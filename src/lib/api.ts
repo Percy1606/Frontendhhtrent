@@ -1,5 +1,5 @@
 // Utilidades de API para el panel de gestión HT RENT
-export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
 
 // Convierte rutas relativas del backend (/uploads/...) en URLs completas cargables
 // desde el navegador (el frontend corre en otro puerto). Las URLs externas (https://...)
