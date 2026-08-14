@@ -99,13 +99,11 @@ export default function EquipoDetallePage() {
         if (res.ok) {
           const data: EquipoDetalle & { varianteInicialId?: string } = await res.json();
           setEquipo(data);
-          if (data.variantes && data.variantes.length > 0) {
-            const inicial = data.varianteInicialId
-              ? data.variantes.find((v) => v.id === data.varianteInicialId) || data.variantes[0]
-              : data.variantes[0];
+          if (data.varianteInicialId && data.variantes && data.variantes.length > 0) {
+            const inicial = data.variantes.find((v) => v.id === data.varianteInicialId) || null;
             setVarianteSeleccionada(inicial);
           } else {
-            setVarianteSeleccionada(data);
+            setVarianteSeleccionada(null);
           }
 
           // Cargar productos relacionados (misma categoría o modalidad)
@@ -281,19 +279,6 @@ export default function EquipoDetallePage() {
                 >
                   {tipoLabel(equipo.tipo)}
                 </span>
-                {equipoActivo && (
-                  <span
-                    className={`absolute top-3 right-3 px-2.5 py-1 rounded-full text-[10px] font-[800] shadow-sm flex items-center gap-1 ${
-                      equipoActivo.imagenUrl && equipoActivo.imagenUrl.trim() !== ''
-                        ? 'bg-emerald-600 text-white'
-                        : 'bg-amber-500 text-white'
-                    }`}
-                  >
-                    {equipoActivo.imagenUrl && equipoActivo.imagenUrl.trim() !== ''
-                      ? '📷 Foto específica del modelo'
-                      : '🖼️ Foto referencial del grupo'}
-                  </span>
-                )}
               </div>
 
               {/* Miniaturas */}
@@ -508,20 +493,9 @@ export default function EquipoDetallePage() {
                                 : 'border-slate-200 bg-white hover:border-slate-300 font-[600]'
                             }`}
                           >
-                            <div className="flex items-center justify-between gap-1">
-                              <span className={esActiva ? 'text-[#E63C46]' : 'text-slate-900'}>
-                                {v.varianteNombre || v.nombre}
-                              </span>
-                              {v.imagenUrl && v.imagenUrl.trim() !== '' ? (
-                                <span className="text-[9px] font-[800] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded shrink-0">
-                                  📷 Foto propia
-                                </span>
-                              ) : (
-                                <span className="text-[9px] font-[600] text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded shrink-0">
-                                  Ref.
-                                </span>
-                              )}
-                            </div>
+                            <span className={esActiva ? 'text-[#E63C46]' : 'text-slate-900'}>
+                              {v.varianteNombre || v.nombre}
+                            </span>
                             <div className="flex items-center justify-between mt-1 text-[11px]">
                               <span className="text-slate-400 font-[600]">{v.modelo || v.codigoInterno}</span>
                               <span className="font-[800] text-slate-900">
