@@ -59,7 +59,7 @@ interface EquipoDetalle {
   documentos?: { id: string; tipo: string; url: string; mimeType?: string }[];
 }
 
-function galeriaDe(equipo: EquipoDetalle): string[] {
+function galeriaDe(equipo: EquipoDetalle, equipoPadre?: EquipoDetalle | null): string[] {
   const fotos = (equipo.documentos || [])
     .filter(
       (d) =>
@@ -68,7 +68,9 @@ function galeriaDe(equipo: EquipoDetalle): string[] {
     )
     .map((d) => d.url);
 
-  return [equipo.imagenUrl, ...fotos].filter(
+  const urlPrincipal = equipo.imagenUrl || equipoPadre?.imagenUrl || '';
+
+  return [urlPrincipal, ...fotos].filter(
     (url, i, arr) => url && arr.indexOf(url) === i,
   );
 }
@@ -162,7 +164,7 @@ export default function EquipoDetallePage() {
       : 'Proyecto / Cotización';
 
   const equipoActivo = varianteSeleccionada || equipo;
-  const imagenes = equipoActivo ? galeriaDe(equipoActivo) : [];
+  const imagenes = equipoActivo ? galeriaDe(equipoActivo, equipo) : [];
 
   // Características primordiales
   const primordiales = equipoActivo
