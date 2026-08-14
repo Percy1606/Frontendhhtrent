@@ -161,33 +161,37 @@ export default function EquipoDetallePage() {
       ? 'Venta Directa'
       : 'Proyecto / Cotización';
 
+  const equipoActivo = varianteSeleccionada || equipo;
+  const imagenes = equipoActivo ? galeriaDe(equipoActivo) : [];
+
   // Características primordiales
-  const primordiales = equipo
+  const primordiales = equipoActivo
     ? [
-        { etiqueta: 'Marca', valor: equipo.marca || 'HT RENT' },
-        { etiqueta: 'Modelo', valor: equipo.modelo || 'Estándar Industrial' },
-        { etiqueta: 'Categoría', valor: equipo.categoria },
+        { etiqueta: 'Marca', valor: equipoActivo.marca || equipo?.marca || 'HT RENT' },
+        { etiqueta: 'Modelo', valor: equipoActivo.modelo || 'Estándar Industrial' },
+        { etiqueta: 'Categoría', valor: equipoActivo.categoria || equipo?.categoria },
         { etiqueta: 'Modalidad', valor: tipoTexto },
       ]
     : [];
 
   // Especificaciones completas para desplegable
-  const especificacionesCompletas = equipo
+  const especificacionesCompletas = equipoActivo
     ? [
-        { etiqueta: 'Código interno', valor: equipo.codigoInterno || '—' },
-        { etiqueta: 'Marca', valor: equipo.marca || 'HT RENT' },
-        { etiqueta: 'Modelo', valor: equipo.modelo || '—' },
-        { etiqueta: 'Serie', valor: equipo.serie || '—' },
-        { etiqueta: 'Año de Fabricación', valor: equipo.anio ? String(equipo.anio) : '—' },
-        { etiqueta: 'Proveedor', valor: equipo.proveedor || 'HT RENT S.A.C.' },
-        { etiqueta: 'Categoría Principal', valor: equipo.categoria },
-        { etiqueta: 'Familia', valor: equipo.familia?.nombre || '—' },
-        { etiqueta: 'Subcategoría', valor: equipo.subfamilia?.nombre || '—' },
-        { etiqueta: 'Sede de Ubicación', valor: equipo.ubicacion },
+        { etiqueta: 'Código interno', valor: equipoActivo.codigoInterno || '—' },
+        { etiqueta: 'Marca', valor: equipoActivo.marca || equipo?.marca || 'HT RENT' },
+        { etiqueta: 'Modelo', valor: equipoActivo.modelo || '—' },
+        { etiqueta: 'Variante / Tipo', valor: equipoActivo.varianteNombre || '—' },
+        { etiqueta: 'Serie', valor: equipoActivo.serie || '—' },
+        { etiqueta: 'Año de Fabricación', valor: equipoActivo.anio ? String(equipoActivo.anio) : '—' },
+        { etiqueta: 'Proveedor', valor: equipoActivo.proveedor || 'HT RENT S.A.C.' },
+        { etiqueta: 'Categoría Principal', valor: equipoActivo.categoria || equipo?.categoria },
+        { etiqueta: 'Familia', valor: equipo?.familia?.nombre || '—' },
+        { etiqueta: 'Subcategoría', valor: equipo?.subfamilia?.nombre || '—' },
+        { etiqueta: 'Sede de Ubicación', valor: equipoActivo.ubicacion || equipo?.ubicacion },
         { etiqueta: 'Modalidad Comercial', valor: tipoTexto },
         {
           etiqueta: 'Disponibilidad Operativa',
-          valor: equipo.disponible ? 'Disponible Inmediato' : 'Bajo Pedido / Reserva',
+          valor: equipoActivo.disponible ? 'Disponible Inmediato' : 'Bajo Pedido / Reserva',
         },
       ]
     : [];
@@ -224,8 +228,6 @@ export default function EquipoDetallePage() {
       </main>
     );
   }
-
-  const imagenes = galeriaDe(equipo);
 
   return (
     <main className="min-h-screen bg-[#f8fafc] font-poppins text-slate-900">
@@ -467,7 +469,10 @@ export default function EquipoDetallePage() {
                           <button
                             key={v.id}
                             type="button"
-                            onClick={() => setVarianteSeleccionada(v)}
+                            onClick={() => {
+                              setVarianteSeleccionada(v);
+                              setImagenActiva(0);
+                            }}
                             className={`p-2.5 rounded-[12px] border text-left transition-all text-xs flex flex-col justify-between gap-1 ${
                               esActiva
                                 ? 'border-[#E63C46] bg-[#E63C46]/5 ring-2 ring-[#E63C46]/20 font-[800]'
