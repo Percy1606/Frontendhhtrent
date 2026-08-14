@@ -264,9 +264,11 @@ export default function AdminEquiposPage() {
                             <ImageIcon className="w-4 h-4 text-slate-300" />
                           </div>
                         )}
-                        <div className="min-w-0 max-w-[260px]">
-                          <p className="font-[700] text-slate-900 truncate">{eq.nombre}</p>
-                          <p className="text-[11px] text-slate-400 font-[500] mt-0.5">
+                        <div className="min-w-0 max-w-sm sm:max-w-md py-0.5">
+                          <p className="font-[700] text-slate-900 leading-snug whitespace-normal break-words">
+                            {eq.nombre}
+                          </p>
+                          <p className="text-[11px] text-slate-400 font-[500] mt-1 whitespace-normal break-words">
                             {[eq.marca, eq.modelo, eq.anio].filter(Boolean).join(' · ') || 'Sin datos técnicos'}
                           </p>
                         </div>
