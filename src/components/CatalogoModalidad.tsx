@@ -35,6 +35,7 @@ interface EquipoBD {
   tipo: 'ALQUILER' | 'VENTA' | 'PROYECTO';
   imagenUrl: string;
   disponible: boolean;
+  variantes?: EquipoBD[];
 }
 
 interface Props {
@@ -265,6 +266,12 @@ export default function CatalogoModalidad({ tipo, otroTipoLabel, otroTipoHref }:
                 >
                   {tipoLabel(p.tipo)}
                 </span>
+                {p.variantes && p.variantes.length > 0 && (
+                  <div className="absolute top-3 right-3 bg-[#162B4D]/90 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-[800] text-white flex items-center gap-1 shadow-sm">
+                    <Layers className="w-3 h-3 text-[#E63C46]" />
+                    <span>{p.variantes.length} modelos</span>
+                  </div>
+                )}
                 <div className="absolute bottom-3 right-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full text-[11px] font-[700] text-slate-700 flex items-center gap-1 shadow-sm">
                   <MapPin className="w-3 h-3 text-[#E63C46]" />
                   <span>{p.ubicacion}</span>

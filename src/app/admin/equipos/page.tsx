@@ -47,6 +47,8 @@ interface Equipo {
   unidad?: string | null;
   imagenUrl: string;
   anio?: number | null;
+  padreId?: string | null;
+  varianteNombre?: string | null;
 }
 
 interface Familia {
@@ -265,9 +267,16 @@ export default function AdminEquiposPage() {
                           </div>
                         )}
                         <div className="min-w-0 max-w-sm sm:max-w-md py-0.5">
-                          <p className="font-[700] text-slate-900 leading-snug whitespace-normal break-words">
-                            {eq.nombre}
-                          </p>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <p className="font-[700] text-slate-900 leading-snug whitespace-normal break-words">
+                              {eq.nombre}
+                            </p>
+                            {eq.padreId && (
+                              <span className="px-2 py-0.5 rounded text-[9px] font-[800] bg-indigo-50 text-indigo-600 border border-indigo-200 uppercase">
+                                Variante: {eq.varianteNombre || 'Hijo'}
+                              </span>
+                            )}
+                          </div>
                           <p className="text-[11px] text-slate-400 font-[500] mt-1 whitespace-normal break-words">
                             {[eq.marca, eq.modelo, eq.anio].filter(Boolean).join(' · ') || 'Sin datos técnicos'}
                           </p>

@@ -31,6 +31,7 @@ import {
   ctaLabel,
   precioEtiqueta,
   precioEtiquetaCorta,
+  formatoPrecioMoneda,
 } from '@/lib/equipo';
 
 interface EquipoDetalle {
@@ -52,6 +53,9 @@ interface EquipoDetalle {
   proveedor?: string | null;
   familia?: { nombre: string } | null;
   subfamilia?: { nombre: string } | null;
+  padreId?: string | null;
+  varianteNombre?: string | null;
+  variantes?: EquipoDetalle[];
   documentos?: { id: string; tipo: string; url: string; mimeType?: string }[];
 }
 
@@ -73,6 +77,7 @@ export default function EquipoDetallePage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const [equipo, setEquipo] = useState<EquipoDetalle | null>(null);
+  const [varianteSeleccionada, setVarianteSeleccionada] = useState<EquipoDetalle | null>(null);
   const [relacionados, setRelacionados] = useState<EquipoDetalle[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -88,6 +93,11 @@ export default function EquipoDetallePage() {
         if (res.ok) {
           const data: EquipoDetalle = await res.json();
           setEquipo(data);
+          if (data.variantes && data.variantes.length > 0) {
+            setVarianteSeleccionada(data.variantes[0]);
+          } else {
+            setVarianteSeleccionada(data);
+          }
 
           // Cargar productos relacionados (misma categoría o modalidad)
           try {
@@ -437,6 +447,49 @@ export default function EquipoDetallePage() {
                   </div>
                 </div>
 
+                {/* SELECTOR DE VARIANTES INTERACTIVO */}
+                {equipo.variantes && equipo.variantes.length > 0 && (
+                  <div className="mt-4 p-4 bg-white rounded-[16px] border-2 border-[#162B4D]/15 shadow-sm space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-[800] uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+                        <Layers className="w-3.5 h-3.5 text-[#E63C46]" />
+                        Selecciona Variante / Modelo:
+                      </span>
+                      <span className="text-[11px] font-[700] text-slate-400">
+                        {equipo.variantes.length} disponibles
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {equipo.variantes.map((v) => {
+                        const esActiva = varianteSeleccionada?.id === v.id;
+                        return (
+                          <button
+                            key={v.id}
+                            type="button"
+                            onClick={() => setVarianteSeleccionada(v)}
+                            className={`p-2.5 rounded-[12px] border text-left transition-all text-xs flex flex-col justify-between gap-1 ${
+                              esActiva
+                                ? 'border-[#E63C46] bg-[#E63C46]/5 ring-2 ring-[#E63C46]/20 font-[800]'
+                                : 'border-slate-200 bg-white hover:border-slate-300 font-[600]'
+                            }`}
+                          >
+                            <span className={esActiva ? 'text-[#E63C46]' : 'text-slate-900'}>
+                              {v.varianteNombre || v.nombre}
+                            </span>
+                            <div className="flex items-center justify-between mt-1 text-[11px]">
+                              <span className="text-slate-400 font-[600]">{v.modelo || v.codigoInterno}</span>
+                              <span className="font-[800] text-slate-900">
+                                {formatoPrecioMoneda(v.precio, v.unidad)}
+                              </span>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 {/* BOTÓN / LINK VER TODAS LAS CARACTERÍSTICAS V */}
                 <button
                   onClick={() => {
@@ -454,12 +507,23 @@ export default function EquipoDetallePage() {
               <div className="border-t border-slate-100 mt-5 pt-4">
                 <div className="flex items-baseline gap-1.5">
                   <span className="font-spartan font-[800] text-xl sm:text-2xl text-slate-900">
-                    {precioTexto(equipo.precio)}
+                    {formatoPrecioMoneda(
+                      varianteSeleccionada ? varianteSeleccionada.precio : equipo.precio,
+                      varianteSeleccionada ? varianteSeleccionada.unidad : equipo.unidad,
+                    )}
                   </span>
-                  {equipo.unidad && (
-                    <span className="text-xs font-[600] text-slate-500">{equipo.unidad}</span>
-                  )}
                 </div>
+                {varianteSeleccionada && varianteSeleccionada.codigoInterno && (
+                  <p className="text-[11px] text-slate-500 font-[600] mt-1 flex items-center gap-1.5">
+                    <span>Código seleccionado:</span>
+                    <span className="font-[800] text-[#162B4D] bg-[#162B4D]/5 px-2 py-0.5 rounded">
+                      {varianteSeleccionada.codigoInterno}
+                    </span>
+                    {varianteSeleccionada.modelo && (
+                      <span className="text-slate-400 font-[500]">({varianteSeleccionada.modelo})</span>
+                    )}
+                  </p>
+                )}
                 <p className="text-[11px] text-slate-400 font-spartan font-[500] mt-0.5 leading-relaxed">
                   {notaPrecio(equipo.tipo)}
                 </p>
@@ -467,14 +531,14 @@ export default function EquipoDetallePage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-6">
                 <button
-                  onClick={() => agregar()}
+                  onClick={() => agregar(varianteSeleccionada || equipo)}
                   className="w-full py-3.5 rounded-[12px] text-xs font-[800] uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-lg bg-[#E63C46] hover:bg-[#C92A36] shadow-[#E63C46]/25 text-white"
                 >
                   <ShoppingCart className="w-4 h-4" /> {ctaLabel(equipo.tipo)}
                 </button>
                 <a
                   href={`https://wa.me/51968285032?text=${encodeURIComponent(
-                    `Hola, me interesa el equipo "${equipo.nombre}" (${equipo.codigoInterno || ''}). ¿Podrían cotizarlo?`
+                    `Hola, me interesa "${(varianteSeleccionada || equipo).nombre}" (Código: ${(varianteSeleccionada || equipo).codigoInterno || ''}, Modelo: ${(varianteSeleccionada || equipo).modelo || ''}). ¿Podrían cotizarlo?`
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
