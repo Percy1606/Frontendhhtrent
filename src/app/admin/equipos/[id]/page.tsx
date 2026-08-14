@@ -250,7 +250,7 @@ export default function AdminEquipoDetallePage() {
         imagenUrl: data.imagenUrl,
         imagenThumbUrl: data.imagenThumbUrl || '',
       }));
-      mostrarMensaje('✅ Fotografía actualizada');
+      mostrarMensaje('✅ Fotografía actualizada correctamente');
     } catch (err) {
       mostrarMensaje(`❌ ${err instanceof Error ? err.message : 'Error desconocido'}`);
     } finally {
