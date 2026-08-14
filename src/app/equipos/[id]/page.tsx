@@ -97,10 +97,13 @@ export default function EquipoDetallePage() {
         setLoading(true);
         const res = await fetch(`${API_URL}/equipos/${params.id}`);
         if (res.ok) {
-          const data: EquipoDetalle = await res.json();
+          const data: EquipoDetalle & { varianteInicialId?: string } = await res.json();
           setEquipo(data);
           if (data.variantes && data.variantes.length > 0) {
-            setVarianteSeleccionada(data.variantes[0]);
+            const inicial = data.varianteInicialId
+              ? data.variantes.find((v) => v.id === data.varianteInicialId) || data.variantes[0]
+              : data.variantes[0];
+            setVarianteSeleccionada(inicial);
           } else {
             setVarianteSeleccionada(data);
           }
