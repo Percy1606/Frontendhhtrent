@@ -19,6 +19,7 @@ import {
   Eye,
   Clock,
   BadgeDollarSign,
+  Image as ImageIcon,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
@@ -254,12 +255,19 @@ export default function EquipoDetallePage() {
           {/* ===== COLUMNA IZQUIERDA: GALERÍA DE IMÁGENES + ACORDEONES ===== */}
           <div className="space-y-6">
             <div className="bg-white rounded-[20px] border border-slate-200/80 p-4 sm:p-5">
-              <div className="relative h-72 sm:h-96 bg-slate-50 rounded-[14px] overflow-hidden border border-slate-100">
-                <img
-                  src={imagenCompleta(imagenes[imagenActiva])}
-                  alt={equipo.nombre}
-                  className="w-full h-full object-contain mix-blend-multiply"
-                />
+              <div className="relative h-72 sm:h-96 bg-slate-50 rounded-[14px] overflow-hidden border border-slate-100 flex items-center justify-center">
+                {imagenes.length > 0 && imagenes[imagenActiva] ? (
+                  <img
+                    src={imagenCompleta(imagenes[imagenActiva])}
+                    alt={equipo.nombre}
+                    className="w-full h-full object-contain mix-blend-multiply"
+                  />
+                ) : (
+                  <div className="flex flex-col items-center justify-center text-slate-300 gap-2">
+                    <ImageIcon className="w-16 h-16 stroke-[1.5]" />
+                    <span className="text-xs font-[600] text-slate-400">Sin fotografía disponible</span>
+                  </div>
+                )}
                 <span
                   className={`absolute top-3 left-3 px-3 py-1 rounded-full text-[10px] font-[800] text-white tracking-wider uppercase shadow-sm ${tipoBadgeClass(
                     equipo.tipo
