@@ -21,6 +21,7 @@ import {
   precioEtiquetaCorta,
   ctaLabel,
   precioEtiqueta,
+  formatoPrecioMoneda,
 } from '@/lib/equipo';
 
 interface EquipoBD {
@@ -289,14 +290,7 @@ export default function CatalogoModalidad({ tipo, otroTipoLabel, otroTipoHref }:
                       {precioEtiquetaCorta(p.tipo)}
                     </span>
                     <div className="text-slate-900 font-spartan font-[700] text-sm">
-                      {p.precio !== null && p.precio !== undefined ? (
-                        <>
-                          S/ {Number(p.precio).toLocaleString('es-PE')}{' '}
-                          <span className="text-[10px] text-slate-400 font-[600]">{p.unidad || ''}</span>
-                        </>
-                      ) : (
-                        'Bajo Cotización'
-                      )}
+                      {formatoPrecioMoneda(p.precio, p.unidad)}
                     </div>
                   </div>
 
@@ -434,9 +428,10 @@ export default function CatalogoModalidad({ tipo, otroTipoLabel, otroTipoHref }:
                   {precioEtiqueta(selectedEquipoModal.tipo)}
                 </span>
                 <span className="text-xl font-[800] text-slate-900">
-                  {selectedEquipoModal.precio !== null && selectedEquipoModal.precio !== undefined
-                    ? `S/ ${Number(selectedEquipoModal.precio).toLocaleString('es-PE')} ${selectedEquipoModal.unidad || ''}`
-                    : 'Cotización Personalizada'}
+                  {formatoPrecioMoneda(
+                    selectedEquipoModal.precio,
+                    selectedEquipoModal.unidad,
+                  )}
                 </span>
               </div>
 

@@ -86,3 +86,35 @@ export function ctaLabel(tipo: string | null | undefined): string {
       return 'Agregar';
   }
 }
+
+// Formateador universal de moneda (Dólares USD vs Soles PEN)
+export function formatoPrecioMoneda(
+  precio?: number | string | null,
+  unidad?: string | null,
+): string {
+  if (precio == null || precio === '') return 'Bajo Cotización';
+  const num = Number(precio);
+  if (isNaN(num)) return String(precio);
+
+  const u = (unidad || '').trim().toUpperCase();
+  const esDolar = u.includes('USD') || u.includes('$');
+  const simbolo = esDolar ? 'USD $' : 'S/';
+
+  const numFormateado = num.toLocaleString('es-PE', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+
+  // Si la unidad es una especificación como "/ mes", "/ día", la concatenamos
+  const tieneUnidadTemporal =
+    unidad &&
+    (unidad.includes('/') ||
+      unidad.toLowerCase().includes('mes') ||
+      unidad.toLowerCase().includes('día') ||
+      unidad.toLowerCase().includes('dia'));
+
+  return tieneUnidadTemporal
+    ? `${simbolo} ${numFormateado} ${unidad}`
+    : `${simbolo} ${numFormateado}`;
+}
+

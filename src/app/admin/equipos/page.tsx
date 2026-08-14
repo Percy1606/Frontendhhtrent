@@ -14,6 +14,8 @@ import {
   Trash2,
   AlertTriangle,
   X,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import {
   apiFetch,
@@ -27,6 +29,7 @@ import {
 } from '@/lib/api';
 import { toast } from 'sonner';
 import { useSession } from '@/hooks/useSession';
+import { formatoPrecioMoneda, tipoBadgeClass, tipoLabel } from '@/lib/equipo';
 
 interface Equipo {
   id: string;
@@ -41,6 +44,7 @@ interface Equipo {
   subfamilia?: { id: string; nombre: string } | null;
   tipo: string;
   precio?: number | string | null;
+  unidad?: string | null;
   imagenUrl: string;
   anio?: number | null;
 }
@@ -57,6 +61,8 @@ export default function AdminEquiposPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [estadoFiltro, setEstadoFiltro] = useState('TODOS');
   const [familiaFiltro, setFamiliaFiltro] = useState('TODAS');
+  const [paginaActual, setPaginaActual] = useState(1);
+  const [pageSize, setPageSize] = useState(40);
   const [confirmarBaja, setConfirmarBaja] = useState<Equipo | null>(null);
   const [eliminando, setEliminando] = useState(false);
   const user = useSession();
@@ -124,6 +130,14 @@ export default function AdminEquiposPage() {
     const matchFamilia = familiaFiltro === 'TODAS' || eq.familiaId === familiaFiltro;
     return matchBusqueda && matchEstado && matchFamilia;
   });
+
+  const totalPaginas = Math.max(1, Math.ceil(filtrados.length / pageSize));
+  const indiceInicio = (paginaActual - 1) * pageSize;
+  const paginados = filtrados.slice(indiceInicio, indiceInicio + pageSize);
+
+  const irAPagina = (p: number) => {
+    setPaginaActual(Math.max(1, Math.min(p, totalPaginas)));
+  };
 
   return (
     <div className="space-y-6">
@@ -222,13 +236,14 @@ export default function AdminEquiposPage() {
                   <th className="py-3.5 px-5">Código</th>
                   <th className="py-3.5 px-4">Equipo</th>
                   <th className="py-3.5 px-4">Categoría</th>
+                  <th className="py-3.5 px-4">Precio / Modalidad</th>
                   <th className="py-3.5 px-4">Estado</th>
                   <th className="py-3.5 px-4">Sede</th>
                   <th className="py-3.5 px-4 text-center">Acciones</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {filtrados.map((eq) => (
+                {paginados.map((eq) => (
                   <tr key={eq.id} className="hover:bg-slate-50/80 transition-colors">
                     <td className="py-3.5 px-5">
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#162B4D]/5 border border-[#162B4D]/10 text-[11px] font-[800] text-[#162B4D]">
@@ -249,7 +264,7 @@ export default function AdminEquiposPage() {
                             <ImageIcon className="w-4 h-4 text-slate-300" />
                           </div>
                         )}
-                        <div className="min-w-0 max-w-[280px]">
+                        <div className="min-w-0 max-w-[260px]">
                           <p className="font-[700] text-slate-900 truncate">{eq.nombre}</p>
                           <p className="text-[11px] text-slate-400 font-[500] mt-0.5">
                             {[eq.marca, eq.modelo, eq.anio].filter(Boolean).join(' · ') || 'Sin datos técnicos'}
@@ -261,6 +276,18 @@ export default function AdminEquiposPage() {
                       <span className="inline-flex items-center gap-1 text-slate-600 font-[600]">
                         <FolderTree className="w-3.5 h-3.5 text-slate-400" />
                         {eq.familia?.nombre || '—'}
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <div className="font-[700] text-slate-900 text-[12px]">
+                        {formatoPrecioMoneda(eq.precio, eq.unidad)}
+                      </div>
+                      <span
+                        className={`inline-block text-[9px] font-[800] uppercase tracking-wider text-white px-2 py-0.5 rounded-full mt-0.5 ${tipoBadgeClass(
+                          eq.tipo,
+                        )}`}
+                      >
+                        {tipoLabel(eq.tipo)}
                       </span>
                     </td>
                     <td className="py-3.5 px-4">
@@ -283,7 +310,7 @@ export default function AdminEquiposPage() {
                         <Link
                           href={`/admin/equipos/${eq.id}`}
                           className="p-2 rounded-[8px] bg-slate-100 hover:bg-[#162B4D] hover:text-white text-slate-600 transition-all"
-                          title="Ver ficha"
+                          title="Ver ficha técnica (solo lectura)"
                         >
                           <Eye className="w-4 h-4" />
                         </Link>
@@ -291,7 +318,7 @@ export default function AdminEquiposPage() {
                           <Link
                             href={`/admin/equipos/${eq.id}?editar=1`}
                             className="p-2 rounded-[8px] bg-slate-100 hover:bg-[#E63C46] hover:text-white text-slate-600 transition-all"
-                            title="Editar"
+                            title="Editar equipo"
                           >
                             <Pencil className="w-4 h-4" />
                           </Link>
@@ -311,6 +338,73 @@ export default function AdminEquiposPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* BARRA DE PAGINACIÓN */}
+          <div className="px-5 py-4 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-xs text-slate-500 font-[500]">
+              Mostrando <span className="font-[700] text-slate-800">{filtrados.length === 0 ? 0 : indiceInicio + 1}</span> - <span className="font-[700] text-slate-800">{Math.min(indiceInicio + pageSize, filtrados.length)}</span> de <span className="font-[700] text-slate-800">{filtrados.length}</span> equipos
+            </div>
+
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 mr-2 text-xs text-slate-500 font-[500]">
+                <span>Mostrar:</span>
+                <select
+                  value={pageSize}
+                  onChange={(e) => {
+                    setPageSize(Number(e.target.value));
+                    setPaginaActual(1);
+                  }}
+                  className="bg-white border border-slate-200 rounded-[8px] px-2 py-1 text-xs font-[700] text-slate-700 focus:outline-none cursor-pointer"
+                >
+                  <option value={20}>20</option>
+                  <option value={40}>40</option>
+                  <option value={80}>80</option>
+                  <option value={100}>100</option>
+                </select>
+              </div>
+
+              <button
+                onClick={() => irAPagina(paginaActual - 1)}
+                disabled={paginaActual <= 1}
+                className="p-2 rounded-[10px] bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                title="Página anterior"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPaginas }, (_, i) => i + 1)
+                  .filter((p) => p === 1 || p === totalPaginas || Math.abs(p - paginaActual) <= 2)
+                  .map((p, idx, arr) => {
+                    const showEllipsis = idx > 0 && p - arr[idx - 1] > 1;
+                    return (
+                      <React.Fragment key={p}>
+                        {showEllipsis && <span className="px-1 text-slate-400 font-[700]">...</span>}
+                        <button
+                          onClick={() => irAPagina(p)}
+                          className={`w-8 h-8 rounded-[10px] text-xs font-[800] transition-all ${
+                            paginaActual === p
+                              ? 'bg-[#162B4D] text-white shadow-md'
+                              : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
+                          }`}
+                        >
+                          {p}
+                        </button>
+                      </React.Fragment>
+                    );
+                  })}
+              </div>
+
+              <button
+                onClick={() => irAPagina(paginaActual + 1)}
+                disabled={paginaActual >= totalPaginas}
+                className="p-2 rounded-[10px] bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                title="Página siguiente"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
       )}

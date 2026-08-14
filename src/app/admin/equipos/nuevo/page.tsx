@@ -119,8 +119,7 @@ export default function NuevoEquipoPage() {
         costo: form.costo ? Number(form.costo) : null,
         valorComercial: form.valorComercial ? Number(form.valorComercial) : null,
         precio: form.precio ? Number(form.precio) : null,
-        // La unidad de tarifa solo aplica a alquiler
-        unidad: form.tipo === 'ALQUILER' ? form.unidad : '',
+        unidad: form.unidad || (form.tipo === 'ALQUILER' ? '/ mes' : 'PEN'),
         imagenThumbUrl: form.imagenThumbUrl || null,
         destacado: form.destacado,
       };
@@ -463,34 +462,43 @@ export default function NuevoEquipoPage() {
             <div>
               <label className={labelCls}>
                 {form.tipo === 'ALQUILER'
-                  ? 'Tarifa de Alquiler (S/ por período)'
+                  ? 'Tarifa de Alquiler'
                   : form.tipo === 'VENTA'
-                  ? 'Precio de Venta (S/)'
-                  : 'Precio Referencial (S/)'}
+                  ? 'Precio de Venta'
+                  : 'Precio Referencial'}
               </label>
               <input
                 type="number"
-                step="0.01"
+                step="any"
                 value={form.precio}
                 onChange={(e) => setForm({ ...form, precio: e.target.value })}
                 placeholder={form.tipo === 'PROYECTO' ? 'Opcional — bajo cotización' : '0.00'}
                 className={inputCls}
               />
             </div>
-            {form.tipo === 'ALQUILER' && (
-              <div>
-                <label className={labelCls}>Período de Tarifa</label>
-                <select
-                  value={form.unidad}
-                  onChange={(e) => setForm({ ...form, unidad: e.target.value })}
-                  className={inputCls + ' cursor-pointer'}
-                >
-                  <option value="/ mes">/ mes</option>
-                  <option value="/ día">/ día</option>
-                  <option value="/ semana">/ semana</option>
-                </select>
-              </div>
-            )}
+            <div>
+              <label className={labelCls}>Moneda / Período</label>
+              <select
+                value={form.unidad}
+                onChange={(e) => setForm({ ...form, unidad: e.target.value })}
+                className={inputCls + ' cursor-pointer'}
+              >
+                {form.tipo === 'ALQUILER' ? (
+                  <>
+                    <option value="/ mes">Soles — / mes</option>
+                    <option value="/ día">Soles — / día</option>
+                    <option value="/ semana">Soles — / semana</option>
+                    <option value="USD / mes">Dólares — USD / mes</option>
+                  </>
+                ) : (
+                  <>
+                    <option value="PEN">Soles (S/ - PEN)</option>
+                    <option value="USD">Dólares ($ - USD)</option>
+                    <option value="Unidad">Por Unidad</option>
+                  </>
+                )}
+              </select>
+            </div>
           </div>
         </section>
 
