@@ -69,7 +69,10 @@ function galeriaDe(equipo: EquipoDetalle, equipoPadre?: EquipoDetalle | null): s
     )
     .map((d) => d.url);
 
-  const urlPrincipal = equipo.imagenUrl || equipoPadre?.imagenUrl || '';
+  const urlEquipo = equipo.imagenUrl && equipo.imagenUrl.trim() !== '' ? equipo.imagenUrl : null;
+  const urlPadre = equipoPadre?.imagenUrl && equipoPadre.imagenUrl.trim() !== '' ? equipoPadre.imagenUrl : null;
+
+  const urlPrincipal = urlEquipo || urlPadre || '';
 
   return [urlPrincipal, ...fotos].filter(
     (url, i, arr) => url && arr.indexOf(url) === i,
