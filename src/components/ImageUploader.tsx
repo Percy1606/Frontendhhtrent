@@ -37,6 +37,17 @@ export default function ImageUploader({
   const [dragOver, setDragOver] = useState(false);
   const [error, setError] = useState('');
 
+  const handleClear = async () => {
+    if (value && value.startsWith('/uploads/')) {
+      try {
+        await apiFetch(`/equipos/imagen?url=${encodeURIComponent(value)}`, {
+          method: 'DELETE',
+        });
+      } catch {}
+    }
+    if (onClear) onClear();
+  };
+
   const subir = async (file: File | null | undefined) => {
     if (!file) return;
     if (!file.type.startsWith('image/')) {
@@ -48,13 +59,23 @@ export default function ImageUploader({
     try {
       const fd = new FormData();
       fd.append('file', file);
+      const oldUrl = value;
       const data = await apiFetch<{ url: string; thumbUrl: string }>(
         '/equipos/imagen',
         { method: 'POST', body: fd },
       );
+      if (oldUrl && oldUrl.startsWith('/uploads/') && oldUrl !== data.url) {
+        apiFetch(`/equipos/imagen?url=${encodeURIComponent(oldUrl)}`, {
+          method: 'DELETE',
+        }).catch(() => undefined);
+      }
       onUploaded(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al subir la imagen');
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Error al subir la imagen. Verifica tu conexión e intenta nuevamente.',
+      );
     } finally {
       setUploading(false);
     }
@@ -159,7 +180,7 @@ export default function ImageUploader({
           {onClear && (
             <button
               type="button"
-              onClick={onClear}
+              onClick={handleClear}
               className="inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-red-50 border border-red-200 text-red-600 text-[10px] font-[800] uppercase tracking-wider rounded-[10px] hover:bg-red-600 hover:text-white transition-all"
             >
               <Trash2 className="w-3 h-3" />
