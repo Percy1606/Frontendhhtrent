@@ -260,7 +260,7 @@ export default function EquipoDetallePage() {
                   <img
                     src={imagenCompleta(imagenes[imagenActiva])}
                     alt={equipo.nombre}
-                    className="w-full h-full object-contain mix-blend-multiply"
+                    className="w-full h-full object-contain"
                   />
                 ) : (
                   <div className="flex flex-col items-center justify-center text-slate-300 gap-2">
