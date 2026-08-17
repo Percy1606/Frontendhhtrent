@@ -64,38 +64,29 @@ function galeriaDe(
   equipoActivo: EquipoDetalle,
   equipoPadre?: EquipoDetalle | null
 ): { fotos: string[]; esReferencial: boolean } {
-  // 1. Verificar si la variante/equipo seleccionado tiene imagen propia válida
+  // 1. Imagen variante seleccionada
   const urlVariante = equipoActivo.imagenUrl && equipoActivo.imagenUrl.trim() !== '' ? equipoActivo.imagenUrl : null;
-  // 2. Verificar si el producto padre tiene imagen principal válida
+  
+  // 2. Imagen del producto padre (si existe)
   const urlPadre = equipoPadre?.imagenUrl && equipoPadre.imagenUrl.trim() !== '' ? equipoPadre.imagenUrl : null;
 
-  // Extraer fotografías adjuntas de la variante seleccionada
-  const fotosAdjuntasVariante = (equipoActivo.documentos || [])
+  // 3. O buscar cualquier foto en variantes hermanas si el padre tampoco tiene
+  const primeraFotoHermanos = (equipoPadre?.variantes || equipoActivo.variantes || [])
+    .map((v) => v.imagenUrl)
+    .find((url) => url && url.trim() !== '');
+
+  // Fotografía principal asignada por orden de prioridad
+  const urlFinal = urlVariante || urlPadre || primeraFotoHermanos || '';
+  const esReferencial = Boolean(!urlVariante && urlFinal !== '');
+
+  // Documentos fotográficos adicionales
+  const fotosAdjuntas = (equipoActivo.documentos || equipoPadre?.documentos || [])
     .filter((d) => d.tipo === 'FOTOGRAFIA' || (d.mimeType && d.mimeType.startsWith('image/')))
     .map((d) => d.url);
 
-  // Regla de prioridad estricta:
-  // - Si la variante tiene imagen propia o fotos adjuntas -> Prioridad Variante
-  // - Si no tiene ninguna -> Usar la del producto padre (fallback)
-  const tieneContenidoPropio = Boolean(urlVariante || fotosAdjuntasVariante.length > 0);
+  const fotos = [urlFinal, ...fotosAdjuntas].filter((url, i, arr) => url && arr.indexOf(url) === i);
 
-  let urlPrincipal = '';
-  let esReferencial = false;
-  let listaFotos: string[] = [];
-
-  if (tieneContenidoPropio) {
-    urlPrincipal = urlVariante || fotosAdjuntasVariante[0] || '';
-    esReferencial = false;
-    listaFotos = [urlPrincipal, ...fotosAdjuntasVariante].filter(
-      (url, i, arr) => url && arr.indexOf(url) === i
-    );
-  } else if (urlPadre) {
-    urlPrincipal = urlPadre;
-    esReferencial = equipoActivo.id !== equipoPadre?.id;
-    listaFotos = [urlPrincipal]; // No duplicar ni mostrar miniaturas de fotos del padre cuando la variante usa fallback
-  }
-
-  return { fotos: listaFotos, esReferencial };
+  return { fotos, esReferencial };
 }
 
 export default function EquipoDetallePage() {
