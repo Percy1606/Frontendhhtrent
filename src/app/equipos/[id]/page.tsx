@@ -67,23 +67,10 @@ function galeriaDe(
   const urlActiva = equipoActivo.imagenUrl && equipoActivo.imagenUrl.trim() !== '' ? equipoActivo.imagenUrl : null;
   const urlPadre = equipoPadre?.imagenUrl && equipoPadre.imagenUrl.trim() !== '' ? equipoPadre.imagenUrl : null;
 
-  const tieneImagenPropia = Boolean(urlActiva && urlActiva !== urlPadre);
-
-  const fotosVariante = (equipoActivo.documentos || [])
-    .filter(
-      (d) =>
-        d.tipo === 'FOTOGRAFIA' ||
-        (d.mimeType && d.mimeType.startsWith('image/')),
-    )
-    .map((d) => d.url);
-
-  const fotosPadre = (equipoPadre?.documentos || [])
-    .filter(
-      (d) =>
-        d.tipo === 'FOTOGRAFIA' ||
-        (d.mimeType && d.mimeType.startsWith('image/')),
-    )
-    .map((d) => d.url);
+  // Buscar la primera foto disponible en cualquier variante del mismo producto/familia
+  const primeraFotoHermanos = (equipoPadre?.variantes || [])
+    .map((v) => v.imagenUrl)
+    .find((url) => url && url.trim() !== '');
 
   let urlPrincipal = '';
   let esReferencial = false;
@@ -93,8 +80,19 @@ function galeriaDe(
     esReferencial = false;
   } else if (urlPadre) {
     urlPrincipal = urlPadre;
-    esReferencial = equipoActivo.id !== equipoPadre?.id; // Marca referencial cuando estamos en una variante que no trae imagen propia
+    esReferencial = equipoActivo.id !== equipoPadre?.id;
+  } else if (primeraFotoHermanos) {
+    urlPrincipal = primeraFotoHermanos;
+    esReferencial = true; // Se marca como referencial del modelo/familia
   }
+
+  const fotosVariante = (equipoActivo.documentos || [])
+    .filter((d) => d.tipo === 'FOTOGRAFIA' || (d.mimeType && d.mimeType.startsWith('image/')))
+    .map((d) => d.url);
+
+  const fotosPadre = (equipoPadre?.documentos || [])
+    .filter((d) => d.tipo === 'FOTOGRAFIA' || (d.mimeType && d.mimeType.startsWith('image/')))
+    .map((d) => d.url);
 
   const todasLasFotos = [urlPrincipal, ...(fotosVariante.length > 0 ? fotosVariante : fotosPadre)].filter(
     (url, i, arr) => url && arr.indexOf(url) === i,
