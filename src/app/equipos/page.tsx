@@ -30,6 +30,7 @@ import {
   precioEtiquetaCorta,
   precioEtiqueta,
   ctaLabel,
+  formatoPrecioMoneda,
 } from '@/lib/equipo';
 
 interface EquipoBD {
@@ -43,6 +44,7 @@ interface EquipoBD {
   tipo: 'ALQUILER' | 'VENTA' | 'PROYECTO';
   imagenUrl: string;
   disponible: boolean;
+  variantes?: EquipoBD[];
 }
 
 export default function EquiposPage() {
@@ -270,7 +272,8 @@ export default function EquiposPage() {
             {visibleProducts.map((p) => (
               <div
                 key={p.id}
-                className="bg-white rounded-[20px] border border-slate-200/80 hover:border-slate-300 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden group"
+                onClick={() => router.push(`/equipos/${p.id}`)}
+                className="bg-white rounded-[20px] border border-slate-200/80 hover:border-slate-300 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden group cursor-pointer"
               >
                 {/* Imagen del Producto */}
                 <div className="relative h-52 bg-slate-100 overflow-hidden">
@@ -298,6 +301,13 @@ export default function EquiposPage() {
                     </span>
                   </div>
 
+                  {p.variantes && p.variantes.length > 0 && (
+                    <div className="absolute top-3 right-3 bg-[#162B4D]/90 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-[800] text-white flex items-center gap-1 shadow-sm">
+                      <Layers className="w-3 h-3 text-[#E63C46]" />
+                      <span>{p.variantes.length} modelos</span>
+                    </div>
+                  )}
+
                   <div className="absolute bottom-3 right-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full text-[11px] font-[700] text-slate-700 flex items-center gap-1 shadow-sm">
                     <MapPin className="w-3 h-3 text-[#E63C46]" />
                     <span>{p.ubicacion}</span>
@@ -318,23 +328,24 @@ export default function EquiposPage() {
                     </p>
                   </div>
 
-                  <div className="border-t border-slate-100 pt-4 flex items-center justify-between mt-auto">
+                  <div className="border-t border-slate-100 pt-4 flex items-center justify-between mt-auto" onClick={(e) => e.stopPropagation()}>
                     <div>
                       <span className="text-[11px] text-slate-400 font-[600] uppercase block">
                         {precioEtiquetaCorta(p.tipo)}
                       </span>
                       <div className="text-slate-900 font-spartan font-[700] text-sm">
-                        {p.precio !== null && p.precio !== undefined
-                          ? `S/ ${Number(p.precio).toLocaleString('es-PE')} ${p.unidad || ''}`
-                          : 'Bajo Cotización'}
+                        {formatoPrecioMoneda(p.precio, p.unidad)}
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2">
                       <button
-                        onClick={() => setSelectedEquipoModal(p)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push(`/equipos/${p.id}`);
+                        }}
                         className="p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition-all"
-                        title="Ver detalle"
+                        title="Ver características y ficha técnica"
                       >
                         <Eye className="w-4 h-4" />
                       </button>
@@ -357,7 +368,6 @@ export default function EquiposPage() {
                               },
                             })
                           );
-                          // Navega a la página de detalle del producto en la MISMA pestaña
                           router.push(`/equipos/${p.id}`);
                         }}
                         className="px-3 py-2 bg-[#162B4D] hover:bg-[#E63C46] text-white rounded-xl text-xs font-[700] flex items-center gap-1.5 transition-all shadow-sm"
