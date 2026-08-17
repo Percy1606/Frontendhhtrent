@@ -82,8 +82,54 @@ function galeriaDe(equipo: EquipoDetalle, equipoPadre?: EquipoDetalle | null): s
 export default function EquipoDetallePage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
-  const [equipo, setEquipo] = useState<EquipoDetalle | null>(null);
-  const [varianteSeleccionada, setVarianteSeleccionada] = useState<EquipoDetalle | null>(null);
+  const [filtroVariantesTexto, setFiltroVariantesTexto] = useState('');
+  const [variantePolo, setVariantePolo] = useState('TODOS');
+  const [varianteAmp, setVarianteAmp] = useState('TODOS');
+  const [varianteCorte, setVarianteCorte] = useState('TODOS');
+
+  // Atributos extraídos automáticamente de las variantes
+  const polosDisponibles = Array.from(
+    new Set(
+      (equipo?.variantes || [])
+        .map((v) => {
+          const match = `${v.nombre} ${v.varianteNombre} ${v.descripcion}`.match(/\b([1-4]\s*P|1P|2P|3P|4P|POLOS?)\b/i);
+          return match ? match[0].toUpperCase().replace(/\s+/, '') : null;
+        })
+        .filter(Boolean)
+    )
+  ).sort();
+
+  const amperajesDisponibles = Array.from(
+    new Set(
+      (equipo?.variantes || [])
+        .map((v) => {
+          const match = `${v.nombre} ${v.varianteNombre} ${v.descripcion}`.match(/\b(\d{1,4}\s*A)\b/i);
+          return match ? match[0].toUpperCase().replace(/\s+/, '') : null;
+        })
+        .filter(Boolean)
+    )
+  ).sort((a: any, b: any) => parseInt(a) - parseInt(b));
+
+  const cortesDisponibles = Array.from(
+    new Set(
+      (equipo?.variantes || [])
+        .map((v) => {
+          const match = `${v.nombre} ${v.varianteNombre} ${v.descripcion}`.match(/\b(\d{1,3}\s*KA)\b/i);
+          return match ? match[0].toUpperCase().replace(/\s+/, '') : null;
+        })
+        .filter(Boolean)
+    )
+  ).sort((a: any, b: any) => parseInt(a) - parseInt(b));
+
+  // Filtrado dinámico de variantes
+  const variantesFiltradas = (equipo?.variantes || []).filter((v) => {
+    const texto = `${v.nombre} ${v.varianteNombre} ${v.codigoInterno} ${v.modelo} ${v.descripcion}`.toUpperCase();
+    if (filtroVariantesTexto && !texto.includes(filtroVariantesTexto.toUpperCase())) return false;
+    if (variantePolo !== 'TODOS' && !texto.includes(variantePolo)) return false;
+    if (varianteAmp !== 'TODOS' && !texto.includes(varianteAmp)) return false;
+    if (varianteCorte !== 'TODOS' && !texto.includes(varianteCorte)) return false;
+    return true;
+  });
   const [relacionados, setRelacionados] = useState<EquipoDetalle[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -384,21 +430,131 @@ export default function EquipoDetallePage() {
                 <span className="text-[#E63C46] font-[700] uppercase">{equipo.categoria}</span>
               </div>
 
-              {/* VARIANTES DESTACADAS CON SELECCIÓN CLARA */}
+              {/* VARIANTES CON BUSCADOR Y FILTROS DINÁMICOS FACETADOS */}
               {equipo.variantes && equipo.variantes.length > 0 && (
-                <div className="mt-5 p-4 bg-slate-50 rounded-[18px] border border-slate-200/80 space-y-3">
-                  <div className="flex items-center justify-between">
+                <div className="mt-5 p-4 bg-slate-50 rounded-[18px] border border-slate-200/80 space-y-4 font-spartan">
+                  <div className="flex items-center justify-between border-b border-slate-200/60 pb-2.5">
                     <span className="text-xs font-[800] uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
                       <Layers className="w-4 h-4 text-[#E63C46]" />
-                      Modelos y Variantes Disponibles:
+                      Selecciona Variante / Modelo ({equipo.variantes.length} disponibles)
                     </span>
-                    <span className="text-[11px] font-[700] text-slate-500">
-                      {equipo.variantes.length} opciones
-                    </span>
+                    {(filtroVariantesTexto || variantePolo !== 'TODOS' || varianteAmp !== 'TODOS' || varianteCorte !== 'TODOS') && (
+                      <button
+                        onClick={() => {
+                          setFiltroVariantesTexto('');
+                          setVariantePolo('TODOS');
+                          setVarianteAmp('TODOS');
+                          setVarianteCorte('TODOS');
+                        }}
+                        className="text-[10px] font-[700] text-[#E63C46] hover:underline"
+                      >
+                        Limpiar filtros
+                      </button>
+                    )}
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    {equipo.variantes.map((v) => {
+                  {/* Buscador de variantes */}
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="Buscar por modelo, código o característica..."
+                      value={filtroVariantesTexto}
+                      onChange={(e) => setFiltroVariantesTexto(e.target.value)}
+                      className="w-full pl-3 pr-3 py-2 bg-white border border-slate-200 rounded-[10px] text-xs font-[600] text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#162B4D] transition-all"
+                    />
+                  </div>
+
+                  {/* Filtros dinámicos automáticos */}
+                  <div className="space-y-2 text-xs">
+                    {/* Filtro Polos */}
+                    {polosDisponibles.length > 0 && (
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[10px] font-[700] uppercase text-slate-400 min-w-[60px]">Polos:</span>
+                        <button
+                          onClick={() => setVariantePolo('TODOS')}
+                          className={`px-2 py-0.5 rounded-md text-[10px] font-[700] transition-all ${
+                            variantePolo === 'TODOS' ? 'bg-[#162B4D] text-white' : 'bg-white border border-slate-200 text-slate-600'
+                          }`}
+                        >
+                          TODOS
+                        </button>
+                        {polosDisponibles.map((p) => (
+                          <button
+                            key={p}
+                            onClick={() => setVariantePolo(p)}
+                            className={`px-2 py-0.5 rounded-md text-[10px] font-[700] transition-all ${
+                              variantePolo === p ? 'bg-[#162B4D] text-white' : 'bg-white border border-slate-200 text-slate-600'
+                            }`}
+                          >
+                            {p}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Filtro Amperaje */}
+                    {amperajesDisponibles.length > 0 && (
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[10px] font-[700] uppercase text-slate-400 min-w-[60px]">Amperaje:</span>
+                        <button
+                          onClick={() => setVarianteAmp('TODOS')}
+                          className={`px-2 py-0.5 rounded-md text-[10px] font-[700] transition-all ${
+                            varianteAmp === 'TODOS' ? 'bg-[#162B4D] text-white' : 'bg-white border border-slate-200 text-slate-600'
+                          }`}
+                        >
+                          TODOS
+                        </button>
+                        {amperajesDisponibles.map((a) => (
+                          <button
+                            key={a}
+                            onClick={() => setVarianteAmp(a)}
+                            className={`px-2 py-0.5 rounded-md text-[10px] font-[700] transition-all ${
+                              varianteAmp === a ? 'bg-[#162B4D] text-white' : 'bg-white border border-slate-200 text-slate-600'
+                            }`}
+                          >
+                            {a}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Filtro Capacidad de Corte */}
+                    {cortesDisponibles.length > 0 && (
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[10px] font-[700] uppercase text-slate-400 min-w-[60px]">Capacidad:</span>
+                        <button
+                          onClick={() => setVarianteCorte('TODOS')}
+                          className={`px-2 py-0.5 rounded-md text-[10px] font-[700] transition-all ${
+                            varianteCorte === 'TODOS' ? 'bg-[#162B4D] text-white' : 'bg-white border border-slate-200 text-slate-600'
+                          }`}
+                        >
+                          TODOS
+                        </button>
+                        {cortesDisponibles.map((c) => (
+                          <button
+                            key={c}
+                            onClick={() => setVarianteCorte(c)}
+                            className={`px-2 py-0.5 rounded-md text-[10px] font-[700] transition-all ${
+                              varianteCorte === c ? 'bg-[#162B4D] text-white' : 'bg-white border border-slate-200 text-slate-600'
+                            }`}
+                          >
+                            {c}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Contador y lista paginada/filtrada */}
+                  <div className="flex items-center justify-between text-[11px] font-[700] text-slate-600 pt-1">
+                    <span>→ {variantesFiltradas.length} variantes encontradas</span>
+                    {varianteSeleccionada && (
+                      <span className="text-[#E63C46]">Variante seleccionada activa</span>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-64 overflow-y-auto pr-1">
+                    {variantesFiltradas.slice(0, 12).map((v) => {
                       const esActiva = varianteSeleccionada?.id === v.id;
                       return (
                         <button
@@ -408,21 +564,23 @@ export default function EquipoDetallePage() {
                             setVarianteSeleccionada(v);
                             setImagenActiva(0);
                           }}
-                          className={`p-3 rounded-[14px] border-2 text-left transition-all text-xs flex flex-col justify-between gap-1.5 shadow-sm ${
+                          className={`p-2.5 rounded-[12px] border text-left transition-all text-xs flex flex-col justify-between gap-1 shadow-2xs ${
                             esActiva
-                              ? 'border-[#E63C46] bg-white ring-4 ring-[#E63C46]/10 font-[800] scale-[1.01]'
+                              ? 'border-[#E63C46] bg-white ring-2 ring-[#E63C46]/20 font-[800]'
                               : 'border-slate-200 bg-white hover:border-slate-300 font-[600]'
                           }`}
                         >
-                          <div className="flex items-center justify-between gap-2">
-                            <span className={esActiva ? 'text-[#E63C46] font-[800]' : 'text-slate-900'}>
+                          <div className="flex items-center justify-between gap-1.5">
+                            <span className={`line-clamp-1 ${esActiva ? 'text-[#E63C46] font-[800]' : 'text-slate-900'}`}>
                               {v.varianteNombre || v.nombre}
                             </span>
-                            {esActiva && <CheckCircle2 className="w-4 h-4 text-[#E63C46] shrink-0" />}
+                            {esActiva && <CheckCircle2 className="w-3.5 h-3.5 text-[#E63C46] shrink-0" />}
                           </div>
-                          <div className="flex items-center justify-between mt-1 pt-1.5 border-t border-slate-100 text-[11px]">
-                            <span className="text-slate-500 font-[700]">{v.modelo || v.codigoInterno}</span>
-                            <span className="font-[800] text-slate-900 bg-slate-100 px-2 py-0.5 rounded-md">
+                          <div className="flex items-center justify-between mt-1 pt-1 border-t border-slate-100 text-[10px]">
+                            <span className="text-slate-400 font-[600] truncate max-w-[100px]">
+                              {v.modelo || v.codigoInterno}
+                            </span>
+                            <span className="font-[800] text-slate-900 bg-slate-100 px-1.5 py-0.5 rounded">
                               {formatoPrecioMoneda(v.precio, v.unidad)}
                             </span>
                           </div>
@@ -433,13 +591,13 @@ export default function EquipoDetallePage() {
                 </div>
               )}
 
-              {/* BLOQUE DE PRECIO MUCHO MÁS DESTACADO */}
-              <div className="border-t border-b border-slate-100 my-5 py-4 bg-gradient-to-r from-slate-50 via-white to-slate-50 p-4 rounded-[16px]">
-                <span className="text-[11px] font-[800] text-[#E63C46] uppercase tracking-widest block mb-0.5">
+              {/* BLOQUE DE PRECIO COMPACTO Y EQUILIBRADO */}
+              <div className="border-t border-b border-slate-100 my-4 py-3 bg-slate-50/60 p-4 rounded-[14px]">
+                <span className="text-[10px] font-[800] text-[#E63C46] uppercase tracking-wider block mb-0.5">
                   Precio de {precioEtiquetaCorta(equipo.tipo)}
                 </span>
                 <div className="flex items-baseline gap-2">
-                  <span className="font-spartan font-[800] text-3xl sm:text-4xl text-slate-900">
+                  <span className="font-spartan font-[800] text-2xl sm:text-3xl text-slate-900">
                     {formatoPrecioMoneda(
                       varianteSeleccionada ? varianteSeleccionada.precio : equipo.precio,
                       varianteSeleccionada ? varianteSeleccionada.unidad : equipo.unidad,
@@ -447,14 +605,14 @@ export default function EquipoDetallePage() {
                   </span>
                 </div>
                 {varianteSeleccionada && varianteSeleccionada.codigoInterno && (
-                  <p className="text-[11px] text-slate-600 font-[600] mt-1 flex items-center gap-1.5">
-                    <span>Modelo seleccionado:</span>
-                    <span className="font-[800] text-[#162B4D] bg-[#162B4D]/10 px-2 py-0.5 rounded">
+                  <p className="text-[10px] text-slate-600 font-[600] mt-0.5 flex items-center gap-1.5">
+                    <span>Modelo:</span>
+                    <span className="font-[800] text-[#162B4D] bg-[#162B4D]/10 px-1.5 py-0.5 rounded">
                       {varianteSeleccionada.codigoInterno}
                     </span>
                   </p>
                 )}
-                <p className="text-[11px] text-slate-400 font-spartan font-[500] mt-1 leading-relaxed">
+                <p className="text-[10px] text-slate-400 font-spartan font-[500] mt-0.5 leading-relaxed">
                   {notaPrecio(equipo.tipo)}
                 </p>
               </div>
