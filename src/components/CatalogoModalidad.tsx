@@ -209,10 +209,10 @@ export default function CatalogoModalidad({ tipo, otroTipoLabel, otroTipoHref }:
         </Link>
       </div>
 
-      {/* FILTROS */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+      {/* FILTROS Y CONTENIDO RESTRUCTURADO PEGADO A LA IZQUIERDA */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* SIDEBAR DE FILTROS A LA IZQUIERDA */}
-        <div className="bg-white p-5 rounded-[20px] border border-slate-200/80 shadow-sm space-y-5 lg:sticky lg:top-24">
+        <div className="lg:col-span-3 bg-white p-5 rounded-[20px] border border-slate-200/80 shadow-sm space-y-5 lg:sticky lg:top-24 text-left">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <h3 className="font-spartan font-[800] text-sm text-slate-800 uppercase tracking-wider flex items-center gap-2">
               <Search className="w-4 h-4 text-[#E63C46]" />
@@ -235,8 +235,8 @@ export default function CatalogoModalidad({ tipo, otroTipoLabel, otroTipoHref }:
           </div>
 
           {/* Buscador general */}
-          <div>
-            <label className="text-[11px] font-[700] uppercase tracking-wider text-slate-400 block mb-1.5">
+          <div className="text-left">
+            <label className="text-[11px] font-[700] uppercase tracking-wider text-slate-400 block mb-1.5 text-left">
               Buscar Producto / Código
             </label>
             <div className="relative">
@@ -246,20 +246,20 @@ export default function CatalogoModalidad({ tipo, otroTipoLabel, otroTipoHref }:
                 placeholder="Ej: 32A, IP67, 5SY4..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-[12px] text-xs font-[600] text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#162B4D] focus:bg-white transition-all"
+                className="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-[12px] text-xs font-[600] text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#162B4D] focus:bg-white transition-all text-left"
               />
             </div>
           </div>
 
           {/* Filtro Marca */}
-          <div>
-            <label className="text-[11px] font-[700] uppercase tracking-wider text-slate-400 block mb-1.5">
+          <div className="text-left">
+            <label className="text-[11px] font-[700] uppercase tracking-wider text-slate-400 block mb-1.5 text-left">
               Marca / Fabricante
             </label>
             <select
               value={selectedMarca}
               onChange={(e) => setSelectedMarca(e.target.value)}
-              className="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-[12px] text-xs font-[600] text-slate-800 focus:outline-none focus:border-[#162B4D] transition-all cursor-pointer"
+              className="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-[12px] text-xs font-[600] text-slate-800 focus:outline-none focus:border-[#162B4D] transition-all cursor-pointer text-left"
             >
               <option value="TODAS">Todas las marcas ({marcasUnicas.length})</option>
               {marcasUnicas.map((m) => (
@@ -271,14 +271,14 @@ export default function CatalogoModalidad({ tipo, otroTipoLabel, otroTipoHref }:
           </div>
 
           {/* Filtro Categoría */}
-          <div>
-            <label className="text-[11px] font-[700] uppercase tracking-wider text-slate-400 block mb-1.5">
+          <div className="text-left">
+            <label className="text-[11px] font-[700] uppercase tracking-wider text-slate-400 block mb-1.5 text-left">
               Categoría Técnica
             </label>
             <select
               value={selectedCategoria}
               onChange={(e) => setSelectedCategoria(e.target.value)}
-              className="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-[12px] text-xs font-[600] text-slate-800 focus:outline-none focus:border-[#162B4D] transition-all cursor-pointer"
+              className="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-[12px] text-xs font-[600] text-slate-800 focus:outline-none focus:border-[#162B4D] transition-all cursor-pointer text-left"
             >
               <option value="TODAS">Todas las categorías ({categoriasUnicas.length})</option>
               {categoriasUnicas.map((cat) => (
@@ -290,11 +290,11 @@ export default function CatalogoModalidad({ tipo, otroTipoLabel, otroTipoHref }:
           </div>
 
           {/* Filtro Amperaje */}
-          <div>
-            <label className="text-[11px] font-[700] uppercase tracking-wider text-slate-400 block mb-1.5">
+          <div className="text-left">
+            <label className="text-[11px] font-[700] uppercase tracking-wider text-slate-400 block mb-1.5 text-left">
               Capacidad de Corriente (Amperaje)
             </label>
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-1.5 justify-start">
               {['TODOS', '16A', '32A', '63A', '100A', '125A', '250A'].map((amp) => (
                 <button
                   key={amp}
@@ -312,11 +312,11 @@ export default function CatalogoModalidad({ tipo, otroTipoLabel, otroTipoHref }:
           </div>
 
           {/* Filtro Grado IP */}
-          <div>
-            <label className="text-[11px] font-[700] uppercase tracking-wider text-slate-400 block mb-1.5">
+          <div className="text-left">
+            <label className="text-[11px] font-[700] uppercase tracking-wider text-slate-400 block mb-1.5 text-left">
               Protección Hermética IP
             </label>
-            <div className="flex gap-2">
+            <div className="flex gap-2 justify-start">
               {['TODOS', 'IP44', 'IP67'].map((ip) => (
                 <button
                   key={ip}
@@ -335,7 +335,7 @@ export default function CatalogoModalidad({ tipo, otroTipoLabel, otroTipoHref }:
         </div>
 
         {/* CONTENEDOR PRINCIPAL DE RESULTADOS A LA DERECHA */}
-        <div className="lg:col-span-3 space-y-6">
+        <div className="lg:col-span-9 space-y-6">
 
       {/* GRILLA */}
       {loading ? (
