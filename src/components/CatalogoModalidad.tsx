@@ -50,8 +50,12 @@ export default function CatalogoModalidad({ tipo, otroTipoLabel, otroTipoHref }:
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedTerm, setDebouncedTerm] = useState('');
   const [selectedCategoria, setSelectedCategoria] = useState('TODAS');
+  const [selectedMarca, setSelectedMarca] = useState('TODAS');
+  const [selectedAmperaje, setSelectedAmperaje] = useState('TODOS');
+  const [selectedIP, setSelectedIP] = useState('TODOS');
   const [selectedEquipoModal, setSelectedEquipoModal] = useState<EquipoBD | null>(null);
   const [categorias, setCategorias] = useState<string[]>([]);
+  const [marcas, setMarcas] = useState<string[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -137,9 +141,25 @@ export default function CatalogoModalidad({ tipo, otroTipoLabel, otroTipoHref }:
     )
   ).sort((a, b) => a.localeCompare(b, 'es'));
 
-  // Con paginación en el servidor, lo visible es lo ya cargado
-  const filteredProducts = productos;
-  const visibleProducts = productos;
+  const marcasUnicas = Array.from(
+    new Set(
+      productos.map((p: any) => p.marca).filter(Boolean)
+    )
+  ).sort((a: any, b: any) => a.localeCompare(b, 'es'));
+
+  // Aplicar filtros locales de Marca, Amperaje e IP
+  const visibleProducts = productos.filter((p: any) => {
+    if (selectedMarca !== 'TODAS' && p.marca !== selectedMarca) return false;
+    if (selectedAmperaje !== 'TODOS') {
+      const text = `${p.nombre} ${p.descripcion}`.toUpperCase();
+      if (!text.includes(selectedAmperaje)) return false;
+    }
+    if (selectedIP !== 'TODOS') {
+      const text = `${p.nombre} ${p.descripcion}`.toUpperCase();
+      if (!text.includes(selectedIP)) return false;
+    }
+    return true;
+  });
 
   const cargarMas = () => {
     const sig = page + 1;
@@ -190,32 +210,132 @@ export default function CatalogoModalidad({ tipo, otroTipoLabel, otroTipoHref }:
       </div>
 
       {/* FILTROS */}
-      <div className="bg-white p-4 sm:p-5 rounded-[20px] border border-slate-200/80 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-3 items-center">
-        <div className="relative md:col-span-2">
-          <Search className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder={`Buscar equipos en ${tipo === 'ALQUILER' ? 'renta' : 'venta'} (equipo, marca, código...)`}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-[14px] text-xs font-[600] text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#162B4D] focus:bg-white transition-all"
-          />
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">
+        {/* SIDEBAR DE FILTROS A LA IZQUIERDA */}
+        <div className="bg-white p-5 rounded-[20px] border border-slate-200/80 shadow-sm space-y-5 lg:sticky lg:top-24">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <h3 className="font-spartan font-[800] text-sm text-slate-800 uppercase tracking-wider flex items-center gap-2">
+              <Search className="w-4 h-4 text-[#E63C46]" />
+              Filtros Avanzados
+            </h3>
+            {(searchTerm || selectedCategoria !== 'TODAS' || selectedMarca !== 'TODAS' || selectedAmperaje !== 'TODOS' || selectedIP !== 'TODOS') && (
+              <button
+                onClick={() => {
+                  setSearchTerm('');
+                  setSelectedCategoria('TODAS');
+                  setSelectedMarca('TODAS');
+                  setSelectedAmperaje('TODOS');
+                  setSelectedIP('TODOS');
+                }}
+                className="text-[10px] font-[700] text-[#E63C46] hover:underline"
+              >
+                Limpiar todo
+              </button>
+            )}
+          </div>
+
+          {/* Buscador general */}
+          <div>
+            <label className="text-[11px] font-[700] uppercase tracking-wider text-slate-400 block mb-1.5">
+              Buscar Producto / Código
+            </label>
+            <div className="relative">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Ej: 32A, IP67, 5SY4..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-[12px] text-xs font-[600] text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#162B4D] focus:bg-white transition-all"
+              />
+            </div>
+          </div>
+
+          {/* Filtro Marca */}
+          <div>
+            <label className="text-[11px] font-[700] uppercase tracking-wider text-slate-400 block mb-1.5">
+              Marca / Fabricante
+            </label>
+            <select
+              value={selectedMarca}
+              onChange={(e) => setSelectedMarca(e.target.value)}
+              className="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-[12px] text-xs font-[600] text-slate-800 focus:outline-none focus:border-[#162B4D] transition-all cursor-pointer"
+            >
+              <option value="TODAS">Todas las marcas ({marcasUnicas.length})</option>
+              {marcasUnicas.map((m) => (
+                <option key={m} value={m}>
+                  {m}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Filtro Categoría */}
+          <div>
+            <label className="text-[11px] font-[700] uppercase tracking-wider text-slate-400 block mb-1.5">
+              Categoría Técnica
+            </label>
+            <select
+              value={selectedCategoria}
+              onChange={(e) => setSelectedCategoria(e.target.value)}
+              className="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-[12px] text-xs font-[600] text-slate-800 focus:outline-none focus:border-[#162B4D] transition-all cursor-pointer"
+            >
+              <option value="TODAS">Todas las categorías ({categoriasUnicas.length})</option>
+              {categoriasUnicas.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Filtro Amperaje */}
+          <div>
+            <label className="text-[11px] font-[700] uppercase tracking-wider text-slate-400 block mb-1.5">
+              Capacidad de Corriente (Amperaje)
+            </label>
+            <div className="flex flex-wrap gap-1.5">
+              {['TODOS', '16A', '32A', '63A', '100A', '125A', '250A'].map((amp) => (
+                <button
+                  key={amp}
+                  onClick={() => setSelectedAmperaje(amp)}
+                  className={`px-2.5 py-1 rounded-lg text-[10px] font-[700] transition-all ${
+                    selectedAmperaje === amp
+                      ? 'bg-[#162B4D] text-white shadow-sm'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  {amp}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Filtro Grado IP */}
+          <div>
+            <label className="text-[11px] font-[700] uppercase tracking-wider text-slate-400 block mb-1.5">
+              Protección Hermética IP
+            </label>
+            <div className="flex gap-2">
+              {['TODOS', 'IP44', 'IP67'].map((ip) => (
+                <button
+                  key={ip}
+                  onClick={() => setSelectedIP(ip)}
+                  className={`flex-1 py-1.5 rounded-lg text-[10px] font-[800] uppercase tracking-wider transition-all border ${
+                    selectedIP === ip
+                      ? 'bg-[#E63C46] border-[#E63C46] text-white shadow-sm'
+                      : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                  }`}
+                >
+                  {ip}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
-        <div>
-          <select
-            value={selectedCategoria}
-            onChange={(e) => setSelectedCategoria(e.target.value)}
-            className="w-full py-3 px-4 bg-slate-50 border border-slate-200 rounded-[14px] text-xs font-[600] text-slate-800 focus:outline-none focus:border-[#162B4D] transition-all cursor-pointer"
-          >
-            <option value="TODAS">Categoría: Todas ({categoriasUnicas.length})</option>
-            {categoriasUnicas.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
+
+        {/* CONTENEDOR PRINCIPAL DE RESULTADOS A LA DERECHA */}
+        <div className="lg:col-span-3 space-y-6">
 
       {/* GRILLA */}
       {loading ? (
@@ -380,6 +500,8 @@ export default function CatalogoModalidad({ tipo, otroTipoLabel, otroTipoHref }:
           </button>
         </div>
       )}
+        </div>
+      </div>
 
       {/* MODAL DETALLE */}
       {selectedEquipoModal && (
