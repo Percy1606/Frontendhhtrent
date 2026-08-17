@@ -391,86 +391,83 @@ export default function EquiposPage() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 items-stretch">
             {visibleProducts.map((p) => (
               <div
                 key={p.id}
                 onClick={() => router.push(`/equipos/${p.id}`)}
-                className="bg-white rounded-[20px] border border-slate-200/80 hover:border-slate-300 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden group cursor-pointer"
+                className="bg-white rounded-[20px] border border-slate-200/80 hover:border-slate-300 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full overflow-hidden group cursor-pointer"
               >
-                {/* Imagen del Producto */}
-                <div className="relative h-52 bg-slate-100 overflow-hidden">
-                  {p.imagenUrl ? (
-                    <img
-                      src={imagenCompleta(p.imagenUrl)}
-                      alt={p.nombre}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-slate-100 to-slate-200">
-                      <ImageIcon className="w-10 h-10 text-slate-300" />
-                      <span className="text-[11px] font-[700] uppercase tracking-widest text-slate-400">
-                        Sin foto
-                      </span>
-                    </div>
-                  )}
-                  <div className="absolute top-3 left-3 flex gap-2">
-                    <span
-                      className={`text-[10px] font-[800] px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm text-white ${tipoBadgeClass(
-                        p.tipo
-                      )}`}
-                    >
-                      {tipoLabel(p.tipo)}
-                    </span>
-                  </div>
-
+                {/* Imagen del Producto con fallback si está rota */}
+                <div className="relative h-48 bg-slate-100 overflow-hidden shrink-0 flex items-center justify-center">
+                  <img
+                    src={imagenCompleta(p.imagenUrl)}
+                    alt={p.nombre}
+                    onError={(e) => {
+                      (e.target as HTMLElement).style.display = 'none';
+                      const parent = (e.target as HTMLElement).parentElement;
+                      if (parent && !parent.querySelector('.fallback-icon')) {
+                        const fallback = document.createElement('div');
+                        fallback.className = 'fallback-icon flex flex-col items-center justify-center gap-1 text-slate-400 text-[10px] font-[700] uppercase';
+                        fallback.innerHTML = '<span>⚡ HH RENT</span>';
+                        parent.appendChild(fallback);
+                      }
+                    }}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <span
+                    className={`absolute top-2.5 left-2.5 text-[9px] font-[800] px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm text-white ${tipoBadgeClass(
+                      p.tipo
+                    )}`}
+                  >
+                    {tipoLabel(p.tipo)}
+                  </span>
                   {p.variantes && p.variantes.length > 0 && (
-                    <div className="absolute top-3 right-3 bg-[#162B4D]/90 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] font-[800] text-white flex items-center gap-1 shadow-sm">
+                    <div className="absolute top-2.5 right-2.5 bg-[#162B4D]/90 backdrop-blur-md px-2 py-0.5 rounded-full text-[9px] font-[800] text-white flex items-center gap-1 shadow-sm">
                       <Layers className="w-3 h-3 text-[#E63C46]" />
                       <span>{p.variantes.length} modelos</span>
                     </div>
                   )}
-
-                  <div className="absolute bottom-3 right-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full text-[11px] font-[700] text-slate-700 flex items-center gap-1 shadow-sm">
+                  <div className="absolute bottom-2.5 right-2.5 bg-white/90 backdrop-blur-md px-2 py-0.5 rounded-full text-[10px] font-[700] text-slate-700 flex items-center gap-1 shadow-sm">
                     <MapPin className="w-3 h-3 text-[#E63C46]" />
                     <span>{p.ubicacion}</span>
                   </div>
                 </div>
 
-                {/* Info del Producto */}
-                <div className="p-5 flex-1 flex flex-col justify-between">
-                  <div>
-                    <span className="text-[11px] font-[700] text-[#E63C46] uppercase tracking-wider block mb-1">
+                {/* Info del Producto con altura uniforme */}
+                <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-[800] text-[#E63C46] uppercase tracking-wider block truncate">
                       {p.categoria}
                     </span>
-                    <h3 className="font-spartan font-[700] text-[17px] text-slate-900 leading-snug tracking-tight line-clamp-2 mb-2 group-hover:text-[#162B4D] transition-colors">
+                    <h3 className="font-spartan font-[700] text-[15px] text-slate-900 leading-snug tracking-tight line-clamp-2 min-h-[2.6rem] group-hover:text-[#162B4D] transition-colors">
                       {p.nombre}
                     </h3>
-                    <p className="text-slate-500 text-xs line-clamp-3 leading-relaxed mb-4">
+                    <p className="text-slate-500 text-[11px] line-clamp-2 leading-relaxed font-spartan font-[500] min-h-[2rem]">
                       {p.descripcion}
                     </p>
                   </div>
 
-                  <div className="border-t border-slate-100 pt-4 flex items-center justify-between mt-auto" onClick={(e) => e.stopPropagation()}>
+                  <div className="border-t border-slate-100 pt-3 flex items-center justify-between mt-auto" onClick={(e) => e.stopPropagation()}>
                     <div>
-                      <span className="text-[11px] text-slate-400 font-[600] uppercase block">
+                      <span className="text-[10px] text-slate-400 font-[600] uppercase block">
                         {precioEtiquetaCorta(p.tipo)}
                       </span>
-                      <div className="text-slate-900 font-spartan font-[700] text-sm">
+                      <div className="text-slate-900 font-spartan font-[800] text-xs sm:text-sm">
                         {formatoPrecioMoneda(p.precio, p.unidad)}
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           router.push(`/equipos/${p.id}`);
                         }}
-                        className="p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition-all"
-                        title="Ver características y ficha técnica"
+                        className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-all"
+                        title="Ver Ficha Técnica"
                       >
-                        <Eye className="w-4 h-4" />
+                        <Eye className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => {
@@ -493,9 +490,9 @@ export default function EquiposPage() {
                           );
                           router.push(`/equipos/${p.id}`);
                         }}
-                        className="px-3 py-2 bg-[#162B4D] hover:bg-[#E63C46] text-white rounded-xl text-xs font-[700] flex items-center gap-1.5 transition-all shadow-sm"
+                        className="px-2.5 py-1.5 bg-[#162B4D] hover:bg-[#E63C46] text-white rounded-lg text-[11px] font-[700] flex items-center gap-1 transition-all shadow-sm"
                       >
-                        <ShoppingCart className="w-3.5 h-3.5" />
+                        <ShoppingCart className="w-3 h-3" />
                         <span>{ctaLabel(p.tipo)}</span>
                       </button>
                     </div>
