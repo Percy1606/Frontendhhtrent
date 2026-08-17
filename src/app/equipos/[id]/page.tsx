@@ -64,7 +64,10 @@ function galeriaDe(
   equipoActivo: EquipoDetalle,
   equipoPadre?: EquipoDetalle | null
 ): { fotos: string[]; esReferencial: boolean } {
-  const tieneImagenPropia = Boolean(equipoActivo.imagenUrl && equipoActivo.imagenUrl.trim() !== '');
+  const urlActiva = equipoActivo.imagenUrl && equipoActivo.imagenUrl.trim() !== '' ? equipoActivo.imagenUrl : null;
+  const urlPadre = equipoPadre?.imagenUrl && equipoPadre.imagenUrl.trim() !== '' ? equipoPadre.imagenUrl : null;
+
+  const tieneImagenPropia = Boolean(urlActiva && urlActiva !== urlPadre);
 
   const fotosVariante = (equipoActivo.documentos || [])
     .filter(
@@ -85,12 +88,12 @@ function galeriaDe(
   let urlPrincipal = '';
   let esReferencial = false;
 
-  if (tieneImagenPropia) {
-    urlPrincipal = equipoActivo.imagenUrl!;
+  if (urlActiva) {
+    urlPrincipal = urlActiva;
     esReferencial = false;
-  } else if (equipoPadre?.imagenUrl && equipoPadre.imagenUrl.trim() !== '') {
-    urlPrincipal = equipoPadre.imagenUrl;
-    esReferencial = equipoActivo.id !== equipoPadre.id; // Es referencial si estamos en variante sin imagen propia
+  } else if (urlPadre) {
+    urlPrincipal = urlPadre;
+    esReferencial = equipoActivo.id !== equipoPadre?.id; // Marca referencial cuando estamos en una variante que no trae imagen propia
   }
 
   const todasLasFotos = [urlPrincipal, ...(fotosVariante.length > 0 ? fotosVariante : fotosPadre)].filter(
@@ -351,6 +354,7 @@ export default function EquipoDetallePage() {
               <div className="relative h-64 sm:h-80 bg-[#F8FAFC] rounded-[14px] overflow-hidden border border-[#E5EAF1] flex items-center justify-center">
                 {galeriaInfo.fotos.length > 0 && galeriaInfo.fotos[imagenActiva] ? (
                   <img
+                    key={`${equipoActivo!.id}-${imagenActiva}`}
                     src={imagenCompleta(galeriaInfo.fotos[imagenActiva])}
                     alt={equipoActivo!.nombre}
                     onError={(e) => {
