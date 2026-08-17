@@ -90,38 +90,38 @@ export default function EquipoDetallePage() {
   const [varianteCorte, setVarianteCorte] = useState('TODOS');
 
   // Atributos extraídos automáticamente de las variantes
-  const polosDisponibles = Array.from(
+  const polosDisponibles: string[] = Array.from(
     new Set(
       (equipo?.variantes || [])
         .map((v: EquipoDetalle) => {
           const match = `${v.nombre} ${v.varianteNombre} ${v.descripcion}`.match(/\b([1-4]\s*P|1P|2P|3P|4P|POLOS?)\b/i);
           return match ? match[0].toUpperCase().replace(/\s+/, '') : null;
         })
-        .filter(Boolean)
+        .filter((item): item is string => Boolean(item))
     )
   ).sort();
 
-  const amperajesDisponibles = Array.from(
+  const amperajesDisponibles: string[] = Array.from(
     new Set(
       (equipo?.variantes || [])
         .map((v: EquipoDetalle) => {
           const match = `${v.nombre} ${v.varianteNombre} ${v.descripcion}`.match(/\b(\d{1,4}\s*A)\b/i);
           return match ? match[0].toUpperCase().replace(/\s+/, '') : null;
         })
-        .filter(Boolean)
+        .filter((item): item is string => Boolean(item))
     )
-  ).sort((a: any, b: any) => parseInt(a) - parseInt(b));
+  ).sort((a: string, b: string) => parseInt(a) - parseInt(b));
 
-  const cortesDisponibles = Array.from(
+  const cortesDisponibles: string[] = Array.from(
     new Set(
       (equipo?.variantes || [])
         .map((v: EquipoDetalle) => {
           const match = `${v.nombre} ${v.varianteNombre} ${v.descripcion}`.match(/\b(\d{1,3}\s*KA)\b/i);
           return match ? match[0].toUpperCase().replace(/\s+/, '') : null;
         })
-        .filter(Boolean)
+        .filter((item): item is string => Boolean(item))
     )
-  ).sort((a: any, b: any) => parseInt(a) - parseInt(b));
+  ).sort((a: string, b: string) => parseInt(a) - parseInt(b));
 
   // Filtrado dinámico de variantes
   const variantesFiltradas = (equipo?.variantes || []).filter((v: EquipoDetalle) => {
