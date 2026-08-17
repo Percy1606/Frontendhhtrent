@@ -61,34 +61,36 @@ interface EquipoDetalle {
 }
 
 function galeriaDe(
-  equipoActivo: EquipoDetalle,
-  equipoPadre?: EquipoDetalle | null
+  equipoActivo: EquipoDetalle | null,
+  equipoPadre: EquipoDetalle | null
 ): { fotos: string[]; esReferencial: boolean } {
-  // 1. Imagen propia de la variante seleccionada
-  const urlVariante =
-    equipoActivo.imagenUrl && equipoActivo.imagenUrl.trim() !== '' ? equipoActivo.imagenUrl : null;
+  if (!equipoActivo && !equipoPadre) return { fotos: [], esReferencial: false };
 
-  // 2. Imagen principal del producto padre
-  const urlPadre =
+  // 1. Verificar si la variante seleccionada posee una foto válida en imagenUrl
+  const fotoVariante =
+    equipoActivo?.imagenUrl && equipoActivo.imagenUrl.trim() !== '' ? equipoActivo.imagenUrl : null;
+
+  // 2. Verificar si el objeto principal / padre posee foto válida
+  const fotoPadre =
     equipoPadre?.imagenUrl && equipoPadre.imagenUrl.trim() !== '' ? equipoPadre.imagenUrl : null;
 
   let urlFinal = '';
   let esReferencial = false;
 
-  if (urlVariante) {
-    urlFinal = urlVariante;
+  if (fotoVariante) {
+    urlFinal = fotoVariante;
     esReferencial = false;
-  } else if (urlPadre) {
-    urlFinal = urlPadre;
-    esReferencial = true;
+  } else if (fotoPadre) {
+    urlFinal = fotoPadre;
+    // Es referencial si estamos en una variante pero mostrando la foto principal del padre
+    esReferencial = Boolean(equipoActivo && equipoPadre && equipoActivo.id !== equipoPadre.id);
   }
 
-  // Documentos fotográficos adjuntos
-  const fotosAdjuntasVariante = (equipoActivo.documentos || [])
+  const fotosAdjuntas = ((equipoActivo?.documentos || equipoPadre?.documentos) || [])
     .filter((d) => d.tipo === 'FOTOGRAFIA' || (d.mimeType && d.mimeType.startsWith('image/')))
     .map((d) => d.url);
 
-  const fotos = [urlFinal, ...fotosAdjuntasVariante].filter((url, i, arr) => url && arr.indexOf(url) === i);
+  const fotos = [urlFinal, ...fotosAdjuntas].filter((url, i, arr) => url && arr.indexOf(url) === i);
 
   return { fotos, esReferencial };
 }
@@ -245,7 +247,7 @@ export default function EquipoDetallePage() {
       : 'Proyecto / Cotización';
 
   const equipoActivo = varianteSeleccionada || equipo;
-  const galeriaInfo = equipoActivo ? galeriaDe(equipoActivo, equipo) : { fotos: [], esReferencial: false };
+  const galeriaInfo = galeriaDe(equipoActivo, equipo);
 
   // Bloque 1: Identificación
   const bloqueIdentificacion = (equipoActivo
