@@ -352,7 +352,7 @@ export default function EquipoDetallePage() {
                 {galeriaInfo.fotos.length > 0 && galeriaInfo.fotos[imagenActiva] ? (
                   <img
                     src={imagenCompleta(galeriaInfo.fotos[imagenActiva])}
-                    alt={equipoActivo.nombre}
+                    alt={equipoActivo!.nombre}
                     onError={(e) => {
                       (e.target as HTMLElement).style.display = 'none';
                       const parent = (e.target as HTMLElement).parentElement;
@@ -376,10 +376,10 @@ export default function EquipoDetallePage() {
                 <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
                   <span
                     className={`px-3 py-1 rounded-full text-[10px] font-[700] tracking-wider uppercase shadow-2xs text-white ${tipoBadgeClass(
-                      equipoActivo.tipo
+                      equipoActivo!.tipo
                     )}`}
                   >
-                    {tipoLabel(equipoActivo.tipo)}
+                    {tipoLabel(equipoActivo!.tipo)}
                   </span>
                   {galeriaInfo.esReferencial && (
                     <span className="px-2.5 py-0.5 rounded-full text-[9px] font-[600] text-slate-700 bg-white/90 backdrop-blur-xs border border-slate-200 shadow-2xs">
@@ -546,18 +546,18 @@ export default function EquipoDetallePage() {
               <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="inline-flex items-center gap-1.5 text-[11px] font-[600] text-[#10A36A] bg-[#10A36A]/10 border border-[#10A36A]/20 px-2.5 py-0.5 rounded-full">
-                    🟢 {equipoActivo.disponible ? 'Disponible inmediato' : 'Bajo Reserva'}
+                    🟢 {equipoActivo!.disponible ? 'Disponible inmediato' : 'Bajo Reserva'}
                   </span>
                   <span className="inline-flex items-center gap-1 text-[11px] font-[600] text-[#172D52] bg-[#F8FAFC] border border-[#E5EAF1] px-2.5 py-0.5 rounded-full">
-                    🔵 {tipoLabel(equipoActivo.tipo)}
+                    🔵 {tipoLabel(equipoActivo!.tipo)}
                   </span>
                   <span className="inline-flex items-center gap-1 text-[11px] font-[600] text-[#7890AD] bg-[#F8FAFC] border border-[#E5EAF1] px-2.5 py-0.5 rounded-full">
-                    📍 Sede {equipoActivo.ubicacion || equipo.ubicacion}
+                    📍 Sede {equipoActivo!.ubicacion || equipo.ubicacion}
                   </span>
                 </div>
-                {equipoActivo.codigoInterno && (
+                {equipoActivo!.codigoInterno && (
                   <span className="text-[11px] font-[600] text-[#7890AD] bg-[#F8FAFC] border border-[#E5EAF1] px-2 py-0.5 rounded-md">
-                    CÓD: {equipoActivo.codigoInterno}
+                    CÓD: {equipoActivo!.codigoInterno}
                   </span>
                 )}
               </div>
