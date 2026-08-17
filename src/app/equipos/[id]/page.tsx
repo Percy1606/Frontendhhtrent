@@ -349,9 +349,15 @@ export default function EquipoDetallePage() {
               <div className="relative h-64 sm:h-80 bg-[#F8FAFC] rounded-[14px] overflow-hidden border border-[#E5EAF1] flex items-center justify-center">
                 {galeriaInfo.fotos.length > 0 && galeriaInfo.fotos[imagenActiva] ? (
                   <img
-                    key={`${equipoActivo!.id}-${imagenActiva}`}
+                    key={`${equipoActivo!.id}-${galeriaInfo.fotos[imagenActiva]}-${imagenActiva}`}
                     src={imagenCompleta(galeriaInfo.fotos[imagenActiva])}
                     alt={equipoActivo!.nombre}
+                    onLoad={(e) => {
+                      (e.target as HTMLElement).style.display = 'block';
+                      const parent = (e.target as HTMLElement).parentElement;
+                      const fallback = parent?.querySelector('.fallback-icon');
+                      if (fallback) fallback.remove();
+                    }}
                     onError={(e) => {
                       (e.target as HTMLElement).style.display = 'none';
                       const parent = (e.target as HTMLElement).parentElement;
