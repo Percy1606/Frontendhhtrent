@@ -64,27 +64,31 @@ function galeriaDe(
   equipoActivo: EquipoDetalle,
   equipoPadre?: EquipoDetalle | null
 ): { fotos: string[]; esReferencial: boolean } {
-  // 1. Imagen variante seleccionada
-  const urlVariante = equipoActivo.imagenUrl && equipoActivo.imagenUrl.trim() !== '' ? equipoActivo.imagenUrl : null;
-  
-  // 2. Imagen del producto padre (si existe)
-  const urlPadre = equipoPadre?.imagenUrl && equipoPadre.imagenUrl.trim() !== '' ? equipoPadre.imagenUrl : null;
+  // 1. Imagen propia de la variante seleccionada
+  const urlVariante =
+    equipoActivo.imagenUrl && equipoActivo.imagenUrl.trim() !== '' ? equipoActivo.imagenUrl : null;
 
-  // 3. O buscar cualquier foto en variantes hermanas si el padre tampoco tiene
-  const primeraFotoHermanos = (equipoPadre?.variantes || equipoActivo.variantes || [])
-    .map((v) => v.imagenUrl)
-    .find((url) => url && url.trim() !== '');
+  // 2. Imagen principal del producto padre
+  const urlPadre =
+    equipoPadre?.imagenUrl && equipoPadre.imagenUrl.trim() !== '' ? equipoPadre.imagenUrl : null;
 
-  // Fotografía principal asignada por orden de prioridad
-  const urlFinal = urlVariante || urlPadre || primeraFotoHermanos || '';
-  const esReferencial = Boolean(!urlVariante && urlFinal !== '');
+  let urlFinal = '';
+  let esReferencial = false;
 
-  // Documentos fotográficos adicionales
-  const fotosAdjuntas = (equipoActivo.documentos || equipoPadre?.documentos || [])
+  if (urlVariante) {
+    urlFinal = urlVariante;
+    esReferencial = false;
+  } else if (urlPadre) {
+    urlFinal = urlPadre;
+    esReferencial = true;
+  }
+
+  // Documentos fotográficos adjuntos
+  const fotosAdjuntasVariante = (equipoActivo.documentos || [])
     .filter((d) => d.tipo === 'FOTOGRAFIA' || (d.mimeType && d.mimeType.startsWith('image/')))
     .map((d) => d.url);
 
-  const fotos = [urlFinal, ...fotosAdjuntas].filter((url, i, arr) => url && arr.indexOf(url) === i);
+  const fotos = [urlFinal, ...fotosAdjuntasVariante].filter((url, i, arr) => url && arr.indexOf(url) === i);
 
   return { fotos, esReferencial };
 }
