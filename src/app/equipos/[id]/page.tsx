@@ -548,17 +548,9 @@ export default function EquipoDetallePage() {
           <div className="lg:col-span-7 space-y-5">
             <div className="bg-white rounded-[20px] border border-slate-200/80 p-6 sm:p-7 shadow-sm">
               <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="inline-flex items-center gap-1.5 text-[11px] font-[600] text-[#10A36A] bg-[#10A36A]/10 border border-[#10A36A]/20 px-2.5 py-0.5 rounded-full">
-                    🟢 {equipoActivo!.disponible ? 'Disponible inmediato' : 'Bajo Reserva'}
-                  </span>
-                  <span className="inline-flex items-center gap-1 text-[11px] font-[600] text-[#172D52] bg-[#F8FAFC] border border-[#E5EAF1] px-2.5 py-0.5 rounded-full">
-                    🔵 {tipoLabel(equipoActivo!.tipo)}
-                  </span>
-                  <span className="inline-flex items-center gap-1 text-[11px] font-[600] text-[#7890AD] bg-[#F8FAFC] border border-[#E5EAF1] px-2.5 py-0.5 rounded-full">
-                    📍 Sede {equipoActivo!.ubicacion || equipo.ubicacion}
-                  </span>
-                </div>
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-[600] text-[#10A36A] bg-[#10A36A]/10 border border-[#10A36A]/20 px-2.5 py-0.5 rounded-full">
+                  🟢 {equipoActivo!.disponible ? 'Disponible inmediato' : 'Bajo Reserva'}
+                </span>
                 {equipoActivo!.codigoInterno && (
                   <span className="text-[11px] font-[600] text-[#7890AD] bg-[#F8FAFC] border border-[#E5EAF1] px-2 py-0.5 rounded-md">
                     CÓD: {equipoActivo!.codigoInterno}
