@@ -419,6 +419,6 @@ export async function apiFetch<T>(
 // GET /equipos (catálogo público) devuelve un objeto paginado { items, total, ... },
 // NO un array. Esta función normaliza la respuesta a un array plano para el admin.
 export async function fetchEquiposPublicos<T = unknown>(): Promise<T[]> {
-  const res = await apiFetch<{ items?: T[] } | T[]>('/equipos');
+  const res = await apiFetch<{ items?: T[] } | T[]>('/equipos?pageSize=10000');
   return Array.isArray(res) ? res : (res?.items ?? []);
 }

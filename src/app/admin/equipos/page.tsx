@@ -49,6 +49,7 @@ interface Equipo {
   anio?: number | null;
   padreId?: string | null;
   varianteNombre?: string | null;
+  descripcion?: string;
 }
 
 interface Familia {
@@ -121,13 +122,34 @@ export default function AdminEquiposPage() {
     });
   }, []);
 
+  useEffect(() => {
+    setPaginaActual(1);
+  }, [searchTerm, estadoFiltro, familiaFiltro]);
+
   const filtrados = equipos.filter((eq) => {
-    const matchBusqueda =
-      searchTerm === '' ||
-      eq.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      eq.codigoInterno?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      eq.marca?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      eq.modelo?.toLowerCase().includes(searchTerm.toLowerCase());
+    const term = searchTerm.trim().toLowerCase();
+    let matchBusqueda = true;
+
+    if (term) {
+      const words = term.split(/\s+/);
+      const targetText = [
+        eq.nombre,
+        eq.codigoInterno,
+        eq.marca,
+        eq.modelo,
+        eq.varianteNombre,
+        eq.descripcion,
+        eq.ubicacion,
+        eq.familia?.nombre,
+        eq.subfamilia?.nombre,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+
+      matchBusqueda = words.every((w) => targetText.includes(w));
+    }
+
     const matchEstado = estadoFiltro === 'TODOS' || eq.estado === estadoFiltro;
     const matchFamilia = familiaFiltro === 'TODAS' || eq.familiaId === familiaFiltro;
     return matchBusqueda && matchEstado && matchFamilia;
