@@ -221,7 +221,7 @@ export default function EquiposPage() {
       </section>
 
       {/* CONTENIDO PRINCIPAL Y FILTROS */}
-      <section className="py-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
+      <section className="py-6 w-full px-4 sm:px-6 lg:px-8">
         {/* CONTENEDOR PRINCIPAL CON SIDEBAR A LA IZQUIERDA */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* SIDEBAR DE FILTROS A LA IZQUIERDA */}

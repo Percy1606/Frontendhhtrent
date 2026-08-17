@@ -89,7 +89,7 @@ export default function VentaPage() {
       </section>
 
       {/* CATÁLOGO DE VENTA */}
-      <section className="py-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12">
+      <section className="py-10 w-full px-4 sm:px-6 lg:px-8">
         <CatalogoModalidad tipo="VENTA" otroTipoLabel="Equipos en Renta" otroTipoHref="/renta" />
       </section>
 
