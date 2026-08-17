@@ -82,6 +82,8 @@ function galeriaDe(equipo: EquipoDetalle, equipoPadre?: EquipoDetalle | null): s
 export default function EquipoDetallePage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
+  const [equipo, setEquipo] = useState<EquipoDetalle | null>(null);
+  const [varianteSeleccionada, setVarianteSeleccionada] = useState<EquipoDetalle | null>(null);
   const [filtroVariantesTexto, setFiltroVariantesTexto] = useState('');
   const [variantePolo, setVariantePolo] = useState('TODOS');
   const [varianteAmp, setVarianteAmp] = useState('TODOS');
@@ -91,7 +93,7 @@ export default function EquipoDetallePage() {
   const polosDisponibles = Array.from(
     new Set(
       (equipo?.variantes || [])
-        .map((v) => {
+        .map((v: EquipoDetalle) => {
           const match = `${v.nombre} ${v.varianteNombre} ${v.descripcion}`.match(/\b([1-4]\s*P|1P|2P|3P|4P|POLOS?)\b/i);
           return match ? match[0].toUpperCase().replace(/\s+/, '') : null;
         })
@@ -102,7 +104,7 @@ export default function EquipoDetallePage() {
   const amperajesDisponibles = Array.from(
     new Set(
       (equipo?.variantes || [])
-        .map((v) => {
+        .map((v: EquipoDetalle) => {
           const match = `${v.nombre} ${v.varianteNombre} ${v.descripcion}`.match(/\b(\d{1,4}\s*A)\b/i);
           return match ? match[0].toUpperCase().replace(/\s+/, '') : null;
         })
@@ -113,7 +115,7 @@ export default function EquipoDetallePage() {
   const cortesDisponibles = Array.from(
     new Set(
       (equipo?.variantes || [])
-        .map((v) => {
+        .map((v: EquipoDetalle) => {
           const match = `${v.nombre} ${v.varianteNombre} ${v.descripcion}`.match(/\b(\d{1,3}\s*KA)\b/i);
           return match ? match[0].toUpperCase().replace(/\s+/, '') : null;
         })
@@ -122,7 +124,7 @@ export default function EquipoDetallePage() {
   ).sort((a: any, b: any) => parseInt(a) - parseInt(b));
 
   // Filtrado dinámico de variantes
-  const variantesFiltradas = (equipo?.variantes || []).filter((v) => {
+  const variantesFiltradas = (equipo?.variantes || []).filter((v: EquipoDetalle) => {
     const texto = `${v.nombre} ${v.varianteNombre} ${v.codigoInterno} ${v.modelo} ${v.descripcion}`.toUpperCase();
     if (filtroVariantesTexto && !texto.includes(filtroVariantesTexto.toUpperCase())) return false;
     if (variantePolo !== 'TODOS' && !texto.includes(variantePolo)) return false;
