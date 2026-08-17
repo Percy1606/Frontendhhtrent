@@ -60,8 +60,13 @@ interface EquipoDetalle {
   documentos?: { id: string; tipo: string; url: string; mimeType?: string }[];
 }
 
-function galeriaDe(equipo: EquipoDetalle, equipoPadre?: EquipoDetalle | null): string[] {
-  const fotos = (equipo.documentos || [])
+function galeriaDe(
+  equipoActivo: EquipoDetalle,
+  equipoPadre?: EquipoDetalle | null
+): { fotos: string[]; esReferencial: boolean } {
+  const tieneImagenPropia = Boolean(equipoActivo.imagenUrl && equipoActivo.imagenUrl.trim() !== '');
+
+  const fotosVariante = (equipoActivo.documentos || [])
     .filter(
       (d) =>
         d.tipo === 'FOTOGRAFIA' ||
@@ -69,14 +74,30 @@ function galeriaDe(equipo: EquipoDetalle, equipoPadre?: EquipoDetalle | null): s
     )
     .map((d) => d.url);
 
-  const urlEquipo = equipo.imagenUrl && equipo.imagenUrl.trim() !== '' ? equipo.imagenUrl : null;
-  const urlPadre = equipoPadre?.imagenUrl && equipoPadre.imagenUrl.trim() !== '' ? equipoPadre.imagenUrl : null;
+  const fotosPadre = (equipoPadre?.documentos || [])
+    .filter(
+      (d) =>
+        d.tipo === 'FOTOGRAFIA' ||
+        (d.mimeType && d.mimeType.startsWith('image/')),
+    )
+    .map((d) => d.url);
 
-  const urlPrincipal = urlEquipo || urlPadre || '';
+  let urlPrincipal = '';
+  let esReferencial = false;
 
-  return [urlPrincipal, ...fotos].filter(
+  if (tieneImagenPropia) {
+    urlPrincipal = equipoActivo.imagenUrl!;
+    esReferencial = false;
+  } else if (equipoPadre?.imagenUrl && equipoPadre.imagenUrl.trim() !== '') {
+    urlPrincipal = equipoPadre.imagenUrl;
+    esReferencial = equipoActivo.id !== equipoPadre.id; // Es referencial si estamos en variante sin imagen propia
+  }
+
+  const todasLasFotos = [urlPrincipal, ...(fotosVariante.length > 0 ? fotosVariante : fotosPadre)].filter(
     (url, i, arr) => url && arr.indexOf(url) === i,
   );
+
+  return { fotos: todasLasFotos, esReferencial };
 }
 
 export default function EquipoDetallePage() {
@@ -231,39 +252,44 @@ export default function EquipoDetallePage() {
       : 'Proyecto / Cotización';
 
   const equipoActivo = varianteSeleccionada || equipo;
-  const imagenes = equipoActivo ? galeriaDe(equipoActivo, equipo) : [];
+  const galeriaInfo = equipoActivo ? galeriaDe(equipoActivo, equipo) : { fotos: [], esReferencial: false };
 
-  // Características primordiales
-  const primordiales = equipoActivo
+  // Bloque 1: Identificación
+  const bloqueIdentificacion = (equipoActivo
     ? [
-        { etiqueta: 'Marca', valor: equipoActivo.marca || equipo?.marca || 'HT RENT' },
-        { etiqueta: 'Modelo', valor: equipoActivo.modelo || 'Estándar Industrial' },
-        { etiqueta: 'Categoría', valor: equipoActivo.categoria || equipo?.categoria },
-        { etiqueta: 'Modalidad', valor: tipoTexto },
+        { etiqueta: 'Código interno', valor: equipoActivo.codigoInterno },
+        { etiqueta: 'Modelo', valor: equipoActivo.modelo },
+        { etiqueta: 'Variante / Tipo', valor: equipoActivo.varianteNombre },
+        { etiqueta: 'Marca', valor: equipoActivo.marca || equipo?.marca },
+        { etiqueta: 'Serie', valor: equipoActivo.serie },
+        { etiqueta: 'Año de Fabricación', valor: equipoActivo.anio ? String(equipoActivo.anio) : null },
       ]
-    : [];
+    : []
+  ).filter((i) => i.valor && i.valor !== '—' && String(i.valor).trim() !== '');
 
-  // Especificaciones completas para desplegable
-  const especificacionesCompletas = equipoActivo
+  // Bloque 2: Clasificación
+  const bloqueClasificacion = (equipoActivo
     ? [
-        { etiqueta: 'Código interno', valor: equipoActivo.codigoInterno || '—' },
-        { etiqueta: 'Marca', valor: equipoActivo.marca || equipo?.marca || 'HT RENT' },
-        { etiqueta: 'Modelo', valor: equipoActivo.modelo || '—' },
-        { etiqueta: 'Variante / Tipo', valor: equipoActivo.varianteNombre || '—' },
-        { etiqueta: 'Serie', valor: equipoActivo.serie || '—' },
-        { etiqueta: 'Año de Fabricación', valor: equipoActivo.anio ? String(equipoActivo.anio) : '—' },
-        { etiqueta: 'Proveedor', valor: equipoActivo.proveedor || 'HT RENT S.A.C.' },
-        { etiqueta: 'Categoría Principal', valor: equipoActivo.categoria || equipo?.categoria },
-        { etiqueta: 'Familia', valor: equipo?.familia?.nombre || '—' },
-        { etiqueta: 'Subcategoría', valor: equipo?.subfamilia?.nombre || '—' },
-        { etiqueta: 'Sede de Ubicación', valor: equipoActivo.ubicacion || equipo?.ubicacion },
+        { etiqueta: 'Categoría', valor: equipoActivo.categoria || equipo?.categoria },
+        { etiqueta: 'Familia', valor: equipo?.familia?.nombre },
+        { etiqueta: 'Subcategoría', valor: equipo?.subfamilia?.nombre },
+      ]
+    : []
+  ).filter((i) => i.valor && i.valor !== '—' && String(i.valor).trim() !== '');
+
+  // Bloque 3: Logística y Operativa
+  const bloqueLogistica = (equipoActivo
+    ? [
+        { etiqueta: 'Proveedor / Fabricante', valor: equipoActivo.proveedor },
+        { etiqueta: 'Almacén / Ubicación', valor: equipoActivo.ubicacion || equipo?.ubicacion },
         { etiqueta: 'Modalidad Comercial', valor: tipoTexto },
         {
           etiqueta: 'Disponibilidad Operativa',
           valor: equipoActivo.disponible ? 'Disponible Inmediato' : 'Bajo Pedido / Reserva',
         },
       ]
-    : [];
+    : []
+  ).filter((i) => i.valor && i.valor !== '—' && String(i.valor).trim() !== '');
 
   if (loading) {
     return (
@@ -319,20 +345,20 @@ export default function EquipoDetallePage() {
       <section className="py-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
-          {/* ===== COLUMNA IZQUIERDA (5 COLUMNAS): GALERÍA DE IMÁGENES + DESCRIPCIÓN Y FICHA TÉCNICA ===== */}
-          <div className="lg:col-span-5 space-y-6">
-            <div className="bg-white rounded-[20px] border border-slate-200/80 p-4 sm:p-5 shadow-sm">
-              <div className="relative h-64 sm:h-80 bg-slate-50 rounded-[14px] overflow-hidden border border-slate-100 flex items-center justify-center">
-                {imagenes.length > 0 && imagenes[imagenActiva] ? (
+          {/* ===== COLUMNA IZQUIERDA (5 COLUMNAS): GALERÍA DE IMÁGENES + DESCRIPCIÓN Y FICHA TÉCNICA ESTRUCTURADA ===== */}
+          <div className="lg:col-span-5 space-y-5 font-spartan">
+            <div className="bg-white rounded-[20px] border border-[#E5EAF1] p-4 sm:p-5 shadow-2xs">
+              <div className="relative h-64 sm:h-80 bg-[#F8FAFC] rounded-[14px] overflow-hidden border border-[#E5EAF1] flex items-center justify-center">
+                {galeriaInfo.fotos.length > 0 && galeriaInfo.fotos[imagenActiva] ? (
                   <img
-                    src={imagenCompleta(imagenes[imagenActiva])}
-                    alt={equipo.nombre}
+                    src={imagenCompleta(galeriaInfo.fotos[imagenActiva])}
+                    alt={equipoActivo.nombre}
                     onError={(e) => {
                       (e.target as HTMLElement).style.display = 'none';
                       const parent = (e.target as HTMLElement).parentElement;
                       if (parent && !parent.querySelector('.fallback-icon')) {
                         const fallback = document.createElement('div');
-                        fallback.className = 'fallback-icon flex flex-col items-center justify-center gap-1 text-slate-400 text-xs font-[800] uppercase tracking-widest';
+                        fallback.className = 'fallback-icon flex flex-col items-center justify-center gap-1 text-[#7890AD] text-xs font-[700] uppercase tracking-widest';
                         fallback.innerHTML = '<span class="text-xl">⚡</span><span>HH RENT</span>';
                         parent.appendChild(fallback);
                       }
@@ -340,32 +366,41 @@ export default function EquipoDetallePage() {
                     className="w-full h-full object-contain"
                   />
                 ) : (
-                  <div className="flex flex-col items-center justify-center text-slate-300 gap-1">
+                  <div className="flex flex-col items-center justify-center text-[#7890AD] gap-1">
                     <span className="text-2xl font-[800]">⚡</span>
-                    <span className="text-xs font-[700] text-slate-400 uppercase tracking-widest">HH RENT</span>
+                    <span className="text-xs font-[700] uppercase tracking-widest">HH RENT</span>
                   </div>
                 )}
-                <span
-                  className={`absolute top-3 left-3 px-3 py-1 rounded-full text-[10px] font-[800] text-white tracking-wider uppercase shadow-sm ${tipoBadgeClass(
-                    equipo.tipo
-                  )}`}
-                >
-                  {tipoLabel(equipo.tipo)}
-                </span>
+                
+                {/* Badges de Estado */}
+                <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
+                  <span
+                    className={`px-3 py-1 rounded-full text-[10px] font-[700] tracking-wider uppercase shadow-2xs text-white ${tipoBadgeClass(
+                      equipoActivo.tipo
+                    )}`}
+                  >
+                    {tipoLabel(equipoActivo.tipo)}
+                  </span>
+                  {galeriaInfo.esReferencial && (
+                    <span className="px-2.5 py-0.5 rounded-full text-[9px] font-[600] text-slate-700 bg-white/90 backdrop-blur-xs border border-slate-200 shadow-2xs">
+                      📷 Imagen referencial
+                    </span>
+                  )}
+                </div>
               </div>
 
-              {/* Miniaturas */}
-              {imagenes.length > 1 && (
+              {/* Miniaturas de imágenes */}
+              {galeriaInfo.fotos.length > 1 && (
                 <div className="grid grid-cols-6 gap-2 mt-3">
-                  {imagenes.map((img, i) => (
+                  {galeriaInfo.fotos.map((img, i) => (
                     <button
                       key={i}
                       onClick={() => setImagenActiva(i)}
                       aria-label={`Ver imagen ${i + 1}`}
-                      className={`aspect-square rounded-[10px] overflow-hidden border-2 transition-all ${
+                      className={`aspect-square rounded-[10px] overflow-hidden border transition-all ${
                         imagenActiva === i
-                          ? 'border-[#E63C46] shadow-md shadow-[#E63C46]/20'
-                          : 'border-slate-200 hover:border-slate-400'
+                          ? 'border-[#EF3945] ring-2 ring-[#EF3945]/20 shadow-2xs'
+                          : 'border-[#E5EAF1] hover:border-[#7890AD]'
                       }`}
                     >
                       <img
@@ -382,53 +417,147 @@ export default function EquipoDetallePage() {
               )}
             </div>
 
-            {/* DESCRIPCIÓN Y ESPECIFICACIONES TÉCNICAS DIRECTAMENTE EN LA COLUMNA IZQUIERDA */}
-            <div className="bg-white rounded-[20px] border border-slate-200/80 p-5 shadow-sm space-y-4 font-spartan">
-              <div>
-                <h3 className="font-[800] text-sm uppercase tracking-wider text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-2">
-                  <FileText className="w-4 h-4 text-[#E63C46]" />
-                  Descripción del Equipo
-                </h3>
-                <p className="mt-3 text-xs sm:text-sm text-slate-600 leading-relaxed whitespace-pre-line font-[500]">
-                  {equipo.descripcion}
-                </p>
-              </div>
-
-              {especificacionesCompletas.length > 0 && (
-                <div className="pt-2">
-                  <h3 className="font-[800] text-sm uppercase tracking-wider text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-2 mb-3">
-                    <Layers className="w-4 h-4 text-[#162B4D]" />
-                    Ficha Técnica
+            {/* DESCRIPCIÓN DEL EQUIPO Y FICHA TÉCNICA LIMPIA Y PROFESIONAL */}
+            <div className="bg-white rounded-[20px] border border-[#E5EAF1] p-5 sm:p-6 shadow-2xs space-y-6">
+              {/* Descripción */}
+              {equipoActivo.descripcion && (
+                <div>
+                  <h3 className="font-[700] text-[15px] sm:text-[16px] text-[#172D52] flex items-center gap-2 border-b border-[#E5EAF1] pb-2.5">
+                    <FileText className="w-4 h-4 text-[#EF3945]" />
+                    Descripción del Equipo
                   </h3>
-                  <div className="grid grid-cols-1 gap-2">
-                    {especificacionesCompletas.map((esp) => (
-                      <div
-                        key={esp.etiqueta}
-                        className="flex items-center justify-between p-2.5 rounded-[12px] bg-slate-50 border border-slate-200/60 text-xs"
-                      >
-                        <span className="font-[700] text-slate-600">{esp.etiqueta}</span>
-                        <span className="font-[800] text-slate-900 text-right bg-white px-2.5 py-0.5 rounded-[8px] border border-slate-200/80 shadow-2xs truncate max-w-[180px]">
-                          {esp.valor}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
+                  <p className="mt-3 text-[14px] sm:text-[15px] text-[#425A78] font-[400] leading-relaxed whitespace-pre-line">
+                    {equipoActivo.descripcion}
+                  </p>
                 </div>
               )}
+
+              {/* Ficha Técnica Estructurada en Bloques */}
+              <div className="pt-2">
+                <div className="flex items-center justify-between border-b border-[#E5EAF1] pb-2.5 mb-4">
+                  <h3 className="font-[700] text-[15px] sm:text-[16px] text-[#172D52] flex items-center gap-2">
+                    <Layers className="w-4 h-4 text-[#172D52]" />
+                    Ficha Técnica
+                  </h3>
+                  {varianteSeleccionada && (
+                    <span className="text-[11px] font-[600] text-[#EF3945] bg-[#EF3945]/10 px-2 py-0.5 rounded-md">
+                      Datos de variante
+                    </span>
+                  )}
+                </div>
+
+                <div className="space-y-4">
+                  {/* Bloque 1: Identificación */}
+                  {bloqueIdentificacion.length > 0 && (
+                    <div>
+                      <h4 className="text-[12px] font-[700] uppercase tracking-wider text-[#7890AD] mb-2">
+                        Identificación
+                      </h4>
+                      <div className="space-y-1.5">
+                        {bloqueIdentificacion.map((item) => (
+                          <div
+                            key={item.etiqueta}
+                            className="flex items-center justify-between py-1.5 border-b border-[#E5EAF1]/60 text-xs"
+                          >
+                            <span className="text-[12px] sm:text-[13px] font-[500] text-[#7890AD]">
+                              {item.etiqueta}
+                            </span>
+                            <span className="text-[13px] sm:text-[14px] font-[600] text-[#172D52] text-right">
+                              {item.valor}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Bloque 2: Clasificación */}
+                  {bloqueClasificacion.length > 0 && (
+                    <div>
+                      <h4 className="text-[12px] font-[700] uppercase tracking-wider text-[#7890AD] mb-2">
+                        Clasificación
+                      </h4>
+                      <div className="space-y-1.5">
+                        {bloqueClasificacion.map((item) => (
+                          <div
+                            key={item.etiqueta}
+                            className="flex items-center justify-between py-1.5 border-b border-[#E5EAF1]/60 text-xs"
+                          >
+                            <span className="text-[12px] sm:text-[13px] font-[500] text-[#7890AD]">
+                              {item.etiqueta}
+                            </span>
+                            <span className="text-[13px] sm:text-[14px] font-[600] text-[#172D52] text-right">
+                              {item.valor}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Bloque 3: Logística y Comercial (Desplegable) */}
+                  {bloqueLogistica.length > 0 && (
+                    <div>
+                      {especificacionesAbiertas && (
+                        <div>
+                          <h4 className="text-[12px] font-[700] uppercase tracking-wider text-[#7890AD] my-2">
+                            Logística y Operativa
+                          </h4>
+                          <div className="space-y-1.5">
+                            {bloqueLogistica.map((item) => (
+                              <div
+                                key={item.etiqueta}
+                                className="flex items-center justify-between py-1.5 border-b border-[#E5EAF1]/60 text-xs"
+                              >
+                                <span className="text-[12px] sm:text-[13px] font-[500] text-[#7890AD]">
+                                  {item.etiqueta}
+                                </span>
+                                <span className="text-[13px] sm:text-[14px] font-[600] text-[#172D52] text-right">
+                                  {item.valor}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => setEspecificacionesAbiertas(!especificacionesAbiertas)}
+                        className="w-full mt-3 py-2 px-3 bg-[#F8FAFC] hover:bg-[#E5EAF1]/50 border border-[#E5EAF1] rounded-[10px] text-xs font-[600] text-[#172D52] transition-all flex items-center justify-center gap-1.5"
+                      >
+                        <span>{especificacionesAbiertas ? 'Ver menos características' : 'Ver más características'}</span>
+                        <ChevronDown
+                          className={`w-3.5 h-3.5 text-[#7890AD] transition-transform duration-200 ${
+                            especificacionesAbiertas ? 'rotate-180' : ''
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
           {/* ===== COLUMNA DERECHA (7 COLUMNAS): COMPRA, PRECIO, VARIANTES Y BENEFICIOS ===== */}
           <div className="lg:col-span-7 space-y-5">
             <div className="bg-white rounded-[20px] border border-slate-200/80 p-6 sm:p-7 shadow-sm">
-              <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
-                <span className="inline-flex items-center gap-1.5 text-[11px] font-[800] uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  {equipo.disponible ? 'Disponible Inmediato' : 'Bajo Reserva'}
-                </span>
-                {equipo.codigoInterno && (
-                  <span className="text-[11px] font-[800] text-[#162B4D] bg-slate-100 px-2.5 py-1 rounded-lg">
-                    CÓD: {equipo.codigoInterno}
+              <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="inline-flex items-center gap-1.5 text-[11px] font-[600] text-[#10A36A] bg-[#10A36A]/10 border border-[#10A36A]/20 px-2.5 py-0.5 rounded-full">
+                    🟢 {equipoActivo.disponible ? 'Disponible inmediato' : 'Bajo Reserva'}
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-[11px] font-[600] text-[#172D52] bg-[#F8FAFC] border border-[#E5EAF1] px-2.5 py-0.5 rounded-full">
+                    🔵 {tipoLabel(equipoActivo.tipo)}
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-[11px] font-[600] text-[#7890AD] bg-[#F8FAFC] border border-[#E5EAF1] px-2.5 py-0.5 rounded-full">
+                    📍 Sede {equipoActivo.ubicacion || equipo.ubicacion}
+                  </span>
+                </div>
+                {equipoActivo.codigoInterno && (
+                  <span className="text-[11px] font-[600] text-[#7890AD] bg-[#F8FAFC] border border-[#E5EAF1] px-2 py-0.5 rounded-md">
+                    CÓD: {equipoActivo.codigoInterno}
                   </span>
                 )}
               </div>
