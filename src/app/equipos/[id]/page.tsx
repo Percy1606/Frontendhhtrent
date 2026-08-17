@@ -231,7 +231,12 @@ export default function EquipoDetallePage() {
           </Link>
         </div>
         <Footer />
-        <WhatsappWidget   return (
+        <WhatsappWidget />
+      </main>
+    );
+  }
+
+  return (
     <main className="min-h-screen bg-[#f8fafc] font-poppins text-slate-900">
       <Header />
 
