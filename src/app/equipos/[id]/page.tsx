@@ -420,14 +420,14 @@ export default function EquipoDetallePage() {
             {/* DESCRIPCIÓN DEL EQUIPO Y FICHA TÉCNICA LIMPIA Y PROFESIONAL */}
             <div className="bg-white rounded-[20px] border border-[#E5EAF1] p-5 sm:p-6 shadow-2xs space-y-6">
               {/* Descripción */}
-              {equipoActivo.descripcion && (
+              {equipoActivo!.descripcion && (
                 <div>
                   <h3 className="font-[700] text-[15px] sm:text-[16px] text-[#172D52] flex items-center gap-2 border-b border-[#E5EAF1] pb-2.5">
                     <FileText className="w-4 h-4 text-[#EF3945]" />
                     Descripción del Equipo
                   </h3>
                   <p className="mt-3 text-[14px] sm:text-[15px] text-[#425A78] font-[400] leading-relaxed whitespace-pre-line">
-                    {equipoActivo.descripcion}
+                    {equipoActivo!.descripcion}
                   </p>
                 </div>
               )}
