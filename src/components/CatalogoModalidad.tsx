@@ -209,10 +209,10 @@ export default function CatalogoModalidad({ tipo, otroTipoLabel, otroTipoHref }:
         </Link>
       </div>
 
-      {/* FILTROS Y CONTENIDO RESTRUCTURADO PEGADO A LA IZQUIERDA */}
+      {/* FILTROS Y PRODUCTOS EN LA MISMA FILA */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* SIDEBAR DE FILTROS A LA IZQUIERDA */}
-        <div className="lg:col-span-3 bg-white p-5 rounded-[20px] border border-slate-200/80 shadow-sm space-y-5 lg:sticky lg:top-24 text-left">
+        {/* PANEL DE FILTROS AVANZADOS - PEGADO TOTALMENTE A LA IZQUIERDA */}
+        <div className="lg:col-span-3 bg-white p-5 rounded-[20px] border border-slate-200/80 shadow-sm space-y-5 lg:sticky lg:top-24 text-left w-full">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <h3 className="font-spartan font-[800] text-sm text-slate-800 uppercase tracking-wider flex items-center gap-2">
               <Search className="w-4 h-4 text-[#E63C46]" />
@@ -334,7 +334,7 @@ export default function CatalogoModalidad({ tipo, otroTipoLabel, otroTipoHref }:
           </div>
         </div>
 
-        {/* CONTENEDOR PRINCIPAL DE RESULTADOS A LA DERECHA */}
+        {/* CONTENEDOR PRINCIPAL DE RESULTADOS A LA DERECHA DE LOS FILTROS */}
         <div className="lg:col-span-9 space-y-6">
 
       {/* GRILLA */}
@@ -366,7 +366,7 @@ export default function CatalogoModalidad({ tipo, otroTipoLabel, otroTipoHref }:
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
           {visibleProducts.map((p) => (
             <div
               key={p.id}
