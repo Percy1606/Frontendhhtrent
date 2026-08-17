@@ -94,7 +94,7 @@ export default function EquipoDetallePage() {
     new Set(
       (equipo?.variantes || [])
         .map((v: EquipoDetalle) => {
-          const match = `${v.nombre} ${v.varianteNombre} ${v.descripcion}`.match(/\b([1-4]\s*P|1P|2P|3P|4P|POLOS?)\b/i);
+          const match = `${v.nombre} ${v.varianteNombre} ${v.modelo}`.match(/\b([1-4]\s*P)\b/i);
           return match ? match[0].toUpperCase().replace(/\s+/, '') : null;
         })
         .filter((item): item is string => Boolean(item))
@@ -105,7 +105,7 @@ export default function EquipoDetallePage() {
     new Set(
       (equipo?.variantes || [])
         .map((v: EquipoDetalle) => {
-          const match = `${v.nombre} ${v.varianteNombre} ${v.descripcion}`.match(/\b(\d{1,4}\s*A)\b/i);
+          const match = `${v.nombre} ${v.varianteNombre} ${v.modelo}`.match(/\b(\d{1,4}\s*A)\b/i);
           return match ? match[0].toUpperCase().replace(/\s+/, '') : null;
         })
         .filter((item): item is string => Boolean(item))
@@ -116,20 +116,34 @@ export default function EquipoDetallePage() {
     new Set(
       (equipo?.variantes || [])
         .map((v: EquipoDetalle) => {
-          const match = `${v.nombre} ${v.varianteNombre} ${v.descripcion}`.match(/\b(\d{1,3}\s*KA)\b/i);
+          const match = `${v.nombre} ${v.varianteNombre} ${v.modelo}`.match(/\b(\d{1,3}\s*KA)\b/i);
           return match ? match[0].toUpperCase().replace(/\s+/, '') : null;
         })
         .filter((item): item is string => Boolean(item))
     )
   ).sort((a: string, b: string) => parseInt(a) - parseInt(b));
 
-  // Filtrado dinámico de variantes
+  // Filtrado dinámico de variantes con expresiones regulares estrictas (evita falsos positivos como 10KA o 1A dentro de un texto)
   const variantesFiltradas = (equipo?.variantes || []).filter((v: EquipoDetalle) => {
     const texto = `${v.nombre} ${v.varianteNombre} ${v.codigoInterno} ${v.modelo} ${v.descripcion}`.toUpperCase();
+    
     if (filtroVariantesTexto && !texto.includes(filtroVariantesTexto.toUpperCase())) return false;
-    if (variantePolo !== 'TODOS' && !texto.includes(variantePolo)) return false;
-    if (varianteAmp !== 'TODOS' && !texto.includes(varianteAmp)) return false;
-    if (varianteCorte !== 'TODOS' && !texto.includes(varianteCorte)) return false;
+    
+    if (variantePolo !== 'TODOS') {
+      const regexPolo = new RegExp(`\\b${variantePolo.replace(/P$/i, '\\s*P')}\\b`, 'i');
+      if (!regexPolo.test(texto)) return false;
+    }
+    
+    if (varianteAmp !== 'TODOS') {
+      const regexAmp = new RegExp(`\\b${varianteAmp.replace(/A$/i, '\\s*A')}\\b`, 'i');
+      if (!regexAmp.test(texto)) return false;
+    }
+    
+    if (varianteCorte !== 'TODOS') {
+      const regexCorte = new RegExp(`\\b${varianteCorte.replace(/KA$/i, '\\s*KA')}\\b`, 'i');
+      if (!regexCorte.test(texto)) return false;
+    }
+    
     return true;
   });
   const [relacionados, setRelacionados] = useState<EquipoDetalle[]>([]);
@@ -593,13 +607,13 @@ export default function EquipoDetallePage() {
                 </div>
               )}
 
-              {/* BLOQUE DE PRECIO COMPACTO Y EQUILIBRADO */}
-              <div className="border-t border-b border-slate-100 my-4 py-3 bg-slate-50/60 p-4 rounded-[14px]">
+              {/* BLOQUE DE PRECIO COMPACTO Y ELEGANTE */}
+              <div className="border-t border-b border-slate-100 my-3 py-2 bg-slate-50/70 p-3 rounded-[12px]">
                 <span className="text-[10px] font-[800] text-[#E63C46] uppercase tracking-wider block mb-0.5">
                   Precio de {precioEtiquetaCorta(equipo.tipo)}
                 </span>
                 <div className="flex items-baseline gap-2">
-                  <span className="font-spartan font-[800] text-2xl sm:text-3xl text-slate-900">
+                  <span className="font-spartan font-[800] text-lg sm:text-xl text-slate-900">
                     {formatoPrecioMoneda(
                       varianteSeleccionada ? varianteSeleccionada.precio : equipo.precio,
                       varianteSeleccionada ? varianteSeleccionada.unidad : equipo.unidad,
