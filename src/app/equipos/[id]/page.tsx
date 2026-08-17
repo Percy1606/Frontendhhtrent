@@ -446,25 +446,20 @@ export default function EquipoDetallePage() {
                 <span className="text-[#E63C46] font-[700] uppercase">{equipo.categoria}</span>
               </div>
 
-              {/* VARIANTES CON BUSCADOR Y FILTROS DINÁMICOS FACETADOS */}
+              {/* VARIANTES CON BUSCADOR DE MODELO O CÓDIGO */}
               {equipo.variantes && equipo.variantes.length > 0 && (
-                <div className="mt-5 p-4 bg-slate-50 rounded-[18px] border border-slate-200/80 space-y-4 font-spartan">
+                <div className="mt-5 p-4 bg-slate-50 rounded-[18px] border border-slate-200/80 space-y-3 font-spartan">
                   <div className="flex items-center justify-between border-b border-slate-200/60 pb-2.5">
                     <span className="text-xs font-[800] uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
                       <Layers className="w-4 h-4 text-[#E63C46]" />
                       Selecciona Variante / Modelo ({equipo.variantes.length} disponibles)
                     </span>
-                    {(filtroVariantesTexto || variantePolo !== 'TODOS' || varianteAmp !== 'TODOS' || varianteCorte !== 'TODOS') && (
+                    {filtroVariantesTexto && (
                       <button
-                        onClick={() => {
-                          setFiltroVariantesTexto('');
-                          setVariantePolo('TODOS');
-                          setVarianteAmp('TODOS');
-                          setVarianteCorte('TODOS');
-                        }}
+                        onClick={() => setFiltroVariantesTexto('')}
                         className="text-[10px] font-[700] text-[#E63C46] hover:underline"
                       >
-                        Limpiar filtros
+                        Limpiar búsqueda
                       </button>
                     )}
                   </div>
@@ -480,88 +475,7 @@ export default function EquipoDetallePage() {
                     />
                   </div>
 
-                  {/* Filtros dinámicos automáticos */}
-                  <div className="space-y-2 text-xs">
-                    {/* Filtro Polos */}
-                    {polosDisponibles.length > 0 && (
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-[10px] font-[700] uppercase text-slate-400 min-w-[60px]">Polos:</span>
-                        <button
-                          onClick={() => setVariantePolo('TODOS')}
-                          className={`px-2 py-0.5 rounded-md text-[10px] font-[700] transition-all ${
-                            variantePolo === 'TODOS' ? 'bg-[#162B4D] text-white' : 'bg-white border border-slate-200 text-slate-600'
-                          }`}
-                        >
-                          TODOS
-                        </button>
-                        {polosDisponibles.map((p) => (
-                          <button
-                            key={p}
-                            onClick={() => setVariantePolo(p)}
-                            className={`px-2 py-0.5 rounded-md text-[10px] font-[700] transition-all ${
-                              variantePolo === p ? 'bg-[#162B4D] text-white' : 'bg-white border border-slate-200 text-slate-600'
-                            }`}
-                          >
-                            {p}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Filtro Amperaje */}
-                    {amperajesDisponibles.length > 0 && (
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-[10px] font-[700] uppercase text-slate-400 min-w-[60px]">Amperaje:</span>
-                        <button
-                          onClick={() => setVarianteAmp('TODOS')}
-                          className={`px-2 py-0.5 rounded-md text-[10px] font-[700] transition-all ${
-                            varianteAmp === 'TODOS' ? 'bg-[#162B4D] text-white' : 'bg-white border border-slate-200 text-slate-600'
-                          }`}
-                        >
-                          TODOS
-                        </button>
-                        {amperajesDisponibles.map((a) => (
-                          <button
-                            key={a}
-                            onClick={() => setVarianteAmp(a)}
-                            className={`px-2 py-0.5 rounded-md text-[10px] font-[700] transition-all ${
-                              varianteAmp === a ? 'bg-[#162B4D] text-white' : 'bg-white border border-slate-200 text-slate-600'
-                            }`}
-                          >
-                            {a}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Filtro Capacidad de Corte */}
-                    {cortesDisponibles.length > 0 && (
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-[10px] font-[700] uppercase text-slate-400 min-w-[60px]">Capacidad:</span>
-                        <button
-                          onClick={() => setVarianteCorte('TODOS')}
-                          className={`px-2 py-0.5 rounded-md text-[10px] font-[700] transition-all ${
-                            varianteCorte === 'TODOS' ? 'bg-[#162B4D] text-white' : 'bg-white border border-slate-200 text-slate-600'
-                          }`}
-                        >
-                          TODOS
-                        </button>
-                        {cortesDisponibles.map((c) => (
-                          <button
-                            key={c}
-                            onClick={() => setVarianteCorte(c)}
-                            className={`px-2 py-0.5 rounded-md text-[10px] font-[700] transition-all ${
-                              varianteCorte === c ? 'bg-[#162B4D] text-white' : 'bg-white border border-slate-200 text-slate-600'
-                            }`}
-                          >
-                            {c}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Contador y lista paginada/filtrada */}
+                  {/* Contador y lista filtrada */}
                   <div className="flex items-center justify-between text-[11px] font-[700] text-slate-600 pt-1">
                     <span>→ {variantesFiltradas.length} variantes encontradas</span>
                     {varianteSeleccionada && (
