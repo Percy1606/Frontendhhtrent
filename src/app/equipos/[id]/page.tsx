@@ -231,18 +231,13 @@ export default function EquipoDetallePage() {
           </Link>
         </div>
         <Footer />
-        <WhatsappWidget />
-      </main>
-    );
-  }
-
-  return (
+        <WhatsappWidget   return (
     <main className="min-h-screen bg-[#f8fafc] font-poppins text-slate-900">
       <Header />
 
       {/* BREADCRUMB COMPACTO */}
       <section className="bg-gradient-to-r from-[#162B4D] via-[#1E3A66] to-[#162B4D] pt-[90px] pb-4 text-white relative overflow-hidden shadow-inner">
-        <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-12 relative z-10">
+        <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="flex items-center gap-2 text-xs sm:text-sm font-[600] text-slate-300">
             <Link href="/" className="hover:text-white transition-colors">Inicio</Link>
             <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
@@ -254,22 +249,33 @@ export default function EquipoDetallePage() {
       </section>
 
       {/* CUERPO PRINCIPAL */}
-      <section className="py-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 space-y-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-          {/* ===== COLUMNA IZQUIERDA: GALERÍA DE IMÁGENES + ACORDEONES ===== */}
-          <div className="space-y-6">
-            <div className="bg-white rounded-[20px] border border-slate-200/80 p-4 sm:p-5">
-              <div className="relative h-72 sm:h-96 bg-slate-50 rounded-[14px] overflow-hidden border border-slate-100 flex items-center justify-center">
+      <section className="py-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          
+          {/* ===== COLUMNA IZQUIERDA (5 COLUMNAS): GALERÍA DE IMÁGENES + DESCRIPCIÓN Y FICHA TÉCNICA ===== */}
+          <div className="lg:col-span-5 space-y-6">
+            <div className="bg-white rounded-[20px] border border-slate-200/80 p-4 sm:p-5 shadow-sm">
+              <div className="relative h-64 sm:h-80 bg-slate-50 rounded-[14px] overflow-hidden border border-slate-100 flex items-center justify-center">
                 {imagenes.length > 0 && imagenes[imagenActiva] ? (
                   <img
                     src={imagenCompleta(imagenes[imagenActiva])}
                     alt={equipo.nombre}
+                    onError={(e) => {
+                      (e.target as HTMLElement).style.display = 'none';
+                      const parent = (e.target as HTMLElement).parentElement;
+                      if (parent && !parent.querySelector('.fallback-icon')) {
+                        const fallback = document.createElement('div');
+                        fallback.className = 'fallback-icon flex flex-col items-center justify-center gap-1 text-slate-400 text-xs font-[800] uppercase tracking-widest';
+                        fallback.innerHTML = '<span class="text-xl">⚡</span><span>HH RENT</span>';
+                        parent.appendChild(fallback);
+                      }
+                    }}
                     className="w-full h-full object-contain"
                   />
                 ) : (
-                  <div className="flex flex-col items-center justify-center text-slate-300 gap-2">
-                    <ImageIcon className="w-16 h-16 stroke-[1.5]" />
-                    <span className="text-xs font-[600] text-slate-400">Sin fotografía disponible</span>
+                  <div className="flex flex-col items-center justify-center text-slate-300 gap-1">
+                    <span className="text-2xl font-[800]">⚡</span>
+                    <span className="text-xs font-[700] text-slate-400 uppercase tracking-widest">HH RENT</span>
                   </div>
                 )}
                 <span
@@ -282,250 +288,153 @@ export default function EquipoDetallePage() {
               </div>
 
               {/* Miniaturas */}
-              <div className="grid grid-cols-7 gap-2 mt-3">
-                {imagenes.map((img, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setImagenActiva(i)}
-                    aria-label={`Ver imagen ${i + 1} de ${equipo.nombre}`}
-                    className={`aspect-square rounded-[10px] overflow-hidden border-2 transition-all ${
-                      imagenActiva === i
-                        ? 'border-[#E63C46] shadow-md shadow-[#E63C46]/20'
-                        : 'border-slate-200 hover:border-slate-400'
-                    }`}
-                  >
-                    <img
-                      src={imagenCompleta(img)}
-                      alt={`Vista ${i + 1} de ${equipo.nombre}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </button>
-                ))}
-              </div>
-              <p className="text-[11px] text-slate-400 font-[600] text-center mt-2">
-                {imagenActiva + 1} de {imagenes.length} imágenes
-              </p>
+              {imagenes.length > 1 && (
+                <div className="grid grid-cols-6 gap-2 mt-3">
+                  {imagenes.map((img, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setImagenActiva(i)}
+                      aria-label={`Ver imagen ${i + 1}`}
+                      className={`aspect-square rounded-[10px] overflow-hidden border-2 transition-all ${
+                        imagenActiva === i
+                          ? 'border-[#E63C46] shadow-md shadow-[#E63C46]/20'
+                          : 'border-slate-200 hover:border-slate-400'
+                      }`}
+                    >
+                      <img
+                        src={imagenCompleta(img)}
+                        alt={`Vista ${i + 1}`}
+                        onError={(e) => {
+                          (e.target as HTMLElement).style.display = 'none';
+                        }}
+                        className="w-full h-full object-cover"
+                      />
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
-            {/* ACORDEONES DESPLEGABLES DIRECTAMENTE DEBAJO DE LA IMAGEN */}
-            <div className="space-y-4 font-spartan">
-              {/* ACORDEÓN 1: DESCRIPCIÓN TÉCNICA */}
-              <div className="bg-white rounded-[22px] border border-slate-200/90 shadow-sm hover:shadow-md transition-all overflow-hidden">
-                <button
-                  onClick={() => setDescripcionAbierta(!descripcionAbierta)}
-                  className={`w-full px-5 py-4 flex items-center justify-between transition-all text-left ${
-                    descripcionAbierta ? 'bg-[#264772] text-white' : 'bg-slate-50 hover:bg-slate-100 text-slate-900'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-xl transition-colors ${descripcionAbierta ? 'bg-white/10 text-white' : 'bg-[#264772]/10 text-[#264772]'}`}>
-                      <FileText className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <h3 className="font-[800] text-sm uppercase tracking-wide">
-                        Descripción del Equipo
-                      </h3>
-                      <p className={`text-[11px] font-[500] ${descripcionAbierta ? 'text-slate-200' : 'text-slate-500'}`}>
-                        Información general y detalles operativos
-                      </p>
-                    </div>
-                  </div>
-                  <ChevronDown
-                    className={`w-5 h-5 transition-transform duration-300 ${
-                      descripcionAbierta ? 'rotate-180 text-white' : 'text-[#264772]'
-                    }`}
-                  />
-                </button>
-
-                {descripcionAbierta && (
-                  <div className="p-6 bg-white border-t border-slate-100 animate-in fade-in duration-200">
-                    <div className="bg-slate-50/70 p-4 rounded-[16px] border border-slate-200/60">
-                      <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-[500] whitespace-pre-line">
-                        {equipo.descripcion}
-                      </p>
-                    </div>
-                  </div>
-                )}
+            {/* DESCRIPCIÓN Y ESPECIFICACIONES TÉCNICAS DIRECTAMENTE EN LA COLUMNA IZQUIERDA */}
+            <div className="bg-white rounded-[20px] border border-slate-200/80 p-5 shadow-sm space-y-4 font-spartan">
+              <div>
+                <h3 className="font-[800] text-sm uppercase tracking-wider text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-2">
+                  <FileText className="w-4 h-4 text-[#E63C46]" />
+                  Descripción del Equipo
+                </h3>
+                <p className="mt-3 text-xs sm:text-sm text-slate-600 leading-relaxed whitespace-pre-line font-[500]">
+                  {equipo.descripcion}
+                </p>
               </div>
 
-              {/* ACORDEÓN 2: ESPECIFICACIONES TÉCNICAS COMPLETAS */}
-              <div id="seccion-especificaciones" className="bg-white rounded-[22px] border border-slate-200/90 shadow-sm hover:shadow-md transition-all overflow-hidden">
-                <button
-                  onClick={() => setEspecificacionesAbiertas(!especificacionesAbiertas)}
-                  className={`w-full px-5 py-4 flex items-center justify-between transition-all text-left ${
-                    especificacionesAbiertas ? 'bg-[#264772] text-white' : 'bg-slate-50 hover:bg-slate-100 text-slate-900'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-xl transition-colors ${especificacionesAbiertas ? 'bg-white/10 text-white' : 'bg-[#264772]/10 text-[#264772]'}`}>
-                      <Layers className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-[800] text-sm uppercase tracking-wide">
-                          Especificaciones Técnicas
-                        </h3>
-                        <span className={`text-[10px] font-[800] px-2 py-0.5 rounded-full ${especificacionesAbiertas ? 'bg-[#E63C46] text-white' : 'bg-[#264772]/10 text-[#264772]'}`}>
-                          {especificacionesCompletas.length} ítems
+              {especificacionesCompletas.length > 0 && (
+                <div className="pt-2">
+                  <h3 className="font-[800] text-sm uppercase tracking-wider text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-2 mb-3">
+                    <Layers className="w-4 h-4 text-[#162B4D]" />
+                    Ficha Técnica
+                  </h3>
+                  <div className="grid grid-cols-1 gap-2">
+                    {especificacionesCompletas.map((esp) => (
+                      <div
+                        key={esp.etiqueta}
+                        className="flex items-center justify-between p-2.5 rounded-[12px] bg-slate-50 border border-slate-200/60 text-xs"
+                      >
+                        <span className="font-[700] text-slate-600">{esp.etiqueta}</span>
+                        <span className="font-[800] text-slate-900 text-right bg-white px-2.5 py-0.5 rounded-[8px] border border-slate-200/80 shadow-2xs truncate max-w-[180px]">
+                          {esp.valor}
                         </span>
                       </div>
-                      <p className={`text-[11px] font-[500] ${especificacionesAbiertas ? 'text-slate-200' : 'text-slate-500'}`}>
-                        Ficha técnica detallada e identificación
-                      </p>
-                    </div>
+                    ))}
                   </div>
-                  <ChevronDown
-                    className={`w-5 h-5 transition-transform duration-300 ${
-                      especificacionesAbiertas ? 'rotate-180 text-white' : 'text-[#264772]'
-                    }`}
-                  />
-                </button>
-
-                {especificacionesAbiertas && (
-                  <div className="p-5 sm:p-6 bg-white border-t border-slate-100 animate-in fade-in duration-200">
-                    <div className="grid grid-cols-1 gap-2.5">
-                      {especificacionesCompletas.map((esp, i) => (
-                        <div
-                          key={esp.etiqueta}
-                          className="flex items-center justify-between p-3 rounded-[14px] bg-slate-50/80 hover:bg-slate-100/80 border border-slate-200/60 transition-colors text-xs"
-                        >
-                          <div className="flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#E63C46]" />
-                            <span className="font-[700] text-slate-600">{esp.etiqueta}</span>
-                          </div>
-                          <span className="font-[800] text-slate-900 text-right bg-white px-3 py-1 rounded-[10px] border border-slate-200/80 shadow-2xs max-w-[200px] sm:max-w-xs truncate">
-                            {esp.valor}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* ===== INFO + CARACTERÍSTICAS PRIMORDIALES ===== */}
-          <div className="space-y-4">
-            <div className="bg-white rounded-[20px] border border-slate-200/80 p-6 sm:p-7">
-              <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
+          {/* ===== COLUMNA DERECHA (7 COLUMNAS): COMPRA, PRECIO, VARIANTES Y BENEFICIOS ===== */}
+          <div className="lg:col-span-7 space-y-5">
+            <div className="bg-white rounded-[20px] border border-slate-200/80 p-6 sm:p-7 shadow-sm">
+              <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
                 <span className="inline-flex items-center gap-1.5 text-[11px] font-[800] uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
                   <CheckCircle2 className="w-3.5 h-3.5" />
-                  {equipo.disponible ? 'Disponible' : 'No disponible'}
+                  {equipo.disponible ? 'Disponible Inmediato' : 'Bajo Reserva'}
                 </span>
                 {equipo.codigoInterno && (
-                  <span className="text-[10px] font-[700] text-slate-400 uppercase tracking-wider">
-                    {equipo.codigoInterno}
+                  <span className="text-[11px] font-[800] text-[#162B4D] bg-slate-100 px-2.5 py-1 rounded-lg">
+                    CÓD: {equipo.codigoInterno}
                   </span>
                 )}
               </div>
 
-              <h1 className="font-spartan font-[800] text-3xl sm:text-4xl lg:text-[38px] leading-tight tracking-tight text-slate-900">
+              {/* TÍTULO LIGERAMENTE MÁS PEQUEÑO Y EQUILIBRADO */}
+              <h1 className="font-spartan font-[800] text-2xl sm:text-3xl text-slate-900 leading-snug tracking-tight">
                 {equipo.nombre}
               </h1>
 
-              <div className="flex items-center gap-2 mt-3 text-xs font-[600] text-slate-500 flex-wrap">
-                <span className="flex items-center gap-1">
+              <div className="flex items-center gap-2 mt-2 text-xs font-[600] text-slate-500 flex-wrap">
+                <span className="flex items-center gap-1 text-slate-700 font-[700]">
                   <MapPin className="w-3.5 h-3.5 text-[#E63C46]" /> Sede {equipo.ubicacion}
                 </span>
-                <span className="w-1 h-1 rounded-full bg-slate-300" />
-                <span>{equipo.categoria}</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+                <span className="text-[#E63C46] font-[700] uppercase">{equipo.categoria}</span>
               </div>
 
-              {/* BLOQUE DE CARACTERÍSTICAS DEL PRODUCTO */}
-              <div className="mt-5 p-4 bg-[#F8FAFC] rounded-[16px] border border-slate-200/70 space-y-3 font-spartan">
-                <h3 className="font-[800] text-sm text-slate-900 tracking-tight">
-                  Características del producto
-                </h3>
-                
-                <div className="space-y-2 text-xs">
-                  <div className="flex justify-between items-baseline border-b border-slate-200/50 pb-1.5">
-                    <span className="font-[600] text-slate-500">Marca:</span>
-                    <span className="font-[700] text-slate-900 text-right">{equipo.marca || 'HT RENT / Importado'}</span>
+              {/* VARIANTES DESTACADAS CON SELECCIÓN CLARA */}
+              {equipo.variantes && equipo.variantes.length > 0 && (
+                <div className="mt-5 p-4 bg-slate-50 rounded-[18px] border border-slate-200/80 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-[800] uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
+                      <Layers className="w-4 h-4 text-[#E63C46]" />
+                      Modelos y Variantes Disponibles:
+                    </span>
+                    <span className="text-[11px] font-[700] text-slate-500">
+                      {equipo.variantes.length} opciones
+                    </span>
                   </div>
-                  {equipo.modelo && (
-                    <div className="flex justify-between items-baseline border-b border-slate-200/50 pb-1.5">
-                      <span className="font-[600] text-slate-500">Modelo:</span>
-                      <span className="font-[700] text-slate-900 text-right">{equipo.modelo}</span>
-                    </div>
-                  )}
-                  <div className="flex justify-between items-baseline border-b border-slate-200/50 pb-1.5">
-                    <span className="font-[600] text-slate-500">Categoría:</span>
-                    <span className="font-[700] text-slate-900 text-right">{equipo.categoria}</span>
-                  </div>
-                  <div className="flex justify-between items-baseline border-b border-slate-200/50 pb-1.5">
-                    <span className="font-[600] text-slate-500">Sede / Ubicación:</span>
-                    <span className="font-[700] text-slate-900 text-right">{equipo.ubicacion}</span>
-                  </div>
-                  <div className="flex justify-between items-baseline pb-1">
-                    <span className="font-[600] text-slate-500">Garantía & Soporte:</span>
-                    <span className="font-[700] text-emerald-600 text-right">Verificado 100%</span>
-                  </div>
-                </div>
 
-                {/* SELECTOR DE VARIANTES INTERACTIVO */}
-                {equipo.variantes && equipo.variantes.length > 0 && (
-                  <div className="mt-4 p-4 bg-white rounded-[16px] border-2 border-[#162B4D]/15 shadow-sm space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-[800] uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
-                        <Layers className="w-3.5 h-3.5 text-[#E63C46]" />
-                        Selecciona Variante / Modelo:
-                      </span>
-                      <span className="text-[11px] font-[700] text-slate-400">
-                        {equipo.variantes.length} disponibles
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {equipo.variantes.map((v) => {
-                        const esActiva = varianteSeleccionada?.id === v.id;
-                        return (
-                          <button
-                            key={v.id}
-                            type="button"
-                            onClick={() => {
-                              setVarianteSeleccionada(v);
-                              setImagenActiva(0);
-                            }}
-                            className={`p-2.5 rounded-[12px] border text-left transition-all text-xs flex flex-col justify-between gap-1 ${
-                              esActiva
-                                ? 'border-[#E63C46] bg-[#E63C46]/5 ring-2 ring-[#E63C46]/20 font-[800]'
-                                : 'border-slate-200 bg-white hover:border-slate-300 font-[600]'
-                            }`}
-                          >
-                            <span className={esActiva ? 'text-[#E63C46]' : 'text-slate-900'}>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {equipo.variantes.map((v) => {
+                      const esActiva = varianteSeleccionada?.id === v.id;
+                      return (
+                        <button
+                          key={v.id}
+                          type="button"
+                          onClick={() => {
+                            setVarianteSeleccionada(v);
+                            setImagenActiva(0);
+                          }}
+                          className={`p-3 rounded-[14px] border-2 text-left transition-all text-xs flex flex-col justify-between gap-1.5 shadow-sm ${
+                            esActiva
+                              ? 'border-[#E63C46] bg-white ring-4 ring-[#E63C46]/10 font-[800] scale-[1.01]'
+                              : 'border-slate-200 bg-white hover:border-slate-300 font-[600]'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className={esActiva ? 'text-[#E63C46] font-[800]' : 'text-slate-900'}>
                               {v.varianteNombre || v.nombre}
                             </span>
-                            <div className="flex items-center justify-between mt-1 text-[11px]">
-                              <span className="text-slate-400 font-[600]">{v.modelo || v.codigoInterno}</span>
-                              <span className="font-[800] text-slate-900">
-                                {formatoPrecioMoneda(v.precio, v.unidad)}
-                              </span>
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
+                            {esActiva && <CheckCircle2 className="w-4 h-4 text-[#E63C46] shrink-0" />}
+                          </div>
+                          <div className="flex items-center justify-between mt-1 pt-1.5 border-t border-slate-100 text-[11px]">
+                            <span className="text-slate-500 font-[700]">{v.modelo || v.codigoInterno}</span>
+                            <span className="font-[800] text-slate-900 bg-slate-100 px-2 py-0.5 rounded-md">
+                              {formatoPrecioMoneda(v.precio, v.unidad)}
+                            </span>
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
-                )}
+                </div>
+              )}
 
-                {/* BOTÓN / LINK VER TODAS LAS CARACTERÍSTICAS V */}
-                <button
-                  onClick={() => {
-                    setEspecificacionesAbiertas(true);
-                    const el = document.getElementById('seccion-especificaciones');
-                    if (el) el.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                  className="w-full pt-2 text-[#264772] hover:text-[#1d385c] text-xs font-[800] flex items-center justify-center gap-1 transition-colors border-t border-slate-200/60"
-                >
-                  <span>Ver todas las características</span>
-                  <ChevronDown className="w-4 h-4 text-[#264772]" />
-                </button>
-              </div>
-
-              <div className="border-t border-slate-100 mt-5 pt-4">
-                <div className="flex items-baseline gap-1.5">
-                  <span className="font-spartan font-[800] text-xl sm:text-2xl text-slate-900">
+              {/* BLOQUE DE PRECIO MUCHO MÁS DESTACADO */}
+              <div className="border-t border-b border-slate-100 my-5 py-4 bg-gradient-to-r from-slate-50 via-white to-slate-50 p-4 rounded-[16px]">
+                <span className="text-[11px] font-[800] text-[#E63C46] uppercase tracking-widest block mb-0.5">
+                  Precio de {precioEtiquetaCorta(equipo.tipo)}
+                </span>
+                <div className="flex items-baseline gap-2">
+                  <span className="font-spartan font-[800] text-3xl sm:text-4xl text-slate-900">
                     {formatoPrecioMoneda(
                       varianteSeleccionada ? varianteSeleccionada.precio : equipo.precio,
                       varianteSeleccionada ? varianteSeleccionada.unidad : equipo.unidad,
@@ -533,92 +442,92 @@ export default function EquipoDetallePage() {
                   </span>
                 </div>
                 {varianteSeleccionada && varianteSeleccionada.codigoInterno && (
-                  <p className="text-[11px] text-slate-500 font-[600] mt-1 flex items-center gap-1.5">
-                    <span>Código seleccionado:</span>
-                    <span className="font-[800] text-[#162B4D] bg-[#162B4D]/5 px-2 py-0.5 rounded">
+                  <p className="text-[11px] text-slate-600 font-[600] mt-1 flex items-center gap-1.5">
+                    <span>Modelo seleccionado:</span>
+                    <span className="font-[800] text-[#162B4D] bg-[#162B4D]/10 px-2 py-0.5 rounded">
                       {varianteSeleccionada.codigoInterno}
                     </span>
-                    {varianteSeleccionada.modelo && (
-                      <span className="text-slate-400 font-[500]">({varianteSeleccionada.modelo})</span>
-                    )}
                   </p>
                 )}
-                <p className="text-[11px] text-slate-400 font-spartan font-[500] mt-0.5 leading-relaxed">
+                <p className="text-[11px] text-slate-400 font-spartan font-[500] mt-1 leading-relaxed">
                   {notaPrecio(equipo.tipo)}
                 </p>
               </div>
 
+              {/* BOTÓN PRINCIPAL COMPRAR + SECUNDARIO COTIZAR */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-6">
                 <button
                   onClick={() => agregar(varianteSeleccionada || equipo)}
-                  className="w-full py-3.5 rounded-[12px] text-xs font-[800] uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-lg bg-[#E63C46] hover:bg-[#C92A36] shadow-[#E63C46]/25 text-white"
+                  className="w-full py-4 rounded-[14px] text-xs font-[800] uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-xl bg-[#E63C46] hover:bg-[#C92A36] shadow-[#E63C46]/25 text-white transform hover:scale-[1.01]"
                 >
-                  <ShoppingCart className="w-4 h-4" /> {ctaLabel(equipo.tipo)}
+                  <ShoppingCart className="w-4 h-4" /> COMPRAR AHORA
                 </button>
                 <a
                   href={`https://wa.me/51968285032?text=${encodeURIComponent(
-                    `Hola, me interesa "${(varianteSeleccionada || equipo).nombre}" (Código: ${(varianteSeleccionada || equipo).codigoInterno || ''}, Modelo: ${(varianteSeleccionada || equipo).modelo || ''}). ¿Podrían cotizarlo?`
+                    `Hola, me interesa solicitar cotización para "${(varianteSeleccionada || equipo).nombre}" (Código: ${(varianteSeleccionada || equipo).codigoInterno || ''}, Modelo: ${(varianteSeleccionada || equipo).modelo || ''}).`
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full py-3.5 rounded-[12px] text-xs font-[800] uppercase tracking-wider bg-[#162B4D] hover:bg-[#233A61] text-white transition-all flex items-center justify-center gap-2"
+                  className="w-full py-4 rounded-[14px] text-xs font-[800] uppercase tracking-wider bg-[#162B4D] hover:bg-[#233A61] text-white transition-all flex items-center justify-center gap-2 shadow-md"
                 >
                   <FileText className="w-4 h-4" /> Solicitar Cotización
                 </a>
               </div>
 
-              {/* Garantías */}
+              {/* MANTENER LOS BENEFICIOS DE CERTIFICACIÓN, DESPACHO Y SOPORTE */}
               <div className="grid grid-cols-3 gap-2 mt-6 pt-5 border-t border-slate-100">
-                <div className="text-center p-2.5 rounded-[12px] bg-slate-50 border border-slate-100">
+                <div className="text-center p-3 rounded-[14px] bg-slate-50 border border-slate-100">
                   <ShieldCheck className="w-5 h-5 text-[#E63C46] mx-auto mb-1" />
-                  <p className="text-[10px] font-[700] text-slate-600 uppercase tracking-wide leading-tight">
+                  <p className="text-[10px] font-[800] text-slate-700 uppercase tracking-wide leading-tight">
                     Equipos Certificados
                   </p>
                 </div>
-                <div className="text-center p-2.5 rounded-[12px] bg-slate-50 border border-slate-100">
+                <div className="text-center p-3 rounded-[14px] bg-slate-50 border border-slate-100">
                   <Truck className="w-5 h-5 text-[#162B4D] mx-auto mb-1" />
-                  <p className="text-[10px] font-[700] text-slate-600 uppercase tracking-wide leading-tight">
+                  <p className="text-[10px] font-[800] text-slate-700 uppercase tracking-wide leading-tight">
                     Despacho a Nivel Nacional
                   </p>
                 </div>
-                <div className="text-center p-2.5 rounded-[12px] bg-slate-50 border border-slate-100">
+                <div className="text-center p-3 rounded-[14px] bg-slate-50 border border-slate-100">
                   <RefreshCcw className="w-5 h-5 text-[#233A61] mx-auto mb-1" />
-                  <p className="text-[10px] font-[700] text-slate-600 uppercase tracking-wide leading-tight">
+                  <p className="text-[10px] font-[800] text-slate-700 uppercase tracking-wide leading-tight">
                     Soporte Técnico 24/7
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Vendedor */}
-            <div className="bg-white rounded-[20px] border border-slate-200/80 p-5 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-[14px] bg-[#162B4D] flex items-center justify-center text-white font-spartan font-[800] text-sm shrink-0">
+            {/* TARJETA DEL VENDEDOR VERIFICADO MEJORADA */}
+            <div className="bg-white rounded-[20px] border border-slate-200/80 p-5 flex items-center gap-4 shadow-sm">
+              <div className="w-12 h-12 rounded-[14px] bg-[#162B4D] flex items-center justify-center text-white font-spartan font-[800] text-base shrink-0 shadow-md">
                 HT
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-[800] text-slate-800 flex items-center gap-1.5">
-                  HH T-Soluciona S.A.C.
-                  <BadgeCheck className="w-4 h-4 text-[#0EA5E9]" />
-                </p>
-                <p className="text-xs text-slate-500 mt-0.5 font-spartan font-[500]">
-                  Av. Colectora Norte 509, Piura, Perú · {tipoLabel(equipo.tipo)} y venta directa con la empresa
+                <div className="flex items-center gap-2">
+                  <h4 className="text-xs font-[800] text-slate-900 uppercase tracking-wide">
+                    HH T-Soluciona S.A.C.
+                  </h4>
+                  <span className="inline-flex items-center gap-1 text-[10px] font-[800] text-[#0EA5E9] bg-sky-50 border border-sky-200 px-2 py-0.5 rounded-full">
+                    <BadgeCheck className="w-3.5 h-3.5 text-[#0EA5E9]" /> Vendedor Verificado
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 mt-1 font-spartan font-[500] leading-relaxed">
+                  Av. Colectora Norte 509, Piura, Perú · Distribuidor oficial y soporte técnico garantizado.
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-
-
-        {/* ===== SECCIÓN PRODUCTOS RELACIONADOS ===== */}
+        {/* ===== SECCIÓN PRODUCTOS RELACIONADOS CON ESPACIO REDUCIDO ===== */}
         {relacionados.length > 0 && (
-          <div className="pt-6 space-y-6">
-            <div className="flex items-center justify-between">
+          <div className="pt-2 space-y-4">
+            <div className="flex items-center justify-between border-t border-slate-200/70 pt-6">
               <div>
-                <span className="text-[#E63C46] font-[700] text-xs tracking-widest uppercase bg-[#E63C46]/10 px-3 py-1 rounded-full border border-[#E63C46]/20 inline-block mb-1">
+                <span className="text-[#E63C46] font-[700] text-[10px] tracking-widest uppercase bg-[#E63C46]/10 px-2.5 py-0.5 rounded-full border border-[#E63C46]/20 inline-block mb-1">
                   Recomendados
                 </span>
-                <h2 className="font-spartan font-[800] text-2xl sm:text-3xl text-slate-900 uppercase tracking-tight">
+                <h2 className="font-spartan font-[800] text-xl sm:text-2xl text-slate-900 uppercase tracking-tight">
                   Productos Relacionados
                 </h2>
               </div>
@@ -631,21 +540,31 @@ export default function EquipoDetallePage() {
               </Link>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
               {relacionados.map((rel) => (
                 <div
                   key={rel.id}
                   onClick={() => router.push(`/equipos/${rel.id}`)}
-                  className="bg-white rounded-[20px] border border-slate-200/80 hover:border-slate-300 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden group cursor-pointer"
+                  className="bg-white rounded-[20px] border border-slate-200/80 hover:border-slate-300 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full overflow-hidden group cursor-pointer"
                 >
-                  <div className="relative h-48 bg-slate-100 overflow-hidden">
+                  <div className="relative h-44 bg-slate-100 overflow-hidden shrink-0 flex items-center justify-center">
                     <img
                       src={imagenCompleta(rel.imagenUrl)}
                       alt={rel.nombre}
+                      onError={(e) => {
+                        (e.target as HTMLElement).style.display = 'none';
+                        const parent = (e.target as HTMLElement).parentElement;
+                        if (parent && !parent.querySelector('.fallback-icon')) {
+                          const fallback = document.createElement('div');
+                          fallback.className = 'fallback-icon flex flex-col items-center justify-center gap-1 text-slate-400 text-[10px] font-[700] uppercase';
+                          fallback.innerHTML = '<span>⚡ HH RENT</span>';
+                          parent.appendChild(fallback);
+                        }
+                      }}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     <span
-                      className={`absolute top-3 left-3 text-[10px] font-[800] px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm text-white ${tipoBadgeClass(
+                      className={`absolute top-2.5 left-2.5 text-[9px] font-[800] px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm text-white ${tipoBadgeClass(
                         rel.tipo
                       )}`}
                     >
@@ -653,22 +572,22 @@ export default function EquipoDetallePage() {
                     </span>
                   </div>
 
-                  <div className="p-4 flex-1 flex flex-col justify-between">
-                    <div>
-                      <span className="text-[10px] font-[700] text-[#E63C46] uppercase tracking-wider block mb-1">
+                  <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-[800] text-[#E63C46] uppercase tracking-wider block truncate">
                         {rel.categoria}
                       </span>
-                      <h4 className="font-spartan font-[700] text-sm text-slate-900 leading-snug line-clamp-2 group-hover:text-[#264772] transition-colors">
+                      <h4 className="font-spartan font-[700] text-[14px] text-slate-900 leading-snug line-clamp-2 min-h-[2.4rem] group-hover:text-[#264772] transition-colors">
                         {rel.nombre}
                       </h4>
                     </div>
 
-                    <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+                    <div className="pt-3 border-t border-slate-100 flex items-center justify-between mt-auto">
                       <div>
                         <span className="text-[10px] text-slate-400 font-[600] uppercase block">
                           {precioEtiquetaCorta(rel.tipo)}
                         </span>
-                        <span className="font-spartan font-[700] text-sm text-slate-900">
+                        <span className="font-spartan font-[800] text-xs sm:text-sm text-slate-900">
                           {rel.precio !== null && rel.precio !== undefined
                             ? `S/ ${Number(rel.precio).toLocaleString('es-PE')}`
                             : 'A Cotizar'}
@@ -679,10 +598,10 @@ export default function EquipoDetallePage() {
                           e.stopPropagation();
                           agregar(rel);
                         }}
-                        className="p-2 bg-[#264772] hover:bg-[#1d385c] text-white rounded-xl transition-all shadow-sm"
+                        className="p-2 bg-[#264772] hover:bg-[#1d385c] text-white rounded-lg transition-all shadow-sm"
                         title={ctaLabel(rel.tipo)}
                       >
-                        <ShoppingCart className="w-4 h-4" />
+                        <ShoppingCart className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </div>
