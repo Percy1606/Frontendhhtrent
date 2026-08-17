@@ -484,7 +484,7 @@ export default function EquipoDetallePage() {
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-64 overflow-y-auto pr-1">
-                    {variantesFiltradas.slice(0, 12).map((v) => {
+                    {variantesFiltradas.map((v) => {
                       const esActiva = varianteSeleccionada?.id === v.id;
                       return (
                         <button
