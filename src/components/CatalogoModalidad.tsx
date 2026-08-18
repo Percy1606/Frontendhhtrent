@@ -367,131 +367,137 @@ export default function CatalogoModalidad({ tipo, otroTipoLabel, otroTipoHref }:
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 items-stretch">
-          {visibleProducts.map((p) => (
-            <div
-              key={p.id}
-              onClick={() => router.push(`/equipos/${p.id}`)}
-              className="bg-white rounded-[20px] border border-slate-200/80 hover:border-slate-300 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full overflow-hidden group cursor-pointer"
-            >
-              {/* Imagen del Producto con fallback si está rota */}
-              <div className="relative h-48 bg-slate-100 overflow-hidden shrink-0 flex items-center justify-center">
-                <img
-                  src={imagenCompleta(p.imagenUrl)}
-                  alt={p.nombre}
-                  onError={(e) => {
-                    (e.target as HTMLElement).style.display = 'none';
-                    const parent = (e.target as HTMLElement).parentElement;
-                    if (parent && !parent.querySelector('.fallback-icon')) {
-                      const fallback = document.createElement('div');
-                      fallback.className = 'fallback-icon flex flex-col items-center justify-center gap-1 text-slate-400 text-[10px] font-[700] uppercase';
-                      fallback.innerHTML = '<span>⚡ HH RENT</span>';
-                      parent.appendChild(fallback);
-                    }
-                  }}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <span
-                  className={`absolute top-2.5 left-2.5 text-[9px] font-[800] px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm text-white ${tipoBadgeClass(
-                    p.tipo
-                  )}`}
-                >
-                  {tipoLabel(p.tipo)}
-                </span>
-                {p.variantes && p.variantes.length > 0 && (
-                  <div className="absolute top-2.5 right-2.5 bg-[#162B4D]/90 backdrop-blur-md px-2 py-0.5 rounded-full text-[9px] font-[800] text-white flex items-center gap-1 shadow-sm">
-                    <Layers className="w-3 h-3 text-[#E63C46]" />
-                    <span>{p.variantes.length} modelos</span>
-                  </div>
-                )}
-                <div className="absolute bottom-2.5 right-2.5 bg-white/90 backdrop-blur-md px-2 py-0.5 rounded-full text-[10px] font-[700] text-slate-700 flex items-center gap-1 shadow-sm">
-                  <MapPin className="w-3 h-3 text-[#E63C46]" />
-                  <span>{p.ubicacion}</span>
-                </div>
-              </div>
+          {visibleProducts.map((p) => {
+            const urlCatalogo = p.imagenUrl && p.imagenUrl.trim() !== ''
+              ? p.imagenUrl
+              : (p.variantes && p.variantes.find(v => v.imagenUrl && v.imagenUrl.trim() !== '')?.imagenUrl) || '';
 
-              {/* Info del Producto con altura uniforme */}
-              <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
-                <div className="space-y-1">
-                  <span className="text-[10px] font-[800] text-[#E63C46] uppercase tracking-wider block truncate">
-                    {p.categoria}
+            return (
+              <div
+                key={p.id}
+                onClick={() => router.push(`/equipos/${p.id}`)}
+                className="bg-white rounded-[20px] border border-slate-200/80 hover:border-slate-300 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full overflow-hidden group cursor-pointer"
+              >
+                {/* Imagen del Producto con encuadre de estudio perfecto */}
+                <div className="relative h-52 bg-slate-50 border-b border-slate-100 overflow-hidden shrink-0 flex items-center justify-center p-3">
+                  <img
+                    src={imagenCompleta(urlCatalogo)}
+                    alt={p.nombre}
+                    onError={(e) => {
+                      (e.target as HTMLElement).style.display = 'none';
+                      const parent = (e.target as HTMLElement).parentElement;
+                      if (parent && !parent.querySelector('.fallback-icon')) {
+                        const fallback = document.createElement('div');
+                        fallback.className = 'fallback-icon flex flex-col items-center justify-center gap-1 text-slate-400 text-[10px] font-[700] uppercase';
+                        fallback.innerHTML = '<span>⚡ HH RENT</span>';
+                        parent.appendChild(fallback);
+                      }
+                    }}
+                    className="max-w-full max-h-full w-auto h-auto object-contain group-hover:scale-105 transition-transform duration-300 drop-shadow-xs"
+                  />
+                  <span
+                    className={`absolute top-2.5 left-2.5 text-[9px] font-[800] px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm text-white ${tipoBadgeClass(
+                      p.tipo
+                    )}`}
+                  >
+                    {tipoLabel(p.tipo)}
                   </span>
-                  <h3 className="font-spartan font-[700] text-[15px] text-slate-900 leading-snug tracking-tight line-clamp-2 min-h-[2.6rem] group-hover:text-[#162B4D] transition-colors">
-                    {p.nombre}
-                  </h3>
-                  <p className="text-slate-500 text-[11px] line-clamp-2 leading-relaxed font-spartan font-[500] min-h-[2rem]">
-                    {p.descripcion}
-                  </p>
+                  {p.variantes && p.variantes.length > 0 && (
+                    <div className="absolute top-2.5 right-2.5 bg-[#162B4D]/90 backdrop-blur-md px-2 py-0.5 rounded-full text-[9px] font-[800] text-white flex items-center gap-1 shadow-sm">
+                      <Layers className="w-3 h-3 text-[#E63C46]" />
+                      <span>{p.variantes.length} modelos</span>
+                    </div>
+                  )}
+                  <div className="absolute bottom-2.5 right-2.5 bg-white/90 backdrop-blur-md px-2 py-0.5 rounded-full text-[10px] font-[700] text-slate-700 flex items-center gap-1 shadow-sm">
+                    <MapPin className="w-3 h-3 text-[#E63C46]" />
+                    <span>{p.ubicacion}</span>
+                  </div>
                 </div>
 
-                <div className="border-t border-slate-100 pt-3 flex items-center justify-between mt-auto" onClick={(e) => e.stopPropagation()}>
-                  <div>
-                    <span className="text-[10px] text-slate-400 font-[600] uppercase block">
-                      {precioEtiquetaCorta(p.tipo)}
+                {/* Info del Producto con altura uniforme */}
+                <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-[800] text-[#E63C46] uppercase tracking-wider block truncate">
+                      {p.categoria}
                     </span>
-                    <div className="text-slate-900 font-spartan font-[800] text-xs sm:text-sm">
-                      {formatoPrecioMoneda(p.precio, p.unidad)}
+                    <h3 className="font-spartan font-[700] text-[15px] text-slate-900 leading-snug tracking-tight line-clamp-2 min-h-[2.6rem] group-hover:text-[#162B4D] transition-colors">
+                      {p.nombre}
+                    </h3>
+                    <p className="text-slate-500 text-[11px] line-clamp-2 leading-relaxed font-spartan font-[500] min-h-[2rem]">
+                      {p.descripcion}
+                    </p>
+                  </div>
+
+                  <div className="border-t border-slate-100 pt-3 flex items-center justify-between mt-auto" onClick={(e) => e.stopPropagation()}>
+                    <div>
+                      <span className="text-[10px] text-slate-400 font-[600] uppercase block">
+                        {precioEtiquetaCorta(p.tipo)}
+                      </span>
+                      <div className="text-slate-900 font-spartan font-[800] text-xs sm:text-sm">
+                        {formatoPrecioMoneda(p.precio, p.unidad)}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          router.push(`/equipos/${p.id}`);
+                        }}
+                        className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-all"
+                        title="Ver Ficha Técnica"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        disabled={addingId === p.id}
+                        onClick={() => {
+                          setAddingId(p.id);
+                          agregarAlCarrito({
+                            id: p.id,
+                            nombre: p.nombre,
+                            descripcion: p.descripcion,
+                            ubicacion: p.ubicacion,
+                            precio: p.precio,
+                            tipo: p.tipo,
+                            unidad: p.unidad || undefined,
+                            imagenUrl: p.imagenUrl,
+                          });
+                          window.dispatchEvent(
+                            new CustomEvent('cart-updated', {
+                              detail: { addedItem: { nombre: p.nombre, imagenUrl: p.imagenUrl } },
+                            })
+                          );
+                          setTimeout(() => {
+                            setAddingId(null);
+                          }, 1000);
+                        }}
+                        className={`px-2.5 py-1.5 text-white rounded-lg text-[11px] font-[700] flex items-center gap-1 transition-all shadow-sm ${
+                          addingId === p.id
+                            ? 'bg-emerald-600 cursor-wait'
+                            : tipo === 'ALQUILER'
+                            ? 'bg-[#264772] hover:bg-[#1d385c]'
+                            : 'bg-[#E63C46] hover:bg-[#C92A36]'
+                        }`}
+                      >
+                        {addingId === p.id ? (
+                          <span className="flex items-center gap-1">
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                            <span>OK</span>
+                          </span>
+                        ) : (
+                          <span className="flex items-center gap-1">
+                            <ShoppingCart className="w-3 h-3" />
+                            <span>{ctaLabel(p.tipo)}</span>
+                          </span>
+                        )}
+                      </button>
                     </div>
                   </div>
-
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        router.push(`/equipos/${p.id}`);
-                      }}
-                      className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition-all"
-                      title="Ver Ficha Técnica"
-                    >
-                      <Eye className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      disabled={addingId === p.id}
-                      onClick={() => {
-                        setAddingId(p.id);
-                        agregarAlCarrito({
-                          id: p.id,
-                          nombre: p.nombre,
-                          descripcion: p.descripcion,
-                          ubicacion: p.ubicacion,
-                          precio: p.precio,
-                          tipo: p.tipo,
-                          unidad: p.unidad || undefined,
-                          imagenUrl: p.imagenUrl,
-                        });
-                        window.dispatchEvent(
-                          new CustomEvent('cart-updated', {
-                            detail: { addedItem: { nombre: p.nombre, imagenUrl: p.imagenUrl } },
-                          })
-                        );
-                        setTimeout(() => {
-                          setAddingId(null);
-                        }, 1000);
-                      }}
-                      className={`px-2.5 py-1.5 text-white rounded-lg text-[11px] font-[700] flex items-center gap-1 transition-all shadow-sm ${
-                        addingId === p.id
-                          ? 'bg-emerald-600 cursor-wait'
-                          : tipo === 'ALQUILER'
-                          ? 'bg-[#264772] hover:bg-[#1d385c]'
-                          : 'bg-[#E63C46] hover:bg-[#C92A36]'
-                      }`}
-                    >
-                      {addingId === p.id ? (
-                        <span className="flex items-center gap-1">
-                          <Loader2 className="w-3 h-3 animate-spin" />
-                          <span>OK</span>
-                        </span>
-                      ) : (
-                        <span className="flex items-center gap-1">
-                          <ShoppingCart className="w-3 h-3" />
-                          <span>{ctaLabel(p.tipo)}</span>
-                        </span>
-                      )}
-                    </button>
-                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
