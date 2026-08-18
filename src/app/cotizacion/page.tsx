@@ -288,12 +288,8 @@ export default function CotizacionPage() {
     cantidad: 1,
   };
 
-  const productImages = [
-    currentProduct.imagenUrl,
-    'https://images.unsplash.com/photo-1581092160607-ee22621dd758?q=80&w=800',
-    'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?q=80&w=800',
-    'https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?q=80&w=800',
-  ];
+  const fotoReal = equipoDetalle?.imagenUrl || currentProduct.imagenUrl;
+  const productImages = fotoReal ? [fotoReal] : [];
 
   return (
     <main className="min-h-screen bg-[#F8FAFC] text-slate-900 font-poppins font-normal pb-16">
@@ -383,30 +379,49 @@ export default function CotizacionPage() {
           {/* GALERÍA DE PRODUCTO (IZQUIERDA - 6 Cols) */}
           <div className="lg:col-span-6 space-y-4">
             <div className="relative h-80 sm:h-96 bg-slate-50 rounded-[20px] overflow-hidden border border-slate-200 flex items-center justify-center p-4">
-              <img
-                src={imagenCompleta(productImages[activeImageIndex])}
-                alt={currentProduct.nombre}
-                className="w-full h-full object-contain transition-all duration-300"
-              />
+              {productImages.length > 0 && productImages[activeImageIndex] ? (
+                <img
+                  src={imagenCompleta(productImages[activeImageIndex])}
+                  alt={currentProduct.nombre}
+                  onError={(e) => {
+                    (e.target as HTMLElement).style.display = 'none';
+                    const parent = (e.target as HTMLElement).parentElement;
+                    if (parent && !parent.querySelector('.watermark-fallback')) {
+                      const fallback = document.createElement('div');
+                      fallback.className = 'watermark-fallback flex flex-col items-center justify-center gap-1.5 text-[#162B4D]/40 select-none';
+                      fallback.innerHTML = '<span class="text-3xl font-[900] tracking-tighter">HT</span><span class="text-[11px] font-[800] tracking-widest uppercase">HH RENT · Equipo Certificado</span>';
+                      parent.appendChild(fallback);
+                    }
+                  }}
+                  className="w-full h-full object-contain transition-all duration-300"
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center gap-1.5 text-[#162B4D]/40 select-none">
+                  <span className="text-3xl font-[900] tracking-tighter">HT</span>
+                  <span className="text-[11px] font-[800] tracking-widest uppercase">HH RENT · Equipo Certificado</span>
+                </div>
+              )}
               <span className="absolute top-4 left-4 bg-[#162B4D] text-white text-[10px] font-[800] px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
                 Sede {currentProduct.ubicacion || 'Piura'}
               </span>
             </div>
 
             {/* MINIATURAS DE LA GALERÍA */}
-            <div className="grid grid-cols-4 gap-3">
-              {productImages.map((img, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setActiveImageIndex(idx)}
-                  className={`h-20 rounded-xl overflow-hidden border-2 transition-all p-1 bg-slate-50 flex items-center justify-center ${
-                    activeImageIndex === idx ? 'border-[#E63C46] shadow-md scale-105' : 'border-slate-200 opacity-70 hover:opacity-100'
-                  }`}
-                >
-                  <img src={imagenCompleta(img)} alt={`Vista ${idx}`} className="w-full h-full object-contain" />
-                </button>
-              ))}
-            </div>
+            {productImages.length > 1 && (
+              <div className="grid grid-cols-4 gap-3">
+                {productImages.map((img, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setActiveImageIndex(idx)}
+                    className={`h-20 rounded-xl overflow-hidden border-2 transition-all p-1 bg-slate-50 flex items-center justify-center ${
+                      activeImageIndex === idx ? 'border-[#E63C46] shadow-md scale-105' : 'border-slate-200 opacity-70 hover:opacity-100'
+                    }`}
+                  >
+                    <img src={imagenCompleta(img)} alt={`Vista ${idx}`} className="w-full h-full object-contain" />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* INFORMACIÓN PRINCIPAL DEL PRODUCTO (DERECHA - 6 Cols) */}
