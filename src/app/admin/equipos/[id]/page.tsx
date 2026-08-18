@@ -480,7 +480,7 @@ export default function AdminEquipoDetallePage() {
           <div className="bg-white rounded-[20px] border border-slate-200/70 shadow-sm overflow-hidden">
             <div className="relative h-60 bg-slate-100">
               {equipo.imagenUrl ? (
-                <img src={imagenCompleta(equipo.imagenUrl)} alt={equipo.nombre} className="w-full h-full object-cover" />
+                <img src={imagenCompleta(equipo.imagenUrl)} alt={equipo.nombre} className="w-full h-full object-contain p-2 transition-all" />
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-slate-100 to-slate-200">
                   <ImageIcon className="w-12 h-12 text-slate-300" />

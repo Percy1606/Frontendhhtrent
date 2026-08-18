@@ -556,12 +556,12 @@ export default function NuevoEquipoPage() {
                   {fotosAdicionales.map((foto, i) => (
                     <div
                       key={i}
-                      className="group relative aspect-square rounded-[12px] overflow-hidden border border-slate-200 bg-slate-50"
+                      className="group relative aspect-square rounded-[12px] overflow-hidden border border-slate-200 bg-slate-50 p-1 flex items-center justify-center"
                     >
                       <img
                         src={URL.createObjectURL(foto)}
                         alt={`Foto adicional ${i + 1}`}
-                        className="w-full h-full object-cover"
+                        className="max-w-full max-h-full w-auto h-auto object-contain"
                       />
                       <button
                         type="button"

@@ -122,11 +122,11 @@ export default function ImageUploader({
         />
 
         {value ? (
-          <div className="relative">
+          <div className="relative h-44 md:h-52 bg-slate-50 border border-slate-200 rounded-[10px] p-2 flex items-center justify-center overflow-hidden">
             <img
               src={imagenCompleta(value)}
               alt="Vista previa"
-              className="w-full h-44 md:h-52 object-cover rounded-[10px]"
+              className="max-w-full max-h-full w-auto h-auto object-contain drop-shadow-xs"
             />
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 rounded-[10px] bg-[#162B4D]/60 opacity-0 group-hover:opacity-100 transition-opacity">
               <UploadCloud className="w-6 h-6 text-white" />

@@ -392,29 +392,34 @@ export default function EquiposPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 items-stretch">
-            {visibleProducts.map((p) => (
-              <div
-                key={p.id}
-                onClick={() => router.push(`/equipos/${p.id}`)}
-                className="bg-white rounded-[20px] border border-slate-200/80 hover:border-slate-300 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full overflow-hidden group cursor-pointer"
-              >
-                {/* Imagen del Producto con fallback si está rota */}
-                <div className="relative h-48 bg-slate-100 overflow-hidden shrink-0 flex items-center justify-center">
-                  <img
-                    src={imagenCompleta(p.imagenUrl)}
-                    alt={p.nombre}
-                    onError={(e) => {
-                      (e.target as HTMLElement).style.display = 'none';
-                      const parent = (e.target as HTMLElement).parentElement;
-                      if (parent && !parent.querySelector('.fallback-icon')) {
-                        const fallback = document.createElement('div');
-                        fallback.className = 'fallback-icon flex flex-col items-center justify-center gap-1 text-slate-400 text-[10px] font-[700] uppercase';
-                        fallback.innerHTML = '<span>⚡ HH RENT</span>';
-                        parent.appendChild(fallback);
-                      }
-                    }}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
+            {visibleProducts.map((p) => {
+              const urlCatalogo = p.imagenUrl && p.imagenUrl.trim() !== ''
+                ? p.imagenUrl
+                : (p.variantes && p.variantes.find(v => v.imagenUrl && v.imagenUrl.trim() !== '')?.imagenUrl) || '';
+
+              return (
+                <div
+                  key={p.id}
+                  onClick={() => router.push(`/equipos/${p.id}`)}
+                  className="bg-white rounded-[20px] border border-slate-200/80 hover:border-slate-300 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full overflow-hidden group cursor-pointer"
+                >
+                  {/* Imagen del Producto con encuadre de estudio perfecto */}
+                  <div className="relative h-52 bg-slate-50 border-b border-slate-100 overflow-hidden shrink-0 flex items-center justify-center p-3">
+                    <img
+                      src={imagenCompleta(urlCatalogo)}
+                      alt={p.nombre}
+                      onError={(e) => {
+                        (e.target as HTMLElement).style.display = 'none';
+                        const parent = (e.target as HTMLElement).parentElement;
+                        if (parent && !parent.querySelector('.fallback-icon')) {
+                          const fallback = document.createElement('div');
+                          fallback.className = 'fallback-icon flex flex-col items-center justify-center gap-1 text-slate-400 text-[10px] font-[700] uppercase';
+                          fallback.innerHTML = '<span>⚡ HH RENT</span>';
+                          parent.appendChild(fallback);
+                        }
+                      }}
+                      className="max-w-full max-h-full w-auto h-auto object-contain group-hover:scale-105 transition-transform duration-300 drop-shadow-xs"
+                    />
                   <span
                     className={`absolute top-2.5 left-2.5 text-[9px] font-[800] px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm text-white ${tipoBadgeClass(
                       p.tipo
@@ -499,7 +504,8 @@ export default function EquiposPage() {
                   </div>
                 </div>
               </div>
-            ))}
+            );
+          })}
           </div>
         )}
 

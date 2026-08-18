@@ -64,6 +64,7 @@ export default function AdminEquiposPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [estadoFiltro, setEstadoFiltro] = useState('TODOS');
   const [familiaFiltro, setFamiliaFiltro] = useState('TODAS');
+  const [jerarquiaFiltro, setJerarquiaFiltro] = useState('TODOS');
   const [paginaActual, setPaginaActual] = useState(1);
   const [pageSize, setPageSize] = useState(40);
   const [confirmarBaja, setConfirmarBaja] = useState<Equipo | null>(null);
@@ -124,7 +125,15 @@ export default function AdminEquiposPage() {
 
   useEffect(() => {
     setPaginaActual(1);
-  }, [searchTerm, estadoFiltro, familiaFiltro]);
+  }, [searchTerm, estadoFiltro, familiaFiltro, jerarquiaFiltro]);
+
+  const limpiarFiltros = () => {
+    setSearchTerm('');
+    setEstadoFiltro('TODOS');
+    setFamiliaFiltro('TODAS');
+    setJerarquiaFiltro('TODOS');
+    setPaginaActual(1);
+  };
 
   const filtrados = equipos.filter((eq) => {
     const term = searchTerm.trim().toLowerCase();
@@ -152,7 +161,12 @@ export default function AdminEquiposPage() {
 
     const matchEstado = estadoFiltro === 'TODOS' || eq.estado === estadoFiltro;
     const matchFamilia = familiaFiltro === 'TODAS' || eq.familiaId === familiaFiltro;
-    return matchBusqueda && matchEstado && matchFamilia;
+    const matchJerarquia =
+      jerarquiaFiltro === 'TODOS' ||
+      (jerarquiaFiltro === 'PRINCIPAL' && !eq.padreId) ||
+      (jerarquiaFiltro === 'VARIANTE' && Boolean(eq.padreId));
+
+    return matchBusqueda && matchEstado && matchFamilia && matchJerarquia;
   });
 
   const totalPaginas = Math.max(1, Math.ceil(filtrados.length / pageSize));
@@ -199,43 +213,70 @@ export default function AdminEquiposPage() {
       </div>
 
       {/* FILTROS */}
-      <div className="bg-white rounded-[20px] border border-slate-200/70 p-4 shadow-sm grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
-        <div className="relative xl:col-span-2">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Buscar por nombre, código HTR-MEG, marca o modelo..."
-            className="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-[12px] text-xs font-[600] text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#162B4D] focus:bg-white transition-all"
-          />
+      <div className="bg-white rounded-[20px] border border-slate-200/70 p-4 shadow-sm space-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3">
+          <div className="relative xl:col-span-2">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Buscar por nombre, código HTR-MEG, marca o modelo..."
+              className="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-[12px] text-xs font-[600] text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#162B4D] focus:bg-white transition-all"
+            />
+          </div>
+
+          <select
+            value={jerarquiaFiltro}
+            onChange={(e) => setJerarquiaFiltro(e.target.value)}
+            className="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-[12px] text-xs font-[700] text-[#162B4D] focus:outline-none focus:border-[#162B4D] cursor-pointer"
+          >
+            <option value="TODOS">Registro: Todos los equipos</option>
+            <option value="PRINCIPAL">Solo Producto Principal (Familia)</option>
+            <option value="VARIANTE">Solo Variantes (Modelos / Hijos)</option>
+          </select>
+
+          <select
+            value={estadoFiltro}
+            onChange={(e) => setEstadoFiltro(e.target.value)}
+            className="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-[12px] text-xs font-[600] text-slate-700 focus:outline-none focus:border-[#162B4D] cursor-pointer"
+          >
+            <option value="TODOS">Estado: Todos</option>
+            {ESTADOS_EQUIPO.map((estado) => (
+              <option key={estado} value={estado}>
+                Estado: {ESTADO_LABELS[estado]}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={familiaFiltro}
+            onChange={(e) => setFamiliaFiltro(e.target.value)}
+            className="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-[12px] text-xs font-[600] text-slate-700 focus:outline-none focus:border-[#162B4D] cursor-pointer"
+          >
+            <option value="TODAS">Categoría: Todas</option>
+            {familias.map((fam) => (
+              <option key={fam.id} value={fam.id}>
+                {fam.nombre}
+              </option>
+            ))}
+          </select>
         </div>
 
-        <select
-          value={estadoFiltro}
-          onChange={(e) => setEstadoFiltro(e.target.value)}
-          className="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-[12px] text-xs font-[600] text-slate-700 focus:outline-none focus:border-[#162B4D] cursor-pointer"
-        >
-          <option value="TODOS">Estado: Todos</option>
-          {ESTADOS_EQUIPO.map((estado) => (
-            <option key={estado} value={estado}>
-              Estado: {ESTADO_LABELS[estado]}
-            </option>
-          ))}
-        </select>
-
-        <select
-          value={familiaFiltro}
-          onChange={(e) => setFamiliaFiltro(e.target.value)}
-          className="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-[12px] text-xs font-[600] text-slate-700 focus:outline-none focus:border-[#162B4D] cursor-pointer"
-        >
-          <option value="TODAS">Categoría: Todas</option>
-          {familias.map((fam) => (
-            <option key={fam.id} value={fam.id}>
-              {fam.nombre}
-            </option>
-          ))}
-        </select>
+        {(searchTerm || estadoFiltro !== 'TODOS' || familiaFiltro !== 'TODAS' || jerarquiaFiltro !== 'TODOS') && (
+          <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs font-[600]">
+            <span className="text-slate-500 font-[500]">
+              Filtros activos: <strong className="text-slate-800">{filtrados.length}</strong> resultados encontrados
+            </span>
+            <button
+              onClick={limpiarFiltros}
+              className="inline-flex items-center gap-1 text-[#E63C46] hover:text-[#C92A36] hover:underline font-[700] transition-colors"
+            >
+              <X className="w-3.5 h-3.5" />
+              <span>Limpiar filtros</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* LISTADO */}
@@ -293,9 +334,13 @@ export default function AdminEquiposPage() {
                             <p className="font-[700] text-slate-900 leading-snug whitespace-normal break-words">
                               {eq.nombre}
                             </p>
-                            {eq.padreId && (
-                              <span className="px-2 py-0.5 rounded text-[9px] font-[800] bg-indigo-50 text-indigo-600 border border-indigo-200 uppercase">
-                                Variante: {eq.varianteNombre || 'Hijo'}
+                            {!eq.padreId ? (
+                              <span className="px-2 py-0.5 rounded text-[9px] font-[800] bg-[#162B4D]/10 text-[#162B4D] border border-[#162B4D]/20 uppercase tracking-wide">
+                                Producto Principal (Familia)
+                              </span>
+                            ) : (
+                              <span className="px-2 py-0.5 rounded text-[9px] font-[800] bg-slate-100 text-slate-700 border border-slate-200 uppercase tracking-wide">
+                                Variante: {eq.varianteNombre || 'Modelo'}
                               </span>
                             )}
                           </div>

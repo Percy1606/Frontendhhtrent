@@ -365,7 +365,7 @@ export default function EquipoDetallePage() {
                         parent.appendChild(fallback);
                       }
                     }}
-                    className="w-full h-full object-contain"
+                    className="w-full h-full object-contain p-3 transition-all duration-300"
                   />
                 ) : (
                   <div className="flex flex-col items-center justify-center text-[#7890AD] gap-1">
@@ -763,7 +763,7 @@ export default function EquipoDetallePage() {
                   onClick={() => router.push(`/equipos/${rel.id}`)}
                   className="bg-white rounded-[20px] border border-slate-200/80 hover:border-slate-300 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full overflow-hidden group cursor-pointer"
                 >
-                  <div className="relative h-44 bg-slate-100 overflow-hidden shrink-0 flex items-center justify-center">
+                  <div className="relative h-48 bg-slate-50 border-b border-slate-100 overflow-hidden shrink-0 flex items-center justify-center p-3">
                     <img
                       src={imagenCompleta(rel.imagenUrl)}
                       alt={rel.nombre}
@@ -777,7 +777,7 @@ export default function EquipoDetallePage() {
                           parent.appendChild(fallback);
                         }
                       }}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="max-w-full max-h-full w-auto h-auto object-contain group-hover:scale-105 transition-transform duration-300 drop-shadow-xs"
                     />
                     <span
                       className={`absolute top-2.5 left-2.5 text-[9px] font-[800] px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm text-white ${tipoBadgeClass(
