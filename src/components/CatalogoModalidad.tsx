@@ -378,23 +378,39 @@ export default function CatalogoModalidad({ tipo, otroTipoLabel, otroTipoHref }:
                 onClick={() => router.push(`/equipos/${p.id}`)}
                 className="bg-white rounded-[20px] border border-slate-200/80 hover:border-slate-300 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full overflow-hidden group cursor-pointer"
               >
-                {/* Imagen del Producto con encuadre de estudio perfecto */}
-                <div className="relative h-52 bg-slate-50 border-b border-slate-100 overflow-hidden shrink-0 flex items-center justify-center p-3">
-                  <img
-                    src={imagenCompleta(urlCatalogo)}
-                    alt={p.nombre}
-                    onError={(e) => {
-                      (e.target as HTMLElement).style.display = 'none';
-                      const parent = (e.target as HTMLElement).parentElement;
-                      if (parent && !parent.querySelector('.fallback-icon')) {
-                        const fallback = document.createElement('div');
-                        fallback.className = 'fallback-icon flex flex-col items-center justify-center gap-1 text-slate-400 text-[10px] font-[700] uppercase';
-                        fallback.innerHTML = '<span>⚡ HH RENT</span>';
-                        parent.appendChild(fallback);
-                      }
-                    }}
-                    className="max-w-full max-h-full w-auto h-auto object-contain group-hover:scale-105 transition-transform duration-300 drop-shadow-xs"
-                  />
+                {/* Imagen del Producto con encuadre de estudio perfecto o marca de agua elegante si no tiene foto */}
+                <div className="relative h-52 bg-gradient-to-br from-slate-50 to-slate-100/80 border-b border-slate-100 overflow-hidden shrink-0 flex items-center justify-center p-3">
+                  {urlCatalogo ? (
+                    <img
+                      src={imagenCompleta(urlCatalogo)}
+                      alt={p.nombre}
+                      onError={(e) => {
+                        (e.target as HTMLElement).style.display = 'none';
+                        const parent = (e.target as HTMLElement).parentElement;
+                        if (parent && !parent.querySelector('.fallback-icon')) {
+                          const fallback = document.createElement('div');
+                          fallback.className = 'fallback-icon flex flex-col items-center justify-center gap-1.5 text-slate-400 select-none';
+                          fallback.innerHTML = `
+                            <div class="w-12 h-12 rounded-2xl bg-[#162B4D]/10 border border-[#162B4D]/15 flex items-center justify-center text-[#162B4D] font-spartan font-[800] text-lg shadow-2xs">
+                              HT
+                            </div>
+                            <span class="text-[11px] font-[800] font-spartan tracking-widest text-[#162B4D]/70 uppercase">HH RENT</span>
+                            <span class="text-[9px] font-[600] text-slate-400">Equipo Certificado</span>
+                          `;
+                          parent.appendChild(fallback);
+                        }
+                      }}
+                      className="max-w-full max-h-full w-auto h-auto object-contain group-hover:scale-105 transition-transform duration-300 drop-shadow-xs"
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center gap-1.5 text-slate-400 select-none group-hover:scale-105 transition-transform duration-300">
+                      <div className="w-12 h-12 rounded-2xl bg-[#162B4D]/10 border border-[#162B4D]/15 flex items-center justify-center text-[#162B4D] font-spartan font-[800] text-lg shadow-2xs">
+                        HT
+                      </div>
+                      <span className="text-[11px] font-[800] font-spartan tracking-widest text-[#162B4D]/70 uppercase">HH RENT</span>
+                      <span className="text-[9px] font-[600] text-slate-400">Equipo Certificado</span>
+                    </div>
+                  )}
                   <span
                     className={`absolute top-2.5 left-2.5 text-[9px] font-[800] px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm text-white ${tipoBadgeClass(
                       p.tipo
