@@ -93,6 +93,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: '/admin/alquileres', label: 'Alquileres', icon: CalendarClock },
     { href: '/admin/mantenimiento', label: 'Mantenimiento', icon: ClipboardList },
     { href: '/admin/cotizaciones', label: 'Cotizaciones', icon: FileText },
+    { href: '/admin/facturacion', label: 'Facturación', icon: ScrollText },
     { href: '/admin/familias', label: 'Categorías', icon: FolderTree },
     { href: '/admin/auditoria', label: 'Auditoría', icon: ScrollText },
     { href: '/admin/usuarios', label: 'Usuarios', icon: UserCog },
