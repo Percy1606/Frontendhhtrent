@@ -97,15 +97,9 @@ export default function AdminEquiposPage() {
   };
 
   useEffect(() => {
+    // Petición directa en paralelo para máxima velocidad
     Promise.all([
-      apiFetch<Equipo[]>('/equipos/admin/listar').catch(async () => {
-        const publicList = await fetchEquiposPublicos<any>().catch(() => []);
-        return publicList.map((e) => ({
-          ...e,
-          ubicacion: e.ubicacion || 'Piura',
-          subfamilia: null,
-        }));
-      }),
+      apiFetch<Equipo[]>('/equipos/admin/listar').catch(() => []),
       apiFetch<Familia[]>('/familias').catch(() => []),
     ]).then(async ([eqs, fams]) => {
       let finalEquipos = Array.isArray(eqs) ? eqs : [];
@@ -281,8 +275,9 @@ export default function AdminEquiposPage() {
 
       {/* LISTADO */}
       {loading ? (
-        <div className="py-20 flex items-center justify-center">
-          <div className="w-10 h-10 border-4 border-[#162B4D] border-t-transparent rounded-full animate-spin" />
+        <div className="py-20 bg-white rounded-[20px] border border-slate-200/70 text-center space-y-3">
+          <div className="w-10 h-10 border-4 border-[#162B4D] border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-slate-600 font-[700] text-xs">Cargando equipos del Maestro General...</p>
         </div>
       ) : filtrados.length === 0 ? (
         <div className="py-16 bg-white rounded-[20px] border border-slate-200 text-center p-8">
