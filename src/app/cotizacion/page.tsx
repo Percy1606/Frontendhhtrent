@@ -382,11 +382,11 @@ export default function CotizacionPage() {
           
           {/* GALERÍA DE PRODUCTO (IZQUIERDA - 6 Cols) */}
           <div className="lg:col-span-6 space-y-4">
-            <div className="relative h-80 sm:h-96 bg-slate-100 rounded-[20px] overflow-hidden border border-slate-200">
+            <div className="relative h-80 sm:h-96 bg-slate-50 rounded-[20px] overflow-hidden border border-slate-200 flex items-center justify-center p-4">
               <img
-                src={productImages[activeImageIndex]}
+                src={imagenCompleta(productImages[activeImageIndex])}
                 alt={currentProduct.nombre}
-                className="w-full h-full object-cover transition-all duration-300"
+                className="w-full h-full object-contain transition-all duration-300"
               />
               <span className="absolute top-4 left-4 bg-[#162B4D] text-white text-[10px] font-[800] px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
                 Sede {currentProduct.ubicacion || 'Piura'}
@@ -399,11 +399,11 @@ export default function CotizacionPage() {
                 <button
                   key={idx}
                   onClick={() => setActiveImageIndex(idx)}
-                  className={`h-20 rounded-xl overflow-hidden border-2 transition-all ${
+                  className={`h-20 rounded-xl overflow-hidden border-2 transition-all p-1 bg-slate-50 flex items-center justify-center ${
                     activeImageIndex === idx ? 'border-[#E63C46] shadow-md scale-105' : 'border-slate-200 opacity-70 hover:opacity-100'
                   }`}
                 >
-                  <img src={imagenCompleta(img)} alt={`Vista ${idx}`} className="w-full h-full object-cover" />
+                  <img src={imagenCompleta(img)} alt={`Vista ${idx}`} className="w-full h-full object-contain" />
                 </button>
               ))}
             </div>
@@ -687,7 +687,7 @@ export default function CotizacionPage() {
                           <img
                             src={imagenCompleta(item.imagenUrl)}
                             alt={item.nombre}
-                            className="w-12 h-12 rounded-lg object-cover bg-slate-100 border border-slate-200 shadow-xs"
+                            className="w-12 h-12 rounded-lg object-contain p-1 bg-slate-50 border border-slate-200 shadow-xs"
                           />
                         </td>
                         <td className="py-3 px-4 font-normal text-slate-900 max-w-xs">
