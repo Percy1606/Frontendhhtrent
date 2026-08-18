@@ -169,6 +169,20 @@ export default function EquipoDetallePage() {
   const [descripcionAbierta, setDescripcionAbierta] = useState(false);
   const [especificacionesAbiertas, setEspecificacionesAbiertas] = useState(false);
 
+  // Estado para el efecto de Zoom interactivo con el mouse
+  const [zoomState, setZoomState] = useState({ isHovered: false, x: 50, y: 50 });
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    setZoomState({ isHovered: true, x, y });
+  };
+
+  const handleMouseLeave = () => {
+    setZoomState({ isHovered: false, x: 50, y: 50 });
+  };
+
   useEffect(() => {
     const cargar = async () => {
       try {
@@ -343,12 +357,20 @@ export default function EquipoDetallePage() {
           {/* ===== COLUMNA IZQUIERDA (5 COLUMNAS): GALERÍA DE IMÁGENES + DESCRIPCIÓN Y FICHA TÉCNICA ESTRUCTURADA ===== */}
           <div className="lg:col-span-5 space-y-5 font-spartan">
             <div className="bg-white rounded-[20px] border border-[#E5EAF1] p-4 sm:p-5 shadow-2xs">
-              <div className="relative h-64 sm:h-80 bg-[#F8FAFC] rounded-[14px] overflow-hidden border border-[#E5EAF1] flex items-center justify-center">
+              <div
+                onMouseMove={handleMouseMove}
+                onMouseLeave={handleMouseLeave}
+                className="relative h-64 sm:h-80 bg-[#F8FAFC] rounded-[14px] overflow-hidden border border-[#E5EAF1] flex items-center justify-center cursor-zoom-in group select-none"
+              >
                 {galeriaInfo.fotos.length > 0 && galeriaInfo.fotos[imagenActiva] ? (
                   <img
                     key={`${equipoActivo!.id}-${galeriaInfo.fotos[imagenActiva]}-${imagenActiva}`}
                     src={imagenCompleta(galeriaInfo.fotos[imagenActiva])}
                     alt={equipoActivo!.nombre}
+                    style={{
+                      transformOrigin: `${zoomState.x}% ${zoomState.y}%`,
+                      transform: zoomState.isHovered ? 'scale(2.2)' : 'scale(1)',
+                    }}
                     onLoad={(e) => {
                       (e.target as HTMLElement).style.display = 'block';
                       const parent = (e.target as HTMLElement).parentElement;
@@ -365,7 +387,7 @@ export default function EquipoDetallePage() {
                         parent.appendChild(fallback);
                       }
                     }}
-                    className="w-full h-full object-contain p-3 transition-all duration-300"
+                    className="w-full h-full object-contain p-3 transition-transform duration-150 ease-out"
                   />
                 ) : (
                   <div className="flex flex-col items-center justify-center text-[#7890AD] gap-1">
