@@ -47,6 +47,7 @@ interface EquipoBD {
   variantes?: EquipoBD[];
 }
 
+const norm = (s: any) => (s || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 export default function EquiposPage() {
   const [productos, setProductos] = useState<EquipoBD[]>([]);
   const [loading, setLoading] = useState(true);
@@ -123,10 +124,10 @@ export default function EquiposPage() {
     if (pagina === 1) {
       let fb = DEFAULT_EQUIPOS;
       if (busqueda.trim()) {
-        const q = busqueda.trim().toLowerCase();
+        const q = norm(busqueda.trim());
         fb = fb.filter(
           (p) =>
-            p.nombre.toLowerCase().includes(q) ||
+            norm(p.nombre).includes(q) ||
             p.descripcion.toLowerCase().includes(q) ||
             p.categoria.toLowerCase().includes(q)
         );
@@ -276,7 +277,7 @@ export default function EquiposPage() {
                 className="w-full py-2.5 px-3 bg-slate-50 border border-slate-200 rounded-[12px] text-xs font-[600] text-slate-800 focus:outline-none focus:border-[#162B4D] transition-all cursor-pointer text-left"
               >
                 <option value="TODOS">Todas las modalidades</option>
-                <option value="ALQUILER">Solo Alquiler</option>
+                <option value="ALQUILER">Solo Alquiler / Rentas</option>
                 <option value="VENTA">Solo Venta</option>
                 <option value="PROYECTO">Llave en Mano</option>
               </select>

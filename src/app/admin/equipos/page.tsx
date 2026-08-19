@@ -57,6 +57,7 @@ interface Familia {
   nombre: string;
 }
 
+const norm = (s: any) => (s || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 export default function AdminEquiposPage() {
   const [equipos, setEquipos] = useState<Equipo[]>([]);
   const [familias, setFamilias] = useState<Familia[]>([]);
@@ -132,27 +133,16 @@ export default function AdminEquiposPage() {
   };
 
   const filtrados = equipos.filter((eq) => {
-    const term = searchTerm.trim().toLowerCase();
+    const term = norm(searchTerm.trim());
     let matchBusqueda = true;
 
     if (term) {
       const words = term.split(/\s+/);
-      const targetText = [
-        eq.nombre,
-        eq.codigoInterno,
-        eq.marca,
-        eq.modelo,
-        eq.varianteNombre,
-        eq.descripcion,
-        eq.ubicacion,
-        eq.familia?.nombre,
-        eq.subfamilia?.nombre,
-      ]
-        .filter(Boolean)
-        .join(' ')
-        .toLowerCase();
+      const targetTextRaw = [
+].filter(Boolean).join(' ');
+        const targetText = norm(targetTextRaw);
 
-      matchBusqueda = words.every((w) => targetText.includes(w));
+      matchBusqueda = words.every((w: string) => targetText.includes(w));
     }
 
     const matchEstado = estadoFiltro === 'TODOS' || eq.estado === estadoFiltro;
