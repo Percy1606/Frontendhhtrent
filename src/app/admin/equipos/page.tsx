@@ -63,6 +63,7 @@ export default function AdminEquiposPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [estadoFiltro, setEstadoFiltro] = useState('TODOS');
+  const [tipoFiltro, setTipoFiltro] = useState('TODOS');
   const [familiaFiltro, setFamiliaFiltro] = useState('TODAS');
   const [jerarquiaFiltro, setJerarquiaFiltro] = useState('TODOS');
   const [paginaActual, setPaginaActual] = useState(1);
@@ -119,11 +120,12 @@ export default function AdminEquiposPage() {
 
   useEffect(() => {
     setPaginaActual(1);
-  }, [searchTerm, estadoFiltro, familiaFiltro, jerarquiaFiltro]);
+  }, [searchTerm, estadoFiltro, familiaFiltro, jerarquiaFiltro, tipoFiltro]);
 
   const limpiarFiltros = () => {
     setSearchTerm('');
     setEstadoFiltro('TODOS');
+    setTipoFiltro('TODOS');
     setFamiliaFiltro('TODAS');
     setJerarquiaFiltro('TODOS');
     setPaginaActual(1);
@@ -154,13 +156,14 @@ export default function AdminEquiposPage() {
     }
 
     const matchEstado = estadoFiltro === 'TODOS' || eq.estado === estadoFiltro;
+    const matchTipo = tipoFiltro === 'TODOS' || eq.tipo === tipoFiltro;
     const matchFamilia = familiaFiltro === 'TODAS' || eq.familiaId === familiaFiltro;
     const matchJerarquia =
       jerarquiaFiltro === 'TODOS' ||
       (jerarquiaFiltro === 'PRINCIPAL' && !eq.padreId) ||
       (jerarquiaFiltro === 'VARIANTE' && Boolean(eq.padreId));
 
-    return matchBusqueda && matchEstado && matchFamilia && matchJerarquia;
+    return matchBusqueda && matchEstado && matchFamilia && matchJerarquia && matchTipo;
   });
 
   const totalPaginas = Math.max(1, Math.ceil(filtrados.length / pageSize));
@@ -231,6 +234,17 @@ export default function AdminEquiposPage() {
           </select>
 
           <select
+            value={tipoFiltro}
+            onChange={(e) => setTipoFiltro(e.target.value)}
+            className="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-[12px] text-xs font-[600] text-slate-700 focus:outline-none focus:border-[#162B4D] cursor-pointer"
+          >
+            <option value="TODOS">Tipo: Todos</option>
+            <option value="ALQUILER">Solo Alquiler / Rentas</option>
+            <option value="VENTA">Solo Venta</option>
+            <option value="PROYECTO">Proyecto</option>
+          </select>
+
+          <select
             value={estadoFiltro}
             onChange={(e) => setEstadoFiltro(e.target.value)}
             className="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-[12px] text-xs font-[600] text-slate-700 focus:outline-none focus:border-[#162B4D] cursor-pointer"
@@ -257,7 +271,7 @@ export default function AdminEquiposPage() {
           </select>
         </div>
 
-        {(searchTerm || estadoFiltro !== 'TODOS' || familiaFiltro !== 'TODAS' || jerarquiaFiltro !== 'TODOS') && (
+        {(searchTerm || estadoFiltro !== 'TODOS' || familiaFiltro !== 'TODAS' || jerarquiaFiltro !== 'TODOS' || tipoFiltro !== 'TODOS') && (
           <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs font-[600]">
             <span className="text-slate-500 font-[500]">
               Filtros activos: <strong className="text-slate-800">{filtrados.length}</strong> resultados encontrados
