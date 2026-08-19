@@ -143,8 +143,8 @@ export default function AdminEquiposPage() {
           eq.nombre,
           eq.marca,
           eq.modelo,
-          eq.proveedor,
-          eq.categoria,
+          (eq as any).proveedor,
+          (eq as any).categoria,
           eq.familia?.nombre,
           eq.subfamilia?.nombre,
 ].filter(Boolean).join(' ');
