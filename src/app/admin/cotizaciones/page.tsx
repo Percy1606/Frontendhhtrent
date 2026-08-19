@@ -21,7 +21,10 @@ import {
   Search,
   Ticket,
   Truck,
+  FileDown,
 } from 'lucide-react';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import {
   apiFetch,
   imagenCompleta,
@@ -151,6 +154,81 @@ export default function AdminCotizacionesPage() {
       .then((data) => setCotizaciones(data))
       .catch(() => setError('No se pudieron cargar las cotizaciones.'))
       .finally(() => setCargando(false));
+  };
+
+  const generarProformaPDF = (cotizacion: Cotizacion) => {
+    const doc = new jsPDF();
+    
+    // Título y Empresa
+    doc.setFontSize(22);
+    doc.setTextColor(22, 43, 77); // #162B4D
+    doc.text('HHTRENT', 14, 20);
+    
+    doc.setFontSize(14);
+    doc.setTextColor(100, 116, 139); // slate-500
+    doc.text('Proforma de Venta', 14, 28);
+    
+    // Separador
+    doc.setDrawColor(226, 232, 240); // slate-200
+    doc.line(14, 32, 196, 32);
+
+    // Datos del Cliente
+    doc.setFontSize(10);
+    doc.setTextColor(15, 23, 42); // slate-900
+    doc.text(`Ticket: TCK-${String(cotizacion.id).substring(0, 8).toUpperCase()}`, 14, 40);
+    doc.text(`Fecha: ${formatoFecha(cotizacion.createdAt)}`, 14, 46);
+    doc.text(`Cliente: ${cotizacion.clienteNombre}`, 14, 52);
+    if (cotizacion.clienteEmpresa) {
+      doc.text(`Empresa: ${cotizacion.clienteEmpresa}`, 14, 58);
+    }
+    doc.text(`Email: ${cotizacion.clienteEmail}`, 14, cotizacion.clienteEmpresa ? 64 : 58);
+    doc.text(`Teléfono: ${cotizacion.clienteTelefono}`, 14, cotizacion.clienteEmpresa ? 70 : 64);
+
+    // Tabla de Items
+    const startY = cotizacion.clienteEmpresa ? 80 : 74;
+    
+    const tableData = cotizacion.items.map((item) => [
+      item.equipo.nombre,
+      item.cantidad,
+      item.equipo.precio ? `S/ ${item.equipo.precio.toFixed(2)}` : 'N/A',
+      item.equipo.precio ? `S/ ${(item.equipo.precio * item.cantidad).toFixed(2)}` : 'N/A',
+    ]);
+
+    autoTable(doc, {
+      startY,
+      head: [['Equipo', 'Cantidad', 'Precio Unitario', 'Subtotal']],
+      body: tableData,
+      theme: 'grid',
+      headStyles: { fillColor: [22, 43, 77] },
+    });
+
+    // Totales
+    const total = cotizacion.totalEstimado || 0;
+    const subtotal = total / 1.18;
+    const igv = total - subtotal;
+    
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const finalY = (doc as any).lastAutoTable.finalY || startY;
+
+    doc.setFontSize(10);
+    doc.text(`Subtotal: S/ ${subtotal.toFixed(2)}`, 140, finalY + 10);
+    doc.text(`IGV (18%): S/ ${igv.toFixed(2)}`, 140, finalY + 16);
+    doc.setFontSize(12);
+    doc.setTextColor(230, 60, 70); // #E63C46
+    doc.text(`Total: S/ ${total.toFixed(2)}`, 140, finalY + 24);
+
+    // Cuentas Bancarias
+    doc.setFontSize(10);
+    doc.setTextColor(15, 23, 42); // slate-900
+    doc.text('Cuentas Bancarias (HHTRENT):', 14, finalY + 40);
+    doc.setFontSize(9);
+    doc.setTextColor(100, 116, 139);
+    doc.text('BCP: 191-12345678-0-12', 14, finalY + 46);
+    doc.text('BBVA: 0011-0123-0100012345', 14, finalY + 52);
+    doc.text('Interbank: 200-3001234567', 14, finalY + 58);
+
+    // Descargar
+    doc.save(`Proforma_${String(cotizacion.id).substring(0, 8).toUpperCase()}.pdf`);
   };
 
   useEffect(() => {
@@ -562,9 +640,18 @@ export default function AdminCotizacionesPage() {
                   </p>
                 </div>
               </div>
-              <button onClick={() => setDetalle(null)} className="p-2 rounded-full hover:bg-slate-100 transition-colors">
-                <X className="w-5 h-5 text-slate-500" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => generarProformaPDF(detalle)}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#162B4D] text-white rounded-[10px] text-[11px] font-[800] hover:bg-[#0f1e36] transition-colors"
+                >
+                  <FileDown className="w-4 h-4" />
+                  Generar Proforma PDF
+                </button>
+                <button onClick={() => setDetalle(null)} className="p-2 rounded-full hover:bg-slate-100 transition-colors">
+                  <X className="w-5 h-5 text-slate-500" />
+                </button>
+              </div>
             </div>
 
             <div className="p-6 space-y-6">
