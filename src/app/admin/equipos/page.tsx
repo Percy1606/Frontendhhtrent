@@ -139,6 +139,14 @@ export default function AdminEquiposPage() {
     if (term) {
       const words = term.split(/\s+/);
       const targetTextRaw = [
+          eq.codigoInterno,
+          eq.nombre,
+          eq.marca,
+          eq.modelo,
+          eq.proveedor,
+          eq.categoria,
+          eq.familia?.nombre,
+          eq.subfamilia?.nombre,
 ].filter(Boolean).join(' ');
         const targetText = norm(targetTextRaw);
 
