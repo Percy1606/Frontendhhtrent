@@ -371,7 +371,7 @@ export default function Header() {
         </div>
       </header>
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-white border-b border-[#E5E7EB] shadow-xl px-6 py-6 space-y-4">
+        <div className="lg:hidden fixed top-[74px] left-0 right-0 z-40 bg-white border-b border-[#E5E7EB] shadow-2xl px-6 py-6 space-y-4 max-h-[calc(100vh-74px)] overflow-y-auto">
           <nav className="flex flex-col gap-2 font-montserrat font-[700] text-[13px] uppercase tracking-wider">
             <a href="/#" onClick={() => { setMobileMenuOpen(false); handleLinkClick('inicio'); }} className="text-slate-800 hover:text-[#E63C46] py-3 border-b border-slate-100 flex items-center justify-between">
               <span>Inicio</span>
