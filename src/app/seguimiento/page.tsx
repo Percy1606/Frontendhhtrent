@@ -11,6 +11,7 @@ import {
   ShieldCheck,
   Building2,
   FileText,
+  FileDown,
   Copy,
   Check,
   ChevronRight,
@@ -629,7 +630,14 @@ function SeguimientoContent() {
                 </div>
                 
                 <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
-                  <button 
+                    <button 
+                      onClick={descargarPDF}
+                      className="flex items-center justify-center gap-2 px-8 py-4 w-full sm:w-auto bg-white border-2 border-slate-200 text-slate-700 hover:border-blue-300 hover:text-blue-600 rounded-[16px] font-[800] text-sm transition-all shadow-sm"
+                    >
+                      <FileDown className="w-5 h-5" />
+                      Descargar Proforma
+                    </button>
+                    <button 
                     onClick={async () => {
                       try {
                         const loadingToast = toast.loading('Aprobando cotización...');
