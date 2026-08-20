@@ -20,12 +20,10 @@ interface ItemCotizacion {
 
 interface Cotizacion {
   id: string;
-  cliente: {
-    nombre: string;
-    empresa?: string | null;
-    email: string;
-    telefono: string;
-  };
+  clienteNombre: string;
+  clienteEmpresa?: string | null;
+  clienteEmail: string;
+  clienteTelefono: string;
   items: ItemCotizacion[];
   createdAt: string;
 }
@@ -43,7 +41,7 @@ export default function ProformaModal({ cotizacion, onClose }: Props) {
   const [config, setConfig] = useState({
     ruc: '',
     direccion: '',
-    atencion: cotizacion.cliente.nombre,
+    atencion: cotizacion.clienteNombre,
     moneda: 'Soles (S/)',
     condVenta: 'Al Contado',
     validez: '7 días',
@@ -123,7 +121,7 @@ export default function ProformaModal({ cotizacion, onClose }: Props) {
     const lh = 6;
     
     doc.setFont('helvetica', 'bold'); doc.text('CLIENTE:', 14, startY);
-    doc.setFont('helvetica', 'normal'); doc.text(cotizacion.cliente.empresa || cotizacion.cliente.nombre, 40, startY);
+    doc.setFont('helvetica', 'normal'); doc.text(cotizacion.clienteEmpresa || cotizacion.clienteNombre, 40, startY);
     
     doc.setFont('helvetica', 'bold'); doc.text('ATENCIÓN:', 14, startY + lh);
     doc.setFont('helvetica', 'normal'); doc.text(config.atencion, 40, startY + lh);
