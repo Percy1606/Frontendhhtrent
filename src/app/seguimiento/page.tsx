@@ -362,7 +362,7 @@ function SeguimientoContent() {
                 <div key={idx} className="flex items-center gap-4 p-3.5 bg-slate-50 rounded-[16px] border border-slate-100">
                   {item.imagenUrl && (
                     <img
-                      src={item.imagenUrl}
+                      src={imagenCompleta(item.imagenUrl)}
                       alt={item.nombre}
                       className="w-14 h-14 object-cover rounded-xl border border-slate-200 shrink-0 bg-white"
                     />
