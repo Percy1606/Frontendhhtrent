@@ -314,9 +314,11 @@ function SeguimientoContent() {
       doc.text('Cta Corriente: 191-1234567-0-12', 14, finalY + 14);
       doc.text('CCI: 002-191-1234567012-12', 14, finalY + 18);
       
-      doc.save(pedido.codigoTicket + '-HHTRENT.pdf');
+      const pdfBlob = doc.output('blob');
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+      window.open(pdfUrl, '_blank');
       toast.dismiss(loadingToast);
-      toast.success('PDF descargado exitosamente');
+      toast.success('Proforma generada exitosamente');
     } catch(e) {
       toast.error('Error al generar PDF');
     }
@@ -625,7 +627,7 @@ function SeguimientoContent() {
                   </span>
                   <h3 className="text-2xl font-[800] text-slate-900 tracking-tight">Tu proforma está lista para revisión</h3>
                   <p className="text-slate-600 text-xs sm:text-sm max-w-xl mx-auto font-[500] leading-relaxed">
-                    Ya hemos asignado los precios a los equipos solicitados. Puedes ver los detalles en la tabla superior o contactarnos para consultas.
+                    Ya hemos asignado los precios a los equipos solicitados. Puedes ver los detalles en la tabla superior o hacer clic en el botón inferior <strong>"Ver Proforma en PDF"</strong> para visualizar y descargar tu documento formal.
                   </p>
                 </div>
                 
@@ -635,7 +637,7 @@ function SeguimientoContent() {
                       className="flex items-center justify-center gap-2 px-8 py-4 w-full sm:w-auto bg-white border-2 border-slate-200 text-slate-700 hover:border-blue-300 hover:text-blue-600 rounded-[16px] font-[800] text-sm transition-all shadow-sm"
                     >
                       <FileDown className="w-5 h-5" />
-                      Descargar Proforma
+                      Ver Proforma en PDF
                     </button>
                     <button 
                     onClick={async () => {
