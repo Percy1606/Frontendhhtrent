@@ -41,9 +41,15 @@ export default function NuevaCotizacionAdmin() {
 
   const cargarEquipos = async () => {
     try {
-      const data = await apiFetch<any[]>('/equipos/admin/listar');
+      let data = await apiFetch<any[]>('/equipos/admin/listar').catch(() => null);
+      if (!data || !Array.isArray(data) || data.length === 0) {
+        // Fallback robusto al catálogo público si falla el de admin
+        const res = await apiFetch<any>('/equipos?pageSize=10000');
+        data = Array.isArray(res) ? res : (res?.items || []);
+      }
+      
       // Filtramos para mostrar solo los que se pueden cotizar y activos
-      setEquipos(data.filter(e => e.estado === 'DISPONIBLE' && !e.esCategoria));
+      setEquipos((data || []).filter((e: any) => e.estado === 'DISPONIBLE' && !e.esCategoria));
     } catch (error) {
       toast.error('Error al cargar catálogo de equipos');
     }
