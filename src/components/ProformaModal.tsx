@@ -15,6 +15,9 @@ interface ItemCotizacion {
     precio: number | null;
     imagenUrl: string;
     tipo: string;
+    marca?: string | null;
+    modelo?: string | null;
+    unidad?: string | null;
   };
 }
 
@@ -51,6 +54,7 @@ export default function ProformaModal({ cotizacion, onClose }: Props) {
     descuento: 0,
     flete: 0,
     embalaje: 0,
+    igvPercent: 18,
   });
 
   // Inicializar precios con 0 si son nulos en la base de datos
@@ -74,10 +78,10 @@ export default function ProformaModal({ cotizacion, onClose }: Props) {
   // Cálculos
   const totalBruto = cotizacion.items.reduce((acc, item) => acc + (precios[item.id] * item.cantidad), 0);
   const totalNeto = totalBruto - config.descuento;
-  const igv = totalNeto * 0.18;
+  const igv = totalNeto * (config.igvPercent / 100);
   const granTotal = totalNeto + igv + config.flete + config.embalaje;
 
-  const generarPDF = () => {
+  const generarPDF = async () => {
     const doc = new jsPDF();
     
     // --- COLORES CORPORATIVOS ---
@@ -85,18 +89,29 @@ export default function ProformaModal({ cotizacion, onClose }: Props) {
     const accentColor: [number, number, number] = [230, 60, 70]; // #E63C46
     
     // --- CABECERA ---
-    // Logo / Empresa
-    doc.setFontSize(24);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
-    doc.text('HHTRENT', 14, 22);
+    // Cargar Logo dinámicamente
+    try {
+      const response = await fetch('/img/hhtrentlogo.jpg');
+      const blob = await response.blob();
+      const reader = new FileReader();
+      const base64data = await new Promise<string>((resolve) => {
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.readAsDataURL(blob);
+      });
+      doc.addImage(base64data, 'JPEG', 14, 15, 45, 12);
+    } catch (e) {
+      doc.setFontSize(24);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      doc.text('HHTRENT', 14, 22);
+    }
     
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(100, 116, 139);
-    doc.text('Especialistas en Proyectos Eléctricos y Alquiler', 14, 28);
-    doc.text('RUC: 20123456789', 14, 33);
-    doc.text('Piura, Perú', 14, 38);
+    doc.text('Especialistas en Proyectos Eléctricos y Alquiler', 14, 32);
+    doc.text('RUC: 20123456789', 14, 37);
+    doc.text('Piura, Perú', 14, 42);
 
     // Caja Proforma
     doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2]);
@@ -112,12 +127,12 @@ export default function ProformaModal({ cotizacion, onClose }: Props) {
     // --- LÍNEA SEPARADORA ---
     doc.setDrawColor(226, 232, 240);
     doc.setLineWidth(0.5);
-    doc.line(14, 45, 196, 45);
+    doc.line(14, 47, 196, 47);
 
     // --- DATOS DEL CLIENTE ---
     doc.setFontSize(9);
     doc.setTextColor(15, 23, 42);
-    const startY = 52;
+    const startY = 54;
     const lh = 6;
     
     doc.setFont('helvetica', 'bold'); doc.text('CLIENTE:', 14, startY);
@@ -150,25 +165,31 @@ export default function ProformaModal({ cotizacion, onClose }: Props) {
       i + 1,
       item.equipo.codigoInterno || '-',
       item.equipo.nombre,
+      item.equipo.modelo || '-',
+      item.equipo.marca || '-',
       item.cantidad,
+      item.equipo.unidad || 'Und',
       formatPEN(precios[item.id]),
       formatPEN(precios[item.id] * item.cantidad)
     ]);
 
     autoTable(doc, {
       startY: 85,
-      head: [['ÍTEM', 'CÓDIGO', 'DESCRIPCIÓN', 'CANT', 'PRECIO UNIT.', 'TOTAL']],
+      head: [['No', 'Código', 'Descripción', 'Modelo', 'Marca', 'Cant', 'Un.', 'Prec. Unit.', 'Prec. Total']],
       body: tableData,
       theme: 'grid',
-      headStyles: { fillColor: primaryColor, textColor: 255, fontSize: 9, fontStyle: 'bold', halign: 'center' },
-      bodyStyles: { fontSize: 8, textColor: 50 },
+      headStyles: { fillColor: primaryColor, textColor: 255, fontSize: 8, fontStyle: 'bold', halign: 'center' },
+      bodyStyles: { fontSize: 7, textColor: 50 },
       columnStyles: {
-        0: { halign: 'center', cellWidth: 15 },
-        1: { halign: 'center', cellWidth: 25 },
-        2: { cellWidth: 80 },
-        3: { halign: 'center', cellWidth: 15 },
-        4: { halign: 'right', cellWidth: 25 },
-        5: { halign: 'right', cellWidth: 22 }
+        0: { halign: 'center', cellWidth: 8 },
+        1: { halign: 'center', cellWidth: 16 },
+        2: { cellWidth: 50 },
+        3: { cellWidth: 20 },
+        4: { cellWidth: 20 },
+        5: { halign: 'center', cellWidth: 10 },
+        6: { halign: 'center', cellWidth: 10 },
+        7: { halign: 'right', cellWidth: 24 },
+        8: { halign: 'right', cellWidth: 24 }
       },
       alternateRowStyles: { fillColor: [250, 250, 250] },
       margin: { left: 14, right: 14 }
@@ -180,35 +201,39 @@ export default function ProformaModal({ cotizacion, onClose }: Props) {
     
     doc.setDrawColor(226, 232, 240);
     doc.setFillColor(248, 250, 252);
-    doc.roundedRect(120, finalY, 76, 48, 2, 2, 'FD');
+    doc.roundedRect(120, finalY, 76, 54, 2, 2, 'FD');
 
     doc.setFontSize(9);
-    const tlH = 7;
+    const tlH = 6.5;
     let tY = finalY + 6;
 
-    doc.setFont('helvetica', 'normal'); doc.text('SUBTOTAL:', 125, tY);
+    doc.setFont('helvetica', 'normal'); doc.text('TOTAL BRUTO:', 125, tY);
     doc.text(formatPEN(totalBruto), 190, tY, { align: 'right' });
     
     tY += tlH;
-    doc.text('DESCUENTO:', 125, tY);
+    doc.text('DESCUENTOS:', 125, tY);
     doc.text(`- ${formatPEN(config.descuento)}`, 190, tY, { align: 'right' });
     
     tY += tlH;
     doc.text('TOTAL NETO:', 125, tY);
     doc.text(formatPEN(totalNeto), 190, tY, { align: 'right' });
+
+    tY += tlH;
+    doc.text('FLETE:', 125, tY);
+    doc.text(formatPEN(config.flete), 190, tY, { align: 'right' });
+
+    tY += tlH;
+    doc.text('EMBALAJE:', 125, tY);
+    doc.text(formatPEN(config.embalaje), 190, tY, { align: 'right' });
     
     tY += tlH;
-    doc.text('I.G.V. (18%):', 125, tY);
+    doc.text(`I.G.V. (${config.igvPercent}%):`, 125, tY);
     doc.text(formatPEN(igv), 190, tY, { align: 'right' });
-    
-    tY += tlH;
-    doc.text('OTROS (Flete/Emb):', 125, tY);
-    doc.text(formatPEN(config.flete + config.embalaje), 190, tY, { align: 'right' });
 
     tY += tlH + 2;
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(accentColor[0], accentColor[1], accentColor[2]);
-    doc.text('TOTAL A PAGAR:', 125, tY);
+    doc.text('TOTAL COTIZACIÓN:', 125, tY);
     doc.text(formatPEN(granTotal), 190, tY, { align: 'right' });
 
     // --- CUENTAS BANCARIAS ---
@@ -221,7 +246,11 @@ export default function ProformaModal({ cotizacion, onClose }: Props) {
     doc.text('BBVA Soles: 0011-0123-0100012345\nCCI: 01112300010001234567', 14, finalY + 22);
     
     // --- PIE DE PÁGINA ---
-    let footY = finalY + 60;
+    let footY = finalY + 66;
+    if (footY > 270) {
+       doc.addPage();
+       footY = 20;
+    }
     
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(9);
@@ -244,7 +273,7 @@ export default function ProformaModal({ cotizacion, onClose }: Props) {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-      <div className="bg-white rounded-[24px] shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      <div className="bg-white rounded-[24px] shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         
         {/* HEADER */}
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50 shrink-0">
@@ -275,8 +304,9 @@ export default function ProformaModal({ cotizacion, onClose }: Props) {
                 <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-[700]">
                   <tr>
                     <th className="py-3 px-4">Equipo</th>
+                    <th className="py-3 px-4">Modelo/Marca</th>
                     <th className="py-3 px-4 text-center">Cant.</th>
-                    <th className="py-3 px-4 w-40">Precio (S/)</th>
+                    <th className="py-3 px-4 w-40">Precio Unit. (S/)</th>
                     <th className="py-3 px-4 w-32 text-right">Subtotal</th>
                   </tr>
                 </thead>
@@ -285,9 +315,13 @@ export default function ProformaModal({ cotizacion, onClose }: Props) {
                     <tr key={item.id} className="hover:bg-slate-50">
                       <td className="py-3 px-4">
                         <p className="font-[700] text-slate-900">{item.equipo.nombre}</p>
-                        <p className="text-xs text-slate-500">{item.equipo.codigoInterno}</p>
+                        <p className="text-xs text-slate-500">{item.equipo.codigoInterno || '-'}</p>
                       </td>
-                      <td className="py-3 px-4 text-center font-[700] text-slate-700">{item.cantidad}</td>
+                      <td className="py-3 px-4">
+                        <p className="text-xs font-[600] text-slate-700">{item.equipo.modelo || '-'}</p>
+                        <p className="text-xs text-slate-500">{item.equipo.marca || '-'}</p>
+                      </td>
+                      <td className="py-3 px-4 text-center font-[700] text-slate-700">{item.cantidad} {item.equipo.unidad || 'Und'}</td>
                       <td className="py-3 px-4">
                         <input 
                           type="number" 
@@ -363,27 +397,34 @@ export default function ProformaModal({ cotizacion, onClose }: Props) {
 
             <div className="bg-slate-50 rounded-xl p-5 border border-slate-200 space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-[600] text-slate-500">Subtotal</span>
+                <span className="text-sm font-[600] text-slate-500">Total Bruto</span>
                 <span className="text-sm font-[800] text-slate-900">{formatPEN(totalBruto)}</span>
               </div>
               <div className="flex items-center justify-between gap-4">
-                <span className="text-sm font-[600] text-slate-500">Descuento (-)</span>
+                <span className="text-sm font-[600] text-slate-500">Descuentos (-)</span>
                 <input type="number" value={config.descuento || ''} onChange={e => handleConfigChange('descuento', parseFloat(e.target.value)||0)} className="w-24 px-2 py-1 text-right bg-white border border-slate-200 rounded text-sm outline-none" placeholder="0.00" />
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-[600] text-slate-500">Total Neto</span>
+                <span className="text-sm font-[800] text-slate-900">{formatPEN(totalNeto)}</span>
               </div>
               <div className="flex items-center justify-between gap-4">
                 <span className="text-sm font-[600] text-slate-500">Flete (+)</span>
                 <input type="number" value={config.flete || ''} onChange={e => handleConfigChange('flete', parseFloat(e.target.value)||0)} className="w-24 px-2 py-1 text-right bg-white border border-slate-200 rounded text-sm outline-none" placeholder="0.00" />
               </div>
-              <div className="flex items-center justify-between gap-4 border-b border-slate-200 pb-4">
+              <div className="flex items-center justify-between gap-4">
                 <span className="text-sm font-[600] text-slate-500">Embalaje (+)</span>
                 <input type="number" value={config.embalaje || ''} onChange={e => handleConfigChange('embalaje', parseFloat(e.target.value)||0)} className="w-24 px-2 py-1 text-right bg-white border border-slate-200 rounded text-sm outline-none" placeholder="0.00" />
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-[600] text-slate-500">I.G.V. (18%)</span>
+              <div className="flex items-center justify-between gap-4 border-t border-slate-200 pt-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-[600] text-slate-500">I.G.V. (%)</span>
+                  <input type="number" value={config.igvPercent} onChange={e => handleConfigChange('igvPercent', parseFloat(e.target.value)||0)} className="w-16 px-2 py-1 text-center bg-white border border-slate-200 rounded text-sm outline-none" placeholder="18" />
+                </div>
                 <span className="text-sm font-[800] text-slate-900">{formatPEN(igv)}</span>
               </div>
               <div className="flex items-center justify-between pt-2">
-                <span className="text-base font-[800] text-[#E63C46]">TOTAL</span>
+                <span className="text-base font-[800] text-[#E63C46]">Total Cotización</span>
                 <span className="text-xl font-[800] text-[#E63C46]">{formatPEN(granTotal)}</span>
               </div>
             </div>
