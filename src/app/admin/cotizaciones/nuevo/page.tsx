@@ -41,8 +41,8 @@ export default function NuevaCotizacionAdmin() {
 
   const cargarEquipos = async () => {
     try {
-      const data = await apiFetch<any[]>('/equipos');
-      // Filtramos para mostrar solo los que se pueden cotizar (venta o alquiler) y activos
+      const data = await apiFetch<any[]>('/equipos/admin/listar');
+      // Filtramos para mostrar solo los que se pueden cotizar y activos
       setEquipos(data.filter(e => e.estado === 'DISPONIBLE' && !e.esCategoria));
     } catch (error) {
       toast.error('Error al cargar catálogo de equipos');
