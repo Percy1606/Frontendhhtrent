@@ -38,6 +38,7 @@ interface PedidoTracking {
   fechaCreacion: string;
   estado: string;
   montoTotal?: number;
+  proformaConfig?: any;
   metodoPago?: string;
   comprobanteUrl?: string;
   datosAlquiler?: {
@@ -148,7 +149,8 @@ function SeguimientoContent() {
   };
 
   const pasosEstado = [
-    { key: 'PENDIENTE', titulo: 'Cotización Recibida', desc: 'Pendiente de Pago / Transferencia' },
+    { key: 'PENDIENTE', titulo: 'Cotización Recibida', desc: 'En evaluación de precios' },
+    { key: 'COTIZADA', titulo: 'Cotización Lista', desc: 'Precios asignados por HHTRENT' },
     { key: 'APROBADA', titulo: 'Pago Verificado', desc: 'Aprobado por finanzas' },
     { key: 'DESPACHADO', titulo: 'Producto Entregado', desc: 'Equipo o pedido entregado con éxito' },
     { key: 'RECHAZADA', titulo: 'Cancelada', desc: 'Cotización desestimada' },
@@ -157,9 +159,10 @@ function SeguimientoContent() {
   const getPasoActualIndex = (estado: string) => {
     switch (estado) {
       case 'PENDIENTE': return 0;
-      case 'APROBADA': return 1;
-      case 'DESPACHADO': return 2;
-      case 'RECHAZADA': return 3;
+      case 'COTIZADA': return 1;
+      case 'APROBADA': return 2;
+      case 'DESPACHADO': return 3;
+      case 'RECHAZADA': return 4;
       default: return 0;
     }
   };
@@ -381,7 +384,7 @@ function SeguimientoContent() {
                       </span>
                     </div>
                   </div>
-                  {item.precio != null && (
+                  {pedido.estado !== 'PENDIENTE' && item.precio != null && (
                     <div className="text-right shrink-0">
                       <span className="text-[10px] text-slate-400 font-[600] block">Subtotal</span>
                       <span className="font-[800] text-slate-900 text-sm">
@@ -398,10 +401,42 @@ function SeguimientoContent() {
               ))}
             </div>
 
-            {pedido.montoTotal != null && (
-              <div className="flex items-center justify-between pt-3 border-t border-slate-100">
-                <span className="text-xs font-[700] text-slate-500 uppercase tracking-wider">Total estimado</span>
-                <span className="text-lg font-[800] text-slate-900">S/ {pedido.montoTotal.toFixed(2)}</span>
+            {pedido.estado !== 'PENDIENTE' && pedido.montoTotal != null && (
+              <div className="pt-3 border-t border-slate-100 space-y-2">
+                {pedido.proformaConfig && (
+                  <>
+                    <div className="flex justify-between text-sm text-slate-500 font-[600]">
+                      <span>Subtotal</span>
+                      <span>S/ {(pedido.items.reduce((acc, i) => acc + ((i.precio||0) * i.cantidad), 0)).toFixed(2)}</span>
+                    </div>
+                    {Number(pedido.proformaConfig.descuento) > 0 && (
+                      <div className="flex justify-between text-sm text-red-500 font-[600]">
+                        <span>Descuento</span>
+                        <span>-S/ {Number(pedido.proformaConfig.descuento).toFixed(2)}</span>
+                      </div>
+                    )}
+                    {Number(pedido.proformaConfig.flete) > 0 && (
+                      <div className="flex justify-between text-sm text-slate-500 font-[600]">
+                        <span>Flete</span>
+                        <span>S/ {Number(pedido.proformaConfig.flete).toFixed(2)}</span>
+                      </div>
+                    )}
+                    {Number(pedido.proformaConfig.embalaje) > 0 && (
+                      <div className="flex justify-between text-sm text-slate-500 font-[600]">
+                        <span>Embalaje</span>
+                        <span>S/ {Number(pedido.proformaConfig.embalaje).toFixed(2)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between text-sm text-slate-500 font-[600]">
+                      <span>I.G.V. ({pedido.proformaConfig.igvPercent || 18}%)</span>
+                      <span>S/ {(pedido.montoTotal - (pedido.items.reduce((acc, i) => acc + ((i.precio||0) * i.cantidad), 0) - (Number(pedido.proformaConfig.descuento)||0) + (Number(pedido.proformaConfig.flete)||0) + (Number(pedido.proformaConfig.embalaje)||0))).toFixed(2)}</span>
+                    </div>
+                  </>
+                )}
+                <div className="flex items-center justify-between pt-2 border-t border-slate-100 mt-2">
+                  <span className="text-xs font-[800] text-slate-900 uppercase tracking-wider">TOTAL A PAGAR</span>
+                  <span className="text-xl font-[800] text-[#E63C46]">S/ {pedido.montoTotal.toFixed(2)}</span>
+                </div>
               </div>
             )}
           </div>
@@ -409,236 +444,60 @@ function SeguimientoContent() {
 
           {/* MÉTODOS DE PAGO O GUÍA DE ENTREGA SEGÚN ESTADO */}
           {pedido.estado === 'PENDIENTE' ? (
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-              {/* CUENTAS DE PAGO */}
-              <div className="lg:col-span-7 bg-white rounded-[24px] border border-slate-200/80 p-6 sm:p-8 shadow-sm space-y-6">
-                <div>
-                  <span className="text-[#E63C46] font-[800] text-xs uppercase tracking-widest block mb-1">
-                    Canales Oficiales de Pago
+              <div className="bg-white rounded-[24px] border border-amber-200/80 p-8 shadow-sm space-y-6 text-center max-w-4xl mx-auto">
+                <div className="w-16 h-16 rounded-full bg-amber-100 border-4 border-amber-50 text-amber-600 flex items-center justify-center mx-auto shadow-sm">
+                  <Clock className="w-8 h-8" />
+                </div>
+                <div className="space-y-2">
+                  <span className="text-[10px] font-[800] uppercase tracking-widest text-amber-700 bg-amber-50 border border-amber-200 px-3.5 py-1 rounded-full inline-block">
+                    Solicitud en Revisión
                   </span>
-                  <h3 className="text-xl font-[800] text-slate-900">
-                    Cuentas Bancarias de Depósito & Transferencia
-                  </h3>
-                  <p className="text-slate-500 text-xs mt-1">
-                    Depósitos directos o transferencias interbancarias a nombre de HH T-SOLUCIONA S.A.C.
+                  <h3 className="text-2xl font-[800] text-slate-900 tracking-tight">Estamos valorizando tu cotización</h3>
+                  <p className="text-slate-600 text-xs sm:text-sm max-w-xl mx-auto font-[500] leading-relaxed">
+                    Nuestros especialistas están evaluando la disponibilidad y precios de los equipos solicitados. 
+                    En breve, esta página se actualizará con tu cotización detallada.
                   </p>
                 </div>
-
-                <div className="space-y-4">
-                  {/* BBVA SOLES */}
-                  <div className="p-4 rounded-[18px] bg-slate-50 border border-slate-200/80 space-y-2.5">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="w-3 h-3 rounded-full bg-[#004481]" />
-                        <span className="font-[800] text-xs sm:text-sm text-slate-900">BBVA Continental</span>
-                      </div>
-                      <span className="text-[10px] font-[800] bg-blue-100 text-[#004481] px-2.5 py-0.5 rounded-full">Soles (S/)</span>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                      <div className="bg-white p-2.5 rounded-xl border border-slate-200">
-                        <span className="text-[10px] text-slate-400 font-[600] block">Cuenta Corriente</span>
-                        <div className="flex items-center justify-between mt-0.5">
-                          <span className="font-[800] text-slate-900">001106670200388108</span>
-                          <button
-                            onClick={() => copiarTexto('001106670200388108', setCopiadoBbva)}
-                            className="text-[#264772] hover:text-[#1d385c] p-1"
-                            title="Copiar cuenta"
-                          >
-                            {copiadoBbva ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                          </button>
-                        </div>
-                      </div>
-                      <div className="bg-white p-2.5 rounded-xl border border-slate-200">
-                        <span className="text-[10px] text-slate-400 font-[600] block">CCI (Interbancario)</span>
-                        <div className="flex items-center justify-between mt-0.5">
-                          <span className="font-[800] text-slate-900">01166700020038810839</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* BBVA DÓLARES */}
-                  <div className="p-4 rounded-[18px] bg-slate-50 border border-slate-200/80 space-y-2.5">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="w-3 h-3 rounded-full bg-[#004481]" />
-                        <span className="font-[800] text-xs sm:text-sm text-slate-900">BBVA Continental</span>
-                      </div>
-                      <span className="text-[10px] font-[800] bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full">Dólares ($)</span>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                      <div className="bg-white p-2.5 rounded-xl border border-slate-200">
-                        <span className="text-[10px] text-slate-400 font-[600] block">Cuenta Corriente</span>
-                        <div className="flex items-center justify-between mt-0.5">
-                          <span className="font-[800] text-slate-900">001106670200388647</span>
-                          <button
-                            onClick={() => copiarTexto('001106670200388647', setCopiadoBcp)}
-                            className="text-[#264772] hover:text-[#1d385c] p-1"
-                            title="Copiar cuenta"
-                          >
-                            {copiadoBcp ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                          </button>
-                        </div>
-                      </div>
-                      <div className="bg-white p-2.5 rounded-xl border border-slate-200">
-                        <span className="text-[10px] text-slate-400 font-[600] block">CCI (Interbancario)</span>
-                        <div className="flex items-center justify-between mt-0.5">
-                          <span className="font-[800] text-slate-900">01166700020038864736</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* INTERBANK SOLES */}
-                  <div className="p-4 rounded-[18px] bg-slate-50 border border-slate-200/80 space-y-2.5">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="w-3 h-3 rounded-full bg-[#009900]" />
-                        <span className="font-[800] text-xs sm:text-sm text-slate-900">Interbank</span>
-                      </div>
-                      <span className="text-[10px] font-[800] bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full">Soles (S/)</span>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                      <div className="bg-white p-2.5 rounded-xl border border-slate-200">
-                        <span className="text-[10px] text-slate-400 font-[600] block">Cuenta Corriente</span>
-                        <div className="flex items-center justify-between mt-0.5">
-                          <span className="font-[800] text-slate-900">7203005451419</span>
-                        </div>
-                      </div>
-                      <div className="bg-white p-2.5 rounded-xl border border-slate-200">
-                        <span className="text-[10px] text-slate-400 font-[600] block">CCI (Interbancario)</span>
-                        <div className="flex items-center justify-between mt-0.5">
-                          <span className="font-[800] text-slate-900">00372000300545141902</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* INTERBANK DÓLARES */}
-                  <div className="p-4 rounded-[18px] bg-slate-50 border border-slate-200/80 space-y-2.5">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="w-3 h-3 rounded-full bg-[#009900]" />
-                        <span className="font-[800] text-xs sm:text-sm text-slate-900">Interbank</span>
-                      </div>
-                      <span className="text-[10px] font-[800] bg-blue-100 text-[#002A8F] px-2.5 py-0.5 rounded-full">Dólares ($)</span>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                      <div className="bg-white p-2.5 rounded-xl border border-slate-200">
-                        <span className="text-[10px] text-slate-400 font-[600] block">Cuenta Corriente</span>
-                        <div className="flex items-center justify-between mt-0.5">
-                          <span className="font-[800] text-slate-900">7203005451426</span>
-                        </div>
-                      </div>
-                      <div className="bg-white p-2.5 rounded-xl border border-slate-200">
-                        <span className="text-[10px] text-slate-400 font-[600] block">CCI (Interbancario)</span>
-                        <div className="flex items-center justify-between mt-0.5">
-                          <span className="font-[800] text-slate-900">00372000300545142607</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* BANCO DE LA NACIÓN - DETRACCIONES */}
-                  <div className="p-4 rounded-[18px] bg-amber-50/60 border border-amber-200/80 space-y-2.5">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="w-3 h-3 rounded-full bg-[#C92A36]" />
-                        <span className="font-[800] text-xs sm:text-sm text-slate-900">Banco de la Nación (Detracciones)</span>
-                      </div>
-                      <span className="text-[10px] font-[800] bg-amber-200 text-amber-900 px-2.5 py-0.5 rounded-full">SUNAT (S/)</span>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                      <div className="bg-white p-2.5 rounded-xl border border-amber-200/80">
-                        <span className="text-[10px] text-slate-400 font-[600] block">Cuenta Detracción</span>
-                        <div className="flex items-center justify-between mt-0.5">
-                          <span className="font-[800] text-slate-900">00-631-443907</span>
-                        </div>
-                      </div>
-                      <div className="bg-white p-2.5 rounded-xl border border-amber-200/80">
-                        <span className="text-[10px] text-slate-400 font-[600] block">CCI (Interbancario)</span>
-                        <div className="flex items-center justify-between mt-0.5">
-                          <span className="font-[800] text-slate-900">01863100063144390723</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                {/* NOTA DE TITULARIDAD */}
-                <p className="text-[11px] text-slate-400 font-[500]">
-                  📌 Titular de todas las cuentas: <span className="font-[700] text-slate-700">HH T-SOLUCIONA S.A.C.</span> (RUC: 20600000000). Envía tu constancia para validar el despacho.
-                </p>
               </div>
-
-              {/* CONFIRMACIÓN Y CARGA DE VOUCHER */}
-              <div className="lg:col-span-5 bg-white rounded-[24px] border border-slate-200/80 p-6 sm:p-8 shadow-sm space-y-6">
-                <div>
-                  <span className="text-emerald-600 font-[800] text-xs uppercase tracking-widest block mb-1">
-                    Validación Inmediata
+            ) : pedido.estado === 'COTIZADA' ? (
+              <div className="bg-white rounded-[24px] border border-blue-200/80 p-8 shadow-sm space-y-6 text-center max-w-4xl mx-auto">
+                <div className="w-16 h-16 rounded-full bg-blue-100 border-4 border-blue-50 text-blue-600 flex items-center justify-center mx-auto shadow-sm">
+                  <FileText className="w-8 h-8" />
+                </div>
+                <div className="space-y-2">
+                  <span className="text-[10px] font-[800] uppercase tracking-widest text-blue-700 bg-blue-50 border border-blue-200 px-3.5 py-1 rounded-full inline-block">
+                    Cotización Lista
                   </span>
-                  <h3 className="text-lg font-[800] text-slate-900">
-                    Registrar Constancia de Pago
-                  </h3>
-                  <p className="text-slate-500 text-xs mt-1">
-                    Sube tu voucher o avísanos por WhatsApp para agilizar la entrega.
+                  <h3 className="text-2xl font-[800] text-slate-900 tracking-tight">Tu proforma está lista para revisión</h3>
+                  <p className="text-slate-600 text-xs sm:text-sm max-w-xl mx-auto font-[500] leading-relaxed">
+                    Ya hemos asignado los precios a los equipos solicitados. Puedes ver los detalles en la tabla superior o contactarnos para consultas.
                   </p>
                 </div>
-
-                {voucherSubido ? (
-                  <div className="p-5 bg-emerald-50 border border-emerald-200 rounded-[18px] text-center space-y-3">
-                    <CheckCircle2 className="w-10 h-10 text-emerald-600 mx-auto" />
-                    <h4 className="font-[800] text-slate-900 text-sm">¡Voucher Registrado Correctamente!</h4>
-                    <p className="text-xs text-slate-600 font-[500]">
-                      El área de tesorería verificará la constancia para autorizar la preparación del equipo.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="border-2 border-dashed border-slate-200 rounded-[18px] p-6 text-center hover:border-[#264772] transition-colors cursor-pointer bg-slate-50/50">
-                      <FileText className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                      <p className="text-xs font-[700] text-slate-700">Haz clic o arrastra tu constancia de pago</p>
-                      <p className="text-[10px] text-slate-400 mt-1">Formatos soportados: JPG, PNG o PDF (máx. 10MB)</p>
-                      <input
-                        type="file"
-                        className="hidden"
-                        id="input-voucher"
-                        onChange={() => {
-                          setSubiendoVoucher(true);
-                          setTimeout(() => {
-                            setSubiendoVoucher(false);
-                            setVoucherSubido(true);
-                          }, 1200);
-                        }}
-                      />
-                      <label
-                        htmlFor="input-voucher"
-                        className="mt-4 inline-block px-4 py-2 bg-[#264772] text-white text-xs font-[800] rounded-xl hover:bg-[#1d385c] transition-all cursor-pointer shadow-sm"
-                      >
-                        {subiendoVoucher ? 'Cargando constancia...' : 'Seleccionar Archivo'}
-                      </label>
-                    </div>
-
-                    <a
-                      href={`https://wa.me/51968285032?text=${encodeURIComponent(
-                        `Hola HH TRENT, adjunto constancia de pago para el Ticket ${pedido.codigoTicket}.`
-                      )}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full py-3.5 bg-[#25D366] hover:bg-[#20bd5a] text-white rounded-[14px] text-xs font-[800] uppercase tracking-wider shadow-lg flex items-center justify-center gap-2 transition-all"
-                    >
-                      <Send className="w-4 h-4" />
-                      <span>Enviar Voucher por WhatsApp</span>
-                    </a>
-                  </div>
-                )}
-              </div>
-            </div>
-          ) : (
+                
+                <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
+                  <button 
+                    onClick={async () => {
+                      try {
+                        const loadingToast = toast.loading('Aprobando cotización...');
+                        await apiFetch(`/cotizaciones/${pedido.codigoTicket.replace('TCK-', '')}/estado`, {
+                          method: 'PATCH',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ estado: 'APROBADA' })
+                        });
+                        toast.dismiss(loadingToast);
+                        toast.success('¡Cotización Aprobada Exitosamente!');
+                        window.location.reload();
+                      } catch(e) {
+                        toast.error('Error al aprobar cotización');
+                      }
+                    }}
+                    className="px-8 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-[800] shadow-md transition-all flex items-center gap-2"
+                  >
+                    <Check className="w-5 h-5" />
+                    Aprobar Cotización
+                  </button>
+                </div>
+              </div>) : (
             /* SI EL PAGO YA FUE VERIFICADO O DESPACHADO -> PANEL DE CONFIRMACIÓN Y DESPACHO INTELIGENTE */
             <div className="bg-white rounded-[24px] border border-emerald-200/80 p-8 shadow-sm space-y-6 text-center max-w-4xl mx-auto">
               <div className="w-16 h-16 rounded-full bg-emerald-100 border-4 border-emerald-50 text-emerald-600 flex items-center justify-center mx-auto shadow-sm">

@@ -1,9 +1,10 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { X, FileDown, Calculator } from 'lucide-react';
+import { X, FileDown, Calculator, Loader2 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { formatPEN } from '@/lib/api';
+import { formatPEN, apiFetch } from '@/lib/api';
+import { toast } from 'sonner';
 
 interface ItemCotizacion {
   id: string;
@@ -34,9 +35,11 @@ interface Cotizacion {
 interface Props {
   cotizacion: Cotizacion;
   onClose: () => void;
+  onSuccess?: () => void;
 }
 
-export default function ProformaModal({ cotizacion, onClose }: Props) {
+export default function ProformaModal({ cotizacion, onClose, onSuccess }: Props) {
+  const [guardando, setGuardando] = useState(false);
   // Precios editables
   const [precios, setPrecios] = useState<Record<string, number>>({});
   
@@ -81,12 +84,24 @@ export default function ProformaModal({ cotizacion, onClose }: Props) {
   const igv = totalNeto * (config.igvPercent / 100);
   const granTotal = totalNeto + igv + config.flete + config.embalaje;
 
-  const generarPDF = async () => {
-    const doc = new jsPDF();
-    
-    // --- COLORES CORPORATIVOS ---
-    const primaryColor: [number, number, number] = [22, 43, 77]; // #162B4D
-    const accentColor: [number, number, number] = [230, 60, 70]; // #E63C46
+  const guardarYGenerarPDF = async () => {
+    try {
+      setGuardando(true);
+      
+      // Guardar en backend
+      await apiFetch(`/cotizaciones/${cotizacion.id}/valorizar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ config, precios })
+      });
+      
+      toast.success('Cotización guardada y valorizada exitosamente');
+
+      const doc = new jsPDF();
+      
+      // --- COLORES CORPORATIVOS ---
+      const primaryColor: [number, number, number] = [22, 43, 77]; // #162B4D
+      const accentColor: [number, number, number] = [230, 60, 70]; // #E63C46
     
     // --- CABECERA ---
     // Cargar Logo dinámicamente
@@ -269,6 +284,17 @@ export default function ProformaModal({ cotizacion, onClose }: Props) {
 
     // Descargar
     doc.save(`Proforma_${nroCot.replace('Nº ', '')}.pdf`);
+    
+    if (onSuccess) {
+      onSuccess();
+    }
+    
+    } catch (error) {
+      toast.error('Ocurrió un error al guardar la proforma');
+      console.error(error);
+    } finally {
+      setGuardando(false);
+    }
   };
 
   return (
@@ -434,12 +460,16 @@ export default function ProformaModal({ cotizacion, onClose }: Props) {
 
         {/* FOOTER */}
         <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 shrink-0 flex items-center justify-end gap-3">
-          <button onClick={onClose} className="px-5 py-2.5 rounded-xl text-sm font-[700] text-slate-600 hover:bg-slate-200 transition-colors">
+          <button onClick={onClose} disabled={guardando} className="px-5 py-2.5 rounded-xl text-sm font-[700] text-slate-600 hover:bg-slate-200 transition-colors">
             Cancelar
           </button>
-          <button onClick={generarPDF} className="px-6 py-2.5 rounded-xl text-sm font-[800] text-white bg-[#162B4D] hover:bg-[#0f1e36] transition-colors flex items-center gap-2 shadow-lg shadow-[#162B4D]/20">
-            <FileDown className="w-4 h-4" />
-            Descargar Proforma
+          <button 
+            onClick={guardarYGenerarPDF} 
+            disabled={guardando}
+            className="px-6 py-2.5 rounded-xl text-sm font-[800] text-white bg-[#162B4D] hover:bg-[#0f1e36] transition-colors flex items-center gap-2 shadow-lg shadow-[#162B4D]/20 disabled:opacity-50"
+          >
+            {guardando ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileDown className="w-4 h-4" />}
+            {guardando ? 'Guardando...' : 'Guardar y Descargar'}
           </button>
         </div>
 
