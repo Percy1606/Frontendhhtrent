@@ -379,7 +379,7 @@ export default function CatalogoModalidad({ tipo, otroTipoLabel, otroTipoHref }:
                 className="bg-white rounded-[20px] border border-slate-200/80 hover:border-slate-300 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full overflow-hidden group cursor-pointer"
               >
                 {/* Imagen del Producto con encuadre de estudio perfecto o marca de agua elegante si no tiene foto */}
-                <div className="relative h-52 bg-gradient-to-br from-slate-50 to-slate-100/80 border-b border-slate-100 overflow-hidden shrink-0 flex items-center justify-center p-3">
+                <div className="relative h-48 sm:h-52 bg-gradient-to-br from-slate-50 to-slate-100/80 border-b border-slate-100 overflow-hidden shrink-0 flex items-center justify-center p-0 sm:p-2">
                   {urlCatalogo ? (
                     <img
                       src={imagenCompleta(urlCatalogo)}
@@ -400,7 +400,7 @@ export default function CatalogoModalidad({ tipo, otroTipoLabel, otroTipoHref }:
                           parent.appendChild(fallback);
                         }
                       }}
-                      className="max-w-full max-h-full w-auto h-auto object-contain group-hover:scale-105 transition-transform duration-300 drop-shadow-xs"
+                      className="w-full h-full object-cover sm:object-contain group-hover:scale-105 transition-transform duration-300 drop-shadow-xs"
                     />
                   ) : (
                     <div className="flex flex-col items-center justify-center gap-1.5 text-slate-400 select-none group-hover:scale-105 transition-transform duration-300">

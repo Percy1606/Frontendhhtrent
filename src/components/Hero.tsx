@@ -35,13 +35,13 @@ export default function Hero() {
 
           {/* Título Principal */}
           <h1 className="font-spartan font-[800] text-[28px] sm:text-[37px] lg:text-[43px] uppercase text-white leading-[1.12] tracking-tight mb-5">
-            LÍDERES EN PROYECTOS ELÉCTRICOS, VENTA DE EQUIPOS Y <br className="hidden sm:inline" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#E63C46] to-red-400">SOLUCIONES ESPECIALIZADAS</span>
+            LÍDERES EN ALQUILER Y VENTA DE EQUIPOS PARA <br className="hidden sm:inline" />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#E63C46] to-red-400">PROYECTOS ELÉCTRICOS E INDUSTRIALES</span>
           </h1>
 
           {/* Descripción */}
           <p className="font-inter font-[400] text-slate-300 text-sm sm:text-base leading-relaxed mb-8 max-w-xl">
-            <strong className="font-[700] text-white">HT RENT</strong> brinda soluciones de alquiler de equipos para proyectos eléctricos e industriales, ofreciendo disponibilidad, confiabilidad y soporte para garantizar la continuidad y eficiencia de cada operación.
+            <strong className="font-[700] text-white">HT RENT</strong> brinda soluciones integrales en maquinaria y equipos especializados, ofreciendo disponibilidad, confiabilidad y soporte técnico para garantizar la continuidad y eficiencia de su operación.
           </p>
 
           {/* Botones de Acción */}
