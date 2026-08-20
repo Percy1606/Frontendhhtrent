@@ -355,13 +355,22 @@ export default function AdminCotizacionesPage() {
             Cotizaciones
           </h1>
           <p className="text-sm text-slate-500 mt-1 font-[500]">
-            Solicitudes enviadas desde el sitio web · {cotizaciones.length} en total
+            Gestión de solicitudes web y manuales • {cotizaciones.length} en total
           </p>
         </div>
-        <span className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-50 text-emerald-700 rounded-[14px] text-xs font-[700] border border-emerald-200">
-          <Mail className="w-4 h-4" />
-          Las solicitudes llegan aquí automáticamente
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="hidden lg:inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-50 text-emerald-700 rounded-[14px] text-xs font-[700] border border-emerald-200">
+            <Mail className="w-4 h-4" />
+            Vía Web y Manual
+          </span>
+          <button
+            onClick={() => router.push('/admin/cotizaciones/nuevo')}
+            className="flex items-center gap-2 bg-[#162B4D] text-white px-5 py-2.5 rounded-[14px] text-sm font-[800] hover:bg-[#0f1e36] transition-colors shadow-lg shadow-[#162B4D]/20"
+          >
+            <FilePlus2 className="w-4 h-4" />
+            Nueva Cotización
+          </button>
+        </div>
       </div>
 
       {/* MÉTRICAS (TARJETAS MÁS COMPACTAS) */}
