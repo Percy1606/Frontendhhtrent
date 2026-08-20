@@ -22,7 +22,7 @@ import { toast } from 'sonner';
 
 export default function NuevaCotizacionAdmin() {
   const router = useRouter();
-  const { session } = useSession();
+  const session = useSession();
 
   const [clienteNombre, setClienteNombre] = useState('');
   const [clienteEmpresa, setClienteEmpresa] = useState('');
