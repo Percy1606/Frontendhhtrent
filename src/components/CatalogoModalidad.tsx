@@ -400,7 +400,7 @@ export default function CatalogoModalidad({ tipo, otroTipoLabel, otroTipoHref }:
                           parent.appendChild(fallback);
                         }
                       }}
-                      className="w-full h-full object-cover sm:object-contain group-hover:scale-105 transition-transform duration-300 drop-shadow-xs"
+                      className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300 drop-shadow-xs"
                     />
                   ) : (
                     <div className="flex flex-col items-center justify-center gap-1.5 text-slate-400 select-none group-hover:scale-105 transition-transform duration-300">
@@ -552,7 +552,7 @@ export default function CatalogoModalidad({ tipo, otroTipoLabel, otroTipoHref }:
               <img
                 src={imagenCompleta(selectedEquipoModal.imagenUrl)}
                 alt={selectedEquipoModal.nombre}
-                className="w-24 h-24 rounded-2xl object-cover border border-slate-200"
+                className="w-24 h-24 rounded-2xl object-contain p-2 bg-slate-50 border border-slate-200"
               />
               <div>
                 <span className="text-xs font-[800] text-[#E63C46] uppercase tracking-wider block">

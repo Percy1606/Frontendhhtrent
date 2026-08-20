@@ -372,25 +372,29 @@ export default function Header() {
       </header>
       {mobileMenuOpen && (
         <div className="lg:hidden bg-white border-b border-[#E5E7EB] shadow-xl px-6 py-6 space-y-4">
-          <nav className="flex flex-col gap-3 font-[600] text-sm">
-            <Link href="/equipos" onClick={() => setMobileMenuOpen(false)} className="text-[#1A1A1A] hover:text-[#E63C46] py-2 border-b border-[#E5E7EB]">
-              Catálogo General de Equipos
-            </Link>
-            <Link href="/renta" onClick={() => setMobileMenuOpen(false)} className="text-[#1A1A1A] hover:text-[#233A61] py-2 border-b border-[#E5E7EB]">
-              🔁 Equipos en Renta
-            </Link>
-            <Link href="/venta" onClick={() => setMobileMenuOpen(false)} className="text-[#1A1A1A] hover:text-[#E63C46] py-2 border-b border-[#E5E7EB]">
-              💰 Equipos en Venta
-            </Link>
-            <a href="/#servicios" onClick={() => setMobileMenuOpen(false)} className="text-[#1A1A1A] hover:text-[#E63C46] py-2 border-b border-[#E5E7EB]">
-              Servicios de Ingeniería
+          <nav className="flex flex-col gap-2 font-montserrat font-[700] text-[13px] uppercase tracking-wider">
+            <a href="/#" onClick={() => { setMobileMenuOpen(false); handleLinkClick('inicio'); }} className="text-slate-800 hover:text-[#E63C46] py-3 border-b border-slate-100 flex items-center justify-between">
+              <span>Inicio</span>
             </a>
-            <a href="/#sedes" onClick={() => setMobileMenuOpen(false)} className="text-[#1A1A1A] hover:text-[#E63C46] py-2 border-b border-[#E5E7EB]">
-              Ubicación
+            <a href="/#nosotros" onClick={() => { setMobileMenuOpen(false); handleLinkClick('nosotros'); }} className="text-slate-800 hover:text-[#E63C46] py-3 border-b border-slate-100 flex items-center justify-between">
+              <span>Nosotros</span>
             </a>
-            <a href="/cotizacion" onClick={() => setMobileMenuOpen(false)} className="text-[#E63C46] font-[700] py-2">
-              Cotización (Resumen)
+            <a href="/#servicios" onClick={() => { setMobileMenuOpen(false); handleLinkClick('servicios'); }} className="text-slate-800 hover:text-[#E63C46] py-3 border-b border-slate-100 flex items-center justify-between">
+              <span>Especialidades</span>
             </a>
+            <a href="/#catalogo" onClick={() => { setMobileMenuOpen(false); handleLinkClick('catalogo'); }} className="text-slate-800 hover:text-[#E63C46] py-3 border-b border-slate-100 flex items-center justify-between">
+              <span>Catálogo</span>
+            </a>
+            <a href="/#contacto" onClick={() => { setMobileMenuOpen(false); handleLinkClick('contacto'); }} className="text-slate-800 hover:text-[#E63C46] py-3 border-b border-slate-100 flex items-center justify-between">
+              <span>Contacto</span>
+            </a>
+            
+            <div className="pt-4">
+              <a href="/cotizacion" onClick={() => setMobileMenuOpen(false)} className="bg-[#E63C46] text-white font-[800] py-3.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-[#E63C46]/20">
+                <ShoppingCart className="w-4 h-4" />
+                <span>Ver Mi Cotización</span>
+              </a>
+            </div>
           </nav>
         </div>
       )}

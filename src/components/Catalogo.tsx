@@ -162,7 +162,7 @@ export default function Catalogo() {
                       <img
                         src={imagenCompleta(item.imagenUrl)}
                         alt={item.nombre}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500"
                       />
                     ) : (
                       <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-slate-100 to-slate-200">
@@ -282,7 +282,7 @@ export default function Catalogo() {
               <img
                 src={imagenCompleta(selectedEquipoModal.imagenUrl)}
                 alt={selectedEquipoModal.nombre}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain p-4"
               />
               <button
                 onClick={() => setSelectedEquipoModal(null)}
