@@ -209,13 +209,12 @@ export default function EquiposPage() {
             </h1>
 
             <a
-              href="/Catalogos_Soluciones_MT_2026.pdf"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="#"
+              onClick={(e) => { e.preventDefault(); alert("El nuevo catálogo estará disponible pronto."); }}
               className="md:absolute md:right-0 px-3.5 py-1.5 bg-[#E63C46] hover:bg-[#C92A36] text-white rounded-lg text-xs font-[700] flex items-center gap-1.5 transition-all shadow-sm"
             >
               <FileText className="w-4 h-4" />
-              <span>Descargar PDF 2026</span>
+              <span>Descargar PDF</span>
               <Download className="w-3.5 h-3.5" />
             </a>
           </div>
