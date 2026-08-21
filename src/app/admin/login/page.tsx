@@ -176,11 +176,20 @@ export default function AdminLoginPage() {
         {SLIDES.map((slide, index) => (
           <div
             key={index}
-            className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ease-in-out ${
-              currentSlide === index ? 'opacity-100' : 'opacity-0'
+            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+              currentSlide === index ? 'opacity-100 z-0' : 'opacity-0 -z-10'
             }`}
-            style={{ backgroundImage: `url('${slide.image}')` }}
-          />
+          >
+            <Image
+              src={slide.image}
+              alt={slide.title}
+              fill
+              className="object-cover object-center"
+              priority={true} // Obliga al navegador a precargar todas las imágenes al instante
+              sizes="55vw"
+              quality={85}
+            />
+          </div>
         ))}
         {/* Overlay ultra suave, dejando que la imagen original se vea al máximo */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#0F203C]/70 via-[#0A1424]/40 to-[#0A1424]/80 z-0 pointer-events-none" />
