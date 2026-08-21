@@ -315,10 +315,13 @@ function getCookie(name: string): string | null {
   return null;
 }
 
-function setCookie(name: string, value: string, days = 1) {
+function setCookie(name: string, value: string, days?: number) {
   if (typeof document === 'undefined') return;
-  const expires = new Date(Date.now() + days * 864e5).toUTCString();
-  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+  let expires = '';
+  if (days !== undefined) {
+    expires = `; expires=${new Date(Date.now() + days * 864e5).toUTCString()}`;
+  }
+  document.cookie = `${name}=${encodeURIComponent(value)}${expires}; path=/; SameSite=Lax`;
 }
 
 function eraseCookie(name: string) {
@@ -350,11 +353,12 @@ export function getStoredUser(): UsuarioSesion | null {
   }
 }
 
-export function saveSession(token: string, usuario: UsuarioSesion) {
+export function saveSession(token: string, usuario: UsuarioSesion, rememberMe: boolean = false) {
   // Se almacena la sesión mediante Cookies seguras del navegador.
   // Se ha removido completamente el uso de localStorage.
-  setCookie('hht_admin_token', token, 1);
-  setCookie('hht_admin_user', JSON.stringify(usuario), 1);
+  const days = rememberMe ? 30 : undefined;
+  setCookie('hht_admin_token', token, days);
+  setCookie('hht_admin_user', JSON.stringify(usuario), days);
   if (typeof localStorage !== 'undefined') {
     localStorage.removeItem('hht_admin_token');
     localStorage.removeItem('hht_admin_user');
