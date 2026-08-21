@@ -406,7 +406,7 @@ export default function EquiposPage() {
                 >
                   {/* Imagen del Producto con encuadre de estudio perfecto */}
                   <div className="relative h-52 bg-slate-50 border-b border-slate-100 overflow-hidden shrink-0 flex items-center justify-center p-3">
-                    <img
+                    <img loading="lazy" decoding="async" loading="lazy" decoding="async"
                       src={imagenCompleta(urlCatalogo)}
                       alt={p.nombre}
                       onError={(e) => {
@@ -543,7 +543,7 @@ export default function EquiposPage() {
             </button>
 
             <div className="flex gap-4 items-start border-b border-slate-100 pb-4">
-              <img
+              <img loading="lazy" decoding="async" loading="lazy" decoding="async"
                 src={imagenCompleta(selectedEquipoModal.imagenUrl)}
                 alt={selectedEquipoModal.nombre}
                 className="w-24 h-24 rounded-2xl object-cover border border-slate-200"

@@ -480,7 +480,7 @@ export default function AdminEquipoDetallePage() {
           <div className="bg-white rounded-[20px] border border-slate-200/70 shadow-sm overflow-hidden">
             <div className="relative h-60 bg-slate-100">
               {equipo.imagenUrl ? (
-                <img src={imagenCompleta(equipo.imagenUrl)} alt={equipo.nombre} className="w-full h-full object-contain p-2 transition-all" />
+                <img loading="lazy" decoding="async" src={imagenCompleta(equipo.imagenUrl)} alt={equipo.nombre} className="w-full h-full object-contain p-2 transition-all" />
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-slate-100 to-slate-200">
                   <ImageIcon className="w-12 h-12 text-slate-300" />
@@ -1020,7 +1020,7 @@ export default function AdminEquipoDetallePage() {
                     className="group relative bg-slate-50 border border-slate-200 rounded-[12px] p-3 hover:border-[#162B4D]/30 transition-all"
                   >
                     {doc.tipo === 'FOTOGRAFIA' || doc.mimeType?.startsWith('image/') ? (
-                      <img src={imagenCompleta(doc.url)} alt={doc.nombre} className="w-full h-20 object-cover rounded-[8px] mb-2" />
+                      <img loading="lazy" decoding="async" src={imagenCompleta(doc.url)} alt={doc.nombre} className="w-full h-20 object-cover rounded-[8px] mb-2" />
                     ) : (
                       <div className="w-full h-20 rounded-[8px] bg-[#162B4D]/5 flex items-center justify-center mb-2">
                         <FileText className="w-8 h-8 text-[#162B4D]/40" />

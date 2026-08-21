@@ -267,7 +267,7 @@ export default function NuevaCotizacionAdmin() {
                         onClick={() => agregarAlCarrito(equipo)}
                         className="w-full flex items-center gap-3 p-3 hover:bg-slate-50 transition-colors text-left border-b border-slate-100 last:border-0"
                       >
-                        <img 
+                        <img loading="lazy" decoding="async" loading="lazy" decoding="async" 
                           src={imagenCompleta(equipo.imagenUrl)} 
                           alt={equipo.nombre}
                           className="w-10 h-10 rounded-lg object-cover bg-slate-100"
@@ -300,7 +300,7 @@ export default function NuevaCotizacionAdmin() {
                     <div className="w-6 h-6 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center text-xs font-[800] shrink-0">
                       {i + 1}
                     </div>
-                    <img 
+                    <img loading="lazy" decoding="async" loading="lazy" decoding="async" 
                       src={imagenCompleta(item.equipo.imagenUrl)} 
                       alt={item.equipo.nombre}
                       className="w-14 h-14 rounded-xl object-cover bg-slate-100 border border-slate-200"

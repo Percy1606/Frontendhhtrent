@@ -631,7 +631,7 @@ export default function ContratoDetallePage() {
                   <tr key={item.id}>
                     <td className="py-3.5 px-6">
                       <div className="flex items-center gap-3">
-                        <img
+                        <img loading="lazy" decoding="async"
                           src={imagenCompleta(item.equipo.imagenUrl)}
                           alt={item.equipo.nombre}
                           className="w-11 h-11 rounded-[10px] object-cover bg-slate-100 border border-slate-200 shrink-0"

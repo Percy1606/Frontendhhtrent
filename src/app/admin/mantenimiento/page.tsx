@@ -267,7 +267,7 @@ export default function AdminMantenimientoPage() {
                     </td>
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-2 min-w-0 max-w-[260px]">
-                        <img
+                        <img loading="lazy" decoding="async" loading="lazy" decoding="async"
                           src={imagenCompleta(o.equipo.imagenUrl)}
                           alt={o.equipo.nombre}
                           className="w-9 h-9 rounded-[8px] object-cover bg-slate-100 border border-slate-200 shrink-0"
@@ -378,7 +378,7 @@ export default function AdminMantenimientoPage() {
           <div className="divide-y divide-slate-50">
             {planes.map((plan) => (
               <div key={plan.id} className="px-6 py-4 flex items-center gap-4 hover:bg-slate-50/70 transition-colors">
-                <img
+                <img loading="lazy" decoding="async" loading="lazy" decoding="async"
                   src={imagenCompleta(plan.equipo.imagenUrl)}
                   alt={plan.equipo.nombre}
                   className="w-10 h-10 rounded-[8px] object-cover bg-slate-100 border border-slate-200 shrink-0"

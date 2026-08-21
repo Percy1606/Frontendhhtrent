@@ -631,7 +631,7 @@ export default function AdminCotizacionesPage() {
                 <div className="space-y-2.5">
                   {detalle.items.map((item) => (
                     <div key={item.id} className="flex items-center gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                      <img
+                      <img loading="lazy" decoding="async" loading="lazy" decoding="async"
                         src={imagenCompleta(item.equipo.imagenUrl)}
                         alt={item.equipo.nombre}
                         className="w-12 h-12 rounded-lg object-cover bg-white border border-slate-200"
