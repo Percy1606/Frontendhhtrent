@@ -558,8 +558,7 @@ export default function NuevoEquipoPage() {
                       key={i}
                       className="group relative aspect-square rounded-[12px] overflow-hidden border border-slate-200 bg-slate-50 p-1 flex items-center justify-center"
                     >
-                      <img loading="lazy" decoding="async" loading="lazy" decoding="async"
-                        src={URL.createObjectURL(foto)}
+                      <img loading="lazy" decoding="async" src={URL.createObjectURL(foto)}
                         alt={`Foto adicional ${i + 1}`}
                         className="max-w-full max-h-full w-auto h-auto object-contain"
                       />

@@ -363,8 +363,7 @@ export default function EquipoDetallePage() {
                 className="relative h-64 sm:h-80 bg-[#F8FAFC] rounded-[14px] overflow-hidden border border-[#E5EAF1] flex items-center justify-center cursor-zoom-in group select-none"
               >
                 {galeriaInfo.fotos.length > 0 && galeriaInfo.fotos[imagenActiva] ? (
-                  <img loading="lazy" decoding="async"
-                    key={`${equipoActivo!.id}-${galeriaInfo.fotos[imagenActiva]}-${imagenActiva}`}
+                  <img loading="lazy" decoding="async" key={`${equipoActivo!.id}-${galeriaInfo.fotos[imagenActiva]}-${imagenActiva}`}
                     src={imagenCompleta(galeriaInfo.fotos[imagenActiva])}
                     alt={equipoActivo!.nombre}
                     style={{
@@ -427,8 +426,7 @@ export default function EquipoDetallePage() {
                           : 'border-[#E5EAF1] hover:border-[#7890AD]'
                       }`}
                     >
-                      <img loading="lazy" decoding="async"
-                        src={imagenCompleta(img)}
+                      <img loading="lazy" decoding="async" src={imagenCompleta(img)}
                         alt={`Vista ${i + 1}`}
                         onError={(e) => {
                           (e.target as HTMLElement).style.display = 'none';
@@ -786,8 +784,7 @@ export default function EquipoDetallePage() {
                   className="bg-white rounded-[20px] border border-slate-200/80 hover:border-slate-300 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full overflow-hidden group cursor-pointer"
                 >
                   <div className="relative h-48 bg-slate-50 border-b border-slate-100 overflow-hidden shrink-0 flex items-center justify-center p-3">
-                    <img loading="lazy" decoding="async"
-                      src={imagenCompleta(rel.imagenUrl)}
+                    <img loading="lazy" decoding="async" src={imagenCompleta(rel.imagenUrl)}
                       alt={rel.nombre}
                       onError={(e) => {
                         (e.target as HTMLElement).style.display = 'none';

@@ -326,8 +326,7 @@ export default function AdminEquiposPage() {
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-3">
                         {eq.imagenUrl ? (
-                          <img loading="lazy" decoding="async" loading="lazy" decoding="async"
-                            src={imagenCompleta(eq.imagenUrl)}
+                          <img loading="lazy" decoding="async" src={imagenCompleta(eq.imagenUrl)}
                             alt={eq.nombre}
                             className="w-11 h-11 rounded-[10px] object-cover bg-slate-100 border border-slate-200 shrink-0"
                           />

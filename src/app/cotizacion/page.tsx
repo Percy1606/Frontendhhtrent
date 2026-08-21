@@ -380,8 +380,7 @@ export default function CotizacionPage() {
           <div className="lg:col-span-6 space-y-4">
             <div className="relative h-80 sm:h-96 bg-slate-50 rounded-[20px] overflow-hidden border border-slate-200 flex items-center justify-center p-4">
               {productImages.length > 0 && productImages[activeImageIndex] ? (
-                <img loading="lazy" decoding="async" loading="lazy" decoding="async"
-                  src={imagenCompleta(productImages[activeImageIndex])}
+                <img loading="lazy" decoding="async" src={imagenCompleta(productImages[activeImageIndex])}
                   alt={currentProduct.nombre}
                   onError={(e) => {
                     (e.target as HTMLElement).style.display = 'none';
@@ -417,7 +416,7 @@ export default function CotizacionPage() {
                       activeImageIndex === idx ? 'border-[#E63C46] shadow-md scale-105' : 'border-slate-200 opacity-70 hover:opacity-100'
                     }`}
                   >
-                    <img loading="lazy" decoding="async" loading="lazy" decoding="async" src={imagenCompleta(img)} alt={`Vista ${idx}`} className="w-full h-full object-contain" />
+                    <img loading="lazy" decoding="async" src={imagenCompleta(img)} alt={`Vista ${idx}`} className="w-full h-full object-contain" />
                   </button>
                 ))}
               </div>
@@ -699,8 +698,7 @@ export default function CotizacionPage() {
                         }`}
                       >
                         <td className="py-3 px-4">
-                          <img loading="lazy" decoding="async" loading="lazy" decoding="async"
-                            src={imagenCompleta(item.imagenUrl)}
+                          <img loading="lazy" decoding="async" src={imagenCompleta(item.imagenUrl)}
                             alt={item.nombre}
                             className="w-12 h-12 rounded-lg object-contain p-1 bg-slate-50 border border-slate-200 shadow-xs"
                           />
@@ -1082,8 +1080,7 @@ export default function CotizacionPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 items-start">
               <div className="sm:col-span-5 relative h-56 bg-slate-100 rounded-[16px] overflow-hidden border border-slate-200 shrink-0">
-                <img loading="lazy" decoding="async" loading="lazy" decoding="async"
-                  src={imagenCompleta(modalDetalleItem.imagenUrl)}
+                <img loading="lazy" decoding="async" src={imagenCompleta(modalDetalleItem.imagenUrl)}
                   alt={modalDetalleItem.nombre}
                   className="w-full h-full object-cover"
                 />

@@ -124,8 +124,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 }`}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img loading="lazy" decoding="async" loading="lazy" decoding="async"
-                  src="/img/hhtrentlogo.jpg"
+                <img loading="lazy" decoding="async" src="/img/hhtrentlogo.jpg"
                   alt="HHTRENT Logo"
                   className="w-full h-full object-contain scale-[1.38] transform transition-transform"
                 />

@@ -295,8 +295,7 @@ export default function OrdenTrabajoDetallePage() {
 
       {/* RESUMEN DEL EQUIPO */}
       <div className="bg-white rounded-[20px] border border-slate-200/70 shadow-sm p-5 flex items-center gap-5">
-        <img loading="lazy" decoding="async"
-          src={imagenCompleta(orden.equipo.imagenUrl)}
+        <img loading="lazy" decoding="async" src={imagenCompleta(orden.equipo.imagenUrl)}
           alt={orden.equipo.nombre}
           className="w-20 h-20 rounded-[14px] object-cover bg-slate-100 border border-slate-200 shrink-0"
         />

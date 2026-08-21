@@ -425,8 +425,7 @@ export default function NuevoContratoPage() {
                         onChange={() => toggleItem(eq)}
                         className="w-4 h-4 accent-[#E63C46] cursor-pointer shrink-0"
                       />
-                      <img loading="lazy" decoding="async" loading="lazy" decoding="async"
-                        src={imagenCompleta(eq.imagenUrl)}
+                      <img loading="lazy" decoding="async" src={imagenCompleta(eq.imagenUrl)}
                         alt={eq.nombre}
                         className="w-12 h-12 rounded-[10px] object-cover bg-slate-100 border border-slate-200 shrink-0"
                       />

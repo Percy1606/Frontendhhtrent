@@ -521,8 +521,7 @@ function SeguimientoContent() {
               {pedido.items.map((item, idx) => (
                 <div key={idx} className="flex items-center gap-4 p-3.5 bg-slate-50 rounded-[16px] border border-slate-100">
                   {item.imagenUrl && (
-                    <img loading="lazy" decoding="async" loading="lazy" decoding="async"
-                      src={imagenCompleta(item.imagenUrl)}
+                    <img loading="lazy" decoding="async" src={imagenCompleta(item.imagenUrl)}
                       alt={item.nombre}
                       className="w-14 h-14 object-cover rounded-xl border border-slate-200 shrink-0 bg-white"
                     />

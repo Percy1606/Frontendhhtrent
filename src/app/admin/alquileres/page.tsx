@@ -248,8 +248,7 @@ export default function AdminAlquileresPage() {
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-2">
                         {c.items.slice(0, 3).map((item) => (
-                          <img loading="lazy" decoding="async" loading="lazy" decoding="async"
-                            key={item.id}
+                          <img loading="lazy" decoding="async" key={item.id}
                             src={imagenCompleta(item.equipo.imagenUrl)}
                             alt={item.equipo.nombre}
                             title={item.equipo.nombre}
