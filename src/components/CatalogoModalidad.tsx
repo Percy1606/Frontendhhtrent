@@ -1,5 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import {
   MapPin,
   Search,
@@ -381,26 +382,12 @@ export default function CatalogoModalidad({ tipo, otroTipoLabel, otroTipoHref }:
                 {/* Imagen del Producto con encuadre de estudio perfecto o marca de agua elegante si no tiene foto */}
                 <div className="relative h-48 sm:h-52 bg-gradient-to-br from-slate-50 to-slate-100/80 border-b border-slate-100 overflow-hidden shrink-0 flex items-center justify-center p-0 sm:p-2">
                   {urlCatalogo ? (
-                    <img
+                    <Image
                       src={imagenCompleta(urlCatalogo)}
                       alt={p.nombre}
-                      onError={(e) => {
-                        (e.target as HTMLElement).style.display = 'none';
-                        const parent = (e.target as HTMLElement).parentElement;
-                        if (parent && !parent.querySelector('.fallback-icon')) {
-                          const fallback = document.createElement('div');
-                          fallback.className = 'fallback-icon flex flex-col items-center justify-center gap-1.5 text-slate-400 select-none';
-                          fallback.innerHTML = `
-                            <div class="w-12 h-12 rounded-2xl bg-[#162B4D]/10 border border-[#162B4D]/15 flex items-center justify-center text-[#162B4D] font-spartan font-[800] text-lg shadow-2xs">
-                              HT
-                            </div>
-                            <span class="text-[11px] font-[800] font-spartan tracking-widest text-[#162B4D]/70 uppercase">HH RENT</span>
-                            <span class="text-[9px] font-[600] text-slate-400">Equipo Certificado</span>
-                          `;
-                          parent.appendChild(fallback);
-                        }
-                      }}
-                      className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-300 drop-shadow-xs"
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      className="object-contain p-2 group-hover:scale-105 transition-transform duration-500 ease-out"
                     />
                   ) : (
                     <div className="flex flex-col items-center justify-center gap-1.5 text-slate-400 select-none group-hover:scale-105 transition-transform duration-300">
@@ -549,11 +536,15 @@ export default function CatalogoModalidad({ tipo, otroTipoLabel, otroTipoHref }:
             </button>
 
             <div className="flex gap-4 items-start border-b border-slate-100 pb-4">
-              <img
-                src={imagenCompleta(selectedEquipoModal.imagenUrl)}
-                alt={selectedEquipoModal.nombre}
-                className="w-24 h-24 rounded-2xl object-contain p-2 bg-slate-50 border border-slate-200"
-              />
+              <div className="relative w-24 h-24 rounded-2xl bg-slate-50 border border-slate-200 shrink-0 overflow-hidden">
+                <Image
+                  src={imagenCompleta(selectedEquipoModal.imagenUrl)}
+                  alt={selectedEquipoModal.nombre}
+                  fill
+                  sizes="96px"
+                  className="object-contain p-2"
+                />
+              </div>
               <div>
                 <span className="text-xs font-[800] text-[#E63C46] uppercase tracking-wider block">
                   {selectedEquipoModal.categoria}

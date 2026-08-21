@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 import React, { useState, useEffect } from 'react';
 import {
   MapPin,
@@ -159,10 +160,12 @@ export default function Catalogo() {
                       Destacado
                     </span>
                     {item.imagenUrl ? (
-                      <img
+                      <Image
                         src={imagenCompleta(item.imagenUrl)}
                         alt={item.nombre}
-                        className="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500"
+                        fill
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        className="object-contain p-4 group-hover:scale-105 transition-transform duration-500"
                       />
                     ) : (
                       <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-gradient-to-br from-slate-100 to-slate-200">
@@ -279,10 +282,12 @@ export default function Catalogo() {
             className="bg-white rounded-[24px] max-w-lg w-full overflow-hidden shadow-2xl border border-slate-100 transition-all duration-200 animate-in fade-in zoom-in-95"
           >
             <div className="relative h-64 w-full bg-slate-100">
-              <img
+              <Image
                 src={imagenCompleta(selectedEquipoModal.imagenUrl)}
                 alt={selectedEquipoModal.nombre}
-                className="w-full h-full object-contain p-4"
+                fill
+                sizes="500px"
+                className="object-contain p-4"
               />
               <button
                 onClick={() => setSelectedEquipoModal(null)}

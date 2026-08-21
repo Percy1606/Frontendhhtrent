@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -406,19 +407,11 @@ export default function EquiposPage() {
                 >
                   {/* Imagen del Producto con encuadre de estudio perfecto */}
                   <div className="relative h-52 bg-slate-50 border-b border-slate-100 overflow-hidden shrink-0 flex items-center justify-center p-3">
-                    <img loading="lazy" decoding="async" src={imagenCompleta(urlCatalogo)}
+                    <Image src={imagenCompleta(urlCatalogo)}
                       alt={p.nombre}
-                      onError={(e) => {
-                        (e.target as HTMLElement).style.display = 'none';
-                        const parent = (e.target as HTMLElement).parentElement;
-                        if (parent && !parent.querySelector('.fallback-icon')) {
-                          const fallback = document.createElement('div');
-                          fallback.className = 'fallback-icon flex flex-col items-center justify-center gap-1 text-slate-400 text-[10px] font-[700] uppercase';
-                          fallback.innerHTML = '<span>⚡ HH RENT</span>';
-                          parent.appendChild(fallback);
-                        }
-                      }}
-                      className="max-w-full max-h-full w-auto h-auto object-contain group-hover:scale-105 transition-transform duration-300 drop-shadow-xs"
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      className="object-contain p-2 group-hover:scale-105 transition-transform duration-300 drop-shadow-xs"
                     />
                   <span
                     className={`absolute top-2.5 left-2.5 text-[9px] font-[800] px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm text-white ${tipoBadgeClass(
