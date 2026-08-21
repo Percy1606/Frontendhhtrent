@@ -945,13 +945,13 @@ export default function AdminCotizacionesPage() {
                   ) : (
                     <>
                       <FilePlus2 className="w-4 h-4" />
-                      Generar contrato (Borrador)
+                      Generar contrato (Provisional)
                     </>
                   )}
                 </button>
               </div>
               <p className="text-[10px] text-slate-400 font-[500] text-center">
-                Se creará un contrato BORRADOR con el cliente y los equipos de esta cotización. Podrás ajustar precios, fechas y condiciones antes de confirmarlo.
+                Se creará un contrato PROVISIONAL con el cliente y los equipos de esta cotización. Podrás ajustar precios, fechas y condiciones antes de confirmarlo.
               </p>
             </div>
           </div>
@@ -968,7 +968,7 @@ export default function AdminCotizacionesPage() {
             <h3 className="font-[800] text-base text-slate-900">Contrato generado</h3>
             <p className="text-xs text-slate-500 font-[500] mt-1.5 mb-6">
               La cotización quedó marcada como <b>CONTRATO</b> y se creó el contrato{' '}
-              <b className="text-[#162B4D]">{contratoGenerado.numero}</b> en estado Borrador.
+              <b className="text-[#162B4D]">{contratoGenerado.numero}</b> en estado Provisional.
             </p>
             <div className="flex flex-col gap-2">
               <button

@@ -65,7 +65,7 @@ export const ESTADOS_CONTRATO = [
 ] as const;
 
 export const CONTRATO_ESTADO_LABELS: Record<string, string> = {
-  BORRADOR: 'Borrador',
+  BORRADOR: 'Provisional',
   CONFIRMADO: 'Confirmado',
   EN_CURSO: 'En curso',
   FINALIZADO: 'Finalizado',

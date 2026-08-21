@@ -365,7 +365,7 @@ export default function ContratoDetallePage() {
                   onClick={eliminar}
                   disabled={busy}
                   className="inline-flex items-center gap-2 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-500 text-xs font-[800] rounded-[14px] transition-all disabled:opacity-60"
-                  title="Eliminar borrador"
+                  title="Eliminar contrato provisional"
                 >
                   <FileText className="w-4 h-4" />
                   Eliminar

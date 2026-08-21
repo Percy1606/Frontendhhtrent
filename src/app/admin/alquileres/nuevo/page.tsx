@@ -515,7 +515,7 @@ export default function NuevoContratoPage() {
               ) : (
                 <>
                   <CheckCircle2 className="w-4 h-4" />
-                  Crear Contrato (Borrador)
+                  Crear Contrato (Provisional)
                 </>
               )}
             </button>

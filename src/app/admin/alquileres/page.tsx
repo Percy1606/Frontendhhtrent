@@ -164,7 +164,7 @@ export default function AdminAlquileresPage() {
           </p>
         </div>
         <div className="bg-white rounded-[16px] border border-slate-200/70 p-4 shadow-sm">
-          <p className="text-[11px] font-[700] text-slate-400 uppercase tracking-wider">En borrador</p>
+          <p className="text-[11px] font-[700] text-slate-400 uppercase tracking-wider">En provisional</p>
           <p className="text-2xl font-[800] text-amber-600 mt-1">
             {contratos.filter((c) => c.estado === 'BORRADOR').length}
           </p>
