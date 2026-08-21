@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -19,31 +19,31 @@ const SLIDES = [
     title: 'CONTROL DE ALQUILERES',
     subtitle: 'Gestiona todos tus alquileres en un solo lugar.',
     description: 'Controla equipos, clientes, contratos y fechas de devolución de manera eficiente.',
-    image: 'https://images.unsplash.com/photo-1541888081622-19e917d5e6ff?q=80&w=2000&auto=format&fit=crop',
+    image: 'https://images.unsplash.com/photo-1541888081622-19e917d5e6ff?q=80&w=2000&auto=format&fit=crop', // Alquileres / proyectos
   },
   {
     title: 'DISPONIBILIDAD DE EQUIPOS',
     subtitle: 'Nunca pierdas el control de tus equipos.',
     description: 'Conoce en tiempo real qué equipos están disponibles, alquilados o en mantenimiento.',
-    image: 'https://images.unsplash.com/photo-1504307651254-35680f356f58?q=80&w=2000&auto=format&fit=crop',
+    image: 'https://images.unsplash.com/photo-1504307651254-35680f356f58?q=80&w=2000&auto=format&fit=crop', // Equipos disponibles
   },
   {
     title: 'RENTABILIDAD OPERATIVA',
     subtitle: 'Más control, mayor rentabilidad.',
     description: 'Analiza ingresos, egresos y la rentabilidad de cada proyecto u orden de servicio.',
-    image: 'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?q=80&w=2000&auto=format&fit=crop',
+    image: 'https://images.unsplash.com/photo-1581094288338-2314dddb7ece?q=80&w=2000&auto=format&fit=crop', // Gráficos / proyectos industriales
   },
   {
     title: 'MANTENIMIENTO',
     subtitle: 'Anticípate a los problemas.',
     description: 'Gestiona mantenimientos preventivos y correctivos para mantener tus equipos operativos.',
-    image: 'https://images.unsplash.com/photo-1508344928928-7185b67de128?q=80&w=2000&auto=format&fit=crop',
+    image: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?q=80&w=2000&auto=format&fit=crop', // Técnicos revisando
   },
   {
     title: 'CLIENTES Y PROYECTOS',
     subtitle: 'Toda tu operación conectada.',
     description: 'Centraliza clientes, proyectos, contratos y operaciones en un solo sistema.',
-    image: 'https://images.unsplash.com/photo-1531834685032-c34bf0d84c77?q=80&w=2000&auto=format&fit=crop',
+    image: 'https://images.unsplash.com/photo-1531834685032-c34bf0d84c77?q=80&w=2000&auto=format&fit=crop', // Obra civil
   },
 ];
 
@@ -59,8 +59,10 @@ export default function AdminLoginPage() {
   
   // Estado para el carrusel
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [formMounted, setFormMounted] = useState(false);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Redirección por rol
+  // Helper para redirigir según el rol
   const redirectByRole = (rol?: string) => {
     switch (rol) {
       case 'COMERCIAL':
@@ -81,19 +83,34 @@ export default function AdminLoginPage() {
   };
 
   useEffect(() => {
+    setFormMounted(true); // Activa la animación del form
     if (getToken()) {
       const user = getStoredUser();
       redirectByRole(user?.rol);
     }
   }, [router]);
 
-  // Temporizador del carrusel
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % SLIDES.length);
-    }, 5500); // 5.5 segundos por slide
-    return () => clearInterval(timer);
+  // Manejo del temporizador del carrusel ininterrumpible
+  const nextSlide = useCallback(() => {
+    setCurrentSlide((prev) => (prev + 1) % SLIDES.length);
   }, []);
+
+  const startTimer = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current);
+    timerRef.current = setInterval(nextSlide, 5500);
+  }, [nextSlide]);
+
+  useEffect(() => {
+    startTimer();
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [startTimer]);
+
+  const handleIndicatorClick = (index: number) => {
+    setCurrentSlide(index);
+    startTimer(); // Reinicia el tiempo al clickear
+  };
 
   const validateFields = () => {
     const errors: { email?: string; password?: string } = {};
@@ -144,57 +161,67 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-100 flex font-poppins">
+    <main className="min-h-screen bg-slate-50 flex font-poppins selection:bg-[#0361CA] selection:text-white">
       
       {/* Columna Izquierda - Carrusel Informativo (Oculto en móvil) */}
-      <div className="hidden lg:flex lg:w-[55%] relative flex-col justify-between overflow-hidden bg-[#0A1424]">
+      <div className="hidden lg:flex lg:w-[55%] relative flex-col justify-between overflow-hidden bg-[#0F172A]">
         
         {/* Imágenes de Fondo Dinámicas del Carrusel */}
         {SLIDES.map((slide, index) => (
           <div
             key={index}
             className={`absolute inset-0 bg-cover bg-center transition-opacity duration-1000 ease-in-out ${
-              currentSlide === index ? 'opacity-40 mix-blend-luminosity' : 'opacity-0'
+              currentSlide === index ? 'opacity-50 mix-blend-overlay' : 'opacity-0'
             }`}
             style={{ backgroundImage: `url('${slide.image}')` }}
           />
         ))}
-        {/* Overlay Azul Corporativo Fuerte */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0F203C]/95 via-[#0A1424]/90 to-[#0A1424]/95 z-0" />
+        {/* Overlay Azul Marino Oscuro para asegurar legibilidad */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-[#021A3D]/95 via-[#032859]/80 to-[#0F172A]/90 z-0 pointer-events-none" />
         
         {/* Contenido Izquierdo */}
         <div className="relative z-10 p-12 xl:p-20 flex flex-col justify-between h-full max-w-4xl mx-auto w-full">
           
           {/* Logo */}
-          <div className="bg-white/95 p-5 rounded-2xl inline-flex items-center justify-center shadow-[0_8px_30px_rgb(0,0,0,0.12)] self-start transform transition-transform hover:scale-105 duration-300">
+          <div className="bg-white p-6 rounded-2xl inline-flex items-center justify-center shadow-[0_10px_40px_rgb(0,0,0,0.2)] self-start transform transition-transform hover:scale-105 duration-300">
             <Image
               src="/img/hhtrentlogo.jpg"
               alt="HT RENT Logo"
-              width={240}
-              height={70}
-              className="h-14 w-auto object-contain"
+              width={260}
+              height={80}
+              className="h-16 w-auto object-contain"
               priority
             />
           </div>
           
-          {/* Textos del Carrusel con Transiciones */}
-          <div className="flex-1 flex flex-col justify-center min-h-[320px] relative mt-12">
+          {/* Textos del Carrusel con Transiciones de Fade + Slide y escalonamiento */}
+          <div className="flex-1 flex flex-col justify-center min-h-[350px] relative mt-12">
             {SLIDES.map((slide, index) => (
               <div
                 key={index}
-                className={`transition-all duration-700 ease-out absolute left-0 right-0 ${
-                  currentSlide === index 
-                    ? 'opacity-100 translate-y-0 pointer-events-auto' 
-                    : 'opacity-0 translate-y-12 pointer-events-none'
+                className={`absolute left-0 right-0 ${
+                  currentSlide === index ? 'pointer-events-auto z-10' : 'pointer-events-none z-0'
                 }`}
               >
-                <h3 className="text-lg xl:text-xl text-[#3b82f6] font-bold tracking-[0.2em] uppercase mb-4">
+                <h3 
+                  className={`text-xl xl:text-2xl text-[#60A5FA] font-bold tracking-[0.2em] uppercase mb-4 transition-all duration-700 ease-out ${
+                    currentSlide === index ? 'opacity-100 translate-y-0 delay-[100ms]' : 'opacity-0 translate-y-8'
+                  }`}
+                >
                   {slide.title}
                 </h3>
-                <h1 className="text-5xl xl:text-[3.5rem] font-extrabold text-white leading-[1.15] mb-6 tracking-tight">
+                <h1 
+                  className={`text-5xl xl:text-[3.5rem] font-extrabold text-white leading-[1.15] mb-6 tracking-tight transition-all duration-700 ease-out ${
+                    currentSlide === index ? 'opacity-100 translate-y-0 delay-[250ms]' : 'opacity-0 translate-y-8'
+                  }`}
+                >
                   {slide.subtitle}
                 </h1>
-                <p className="text-xl xl:text-2xl text-slate-300 font-medium max-w-2xl leading-relaxed">
+                <p 
+                  className={`text-xl xl:text-2xl text-slate-200 font-medium max-w-2xl leading-relaxed transition-all duration-700 ease-out ${
+                    currentSlide === index ? 'opacity-100 translate-y-0 delay-[400ms]' : 'opacity-0 translate-y-8'
+                  }`}
+                >
                   {slide.description}
                 </p>
               </div>
@@ -207,17 +234,17 @@ export default function AdminLoginPage() {
               {SLIDES.map((_, index) => (
                 <button
                   key={index}
-                  onClick={() => setCurrentSlide(index)}
-                  className={`h-2 rounded-full transition-all duration-500 ease-out ${
+                  onClick={() => handleIndicatorClick(index)}
+                  className={`h-2.5 rounded-full transition-all duration-500 ease-out ${
                     currentSlide === index 
-                      ? 'w-16 bg-[#3b82f6] shadow-[0_0_15px_rgba(59,130,246,0.6)]' 
-                      : 'w-4 bg-white/20 hover:bg-white/40'
+                      ? 'w-16 bg-[#0361CA] shadow-[0_0_15px_rgba(3,97,202,0.8)]' 
+                      : 'w-4 bg-white/30 hover:bg-white/60'
                   }`}
                   aria-label={`Ir a slide ${index + 1}`}
                 />
               ))}
             </div>
-            <p className="text-sm text-slate-400/70 font-medium">
+            <p className="text-sm text-slate-300 font-medium tracking-wide">
               © 2026 HHTRENT S.A.C. Todos los derechos reservados.
             </p>
           </div>
@@ -225,14 +252,18 @@ export default function AdminLoginPage() {
       </div>
 
       {/* Columna Derecha - Formulario de Login */}
-      <div className="w-full lg:w-[45%] flex flex-col items-center justify-center p-6 sm:p-12 relative">
+      <div className="w-full lg:w-[45%] flex flex-col items-center justify-center p-6 sm:p-12 relative overflow-hidden bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-slate-100 via-slate-50 to-white">
         
-        {/* Contenedor Tarjeta Login */}
-        <div className="bg-white p-10 sm:p-12 xl:p-16 rounded-[2.5rem] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] border border-slate-100 w-full max-w-[32rem]">
+        {/* Contenedor Tarjeta Login con animación de entrada */}
+        <div 
+          className={`bg-white p-10 sm:p-12 xl:p-16 rounded-[2.5rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.08)] border border-slate-100 w-full max-w-[32rem] transition-all duration-1000 ease-out transform ${
+            formMounted ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'
+          }`}
+        >
           
           {/* Logo visible solo en móvil */}
           <div className="lg:hidden flex justify-center mb-10">
-            <div className="bg-white p-4 rounded-2xl shadow-md border border-slate-100">
+            <div className="bg-white p-4 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.1)] border border-slate-100">
               <Image
                 src="/img/hhtrentlogo.jpg"
                 alt="HT RENT Logo"
@@ -245,19 +276,19 @@ export default function AdminLoginPage() {
           </div>
 
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-extrabold text-[#0F203C] tracking-tight">BIENVENIDO</h2>
-            <p className="text-base text-slate-500 mt-3 font-medium">Ingresa a tu sistema de ventas ERP / CRM</p>
+            <h2 className="text-4xl font-extrabold text-slate-900 tracking-tight">BIENVENIDO</h2>
+            <p className="text-base text-slate-500 mt-3 font-medium">Ingresa a tu sistema ERP / CRM HHTRENT</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6 xl:space-y-7" noValidate>
             
             {/* Input Usuario/Correo */}
-            <div>
-              <label className="block text-sm font-bold uppercase tracking-wider text-slate-600 mb-2 ml-1">
+            <div className="relative group/input">
+              <label className="block text-sm font-bold uppercase tracking-wider text-slate-600 mb-2 ml-1 transition-colors group-focus-within/input:text-[#0361CA]">
                 Usuario o Correo
               </label>
-              <div className="relative group">
-                <Mail className={`absolute left-5 top-1/2 -translate-y-1/2 w-6 h-6 transition-colors duration-300 ${fieldErrors.email ? 'text-red-400' : 'text-slate-400 group-focus-within:text-[#2563eb]'}`} />
+              <div className="relative">
+                <Mail className={`absolute left-5 top-1/2 -translate-y-1/2 w-6 h-6 transition-colors duration-300 z-10 ${fieldErrors.email ? 'text-red-500' : 'text-slate-400 group-focus-within/input:text-[#0361CA]'}`} />
                 <input
                   type="text"
                   required
@@ -267,10 +298,10 @@ export default function AdminLoginPage() {
                     if (fieldErrors.email) setFieldErrors({ ...fieldErrors, email: undefined });
                   }}
                   placeholder="ejemplo@hhtrent.com"
-                  className={`w-full pl-14 pr-5 py-4 xl:py-5 bg-slate-50 border-2 rounded-2xl text-base xl:text-lg text-slate-900 focus:outline-none focus:bg-white transition-all duration-300 placeholder:text-slate-400 hover:bg-slate-50/80 ${
+                  className={`w-full pl-14 pr-5 py-4 xl:py-5 bg-slate-50 border-2 rounded-2xl text-base xl:text-lg text-slate-900 focus:outline-none focus:bg-white transition-all duration-300 placeholder:text-slate-400 hover:bg-slate-100/50 ${
                     fieldErrors.email 
-                      ? 'border-red-300 focus:border-red-500 shadow-[0_0_0_4px_rgba(239,68,68,0.1)]' 
-                      : 'border-slate-200 focus:border-[#2563eb] hover:border-slate-300 shadow-[0_0_0_4px_rgba(37,99,235,0)] focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)]'
+                      ? 'border-red-400 focus:border-red-500 shadow-[0_0_0_4px_rgba(239,68,68,0.15)]' 
+                      : 'border-slate-200 focus:border-[#0361CA] hover:border-slate-300 focus:shadow-[0_0_0_4px_rgba(3,97,202,0.15)]'
                   }`}
                 />
               </div>
@@ -280,12 +311,12 @@ export default function AdminLoginPage() {
             </div>
 
             {/* Input Contraseña */}
-            <div>
-              <label className="block text-sm font-bold uppercase tracking-wider text-slate-600 mb-2 ml-1">
+            <div className="relative group/input">
+              <label className="block text-sm font-bold uppercase tracking-wider text-slate-600 mb-2 ml-1 transition-colors group-focus-within/input:text-[#0361CA]">
                 Contraseña
               </label>
-              <div className="relative group">
-                <Lock className={`absolute left-5 top-1/2 -translate-y-1/2 w-6 h-6 transition-colors duration-300 ${fieldErrors.password ? 'text-red-400' : 'text-slate-400 group-focus-within:text-[#2563eb]'}`} />
+              <div className="relative">
+                <Lock className={`absolute left-5 top-1/2 -translate-y-1/2 w-6 h-6 transition-colors duration-300 z-10 ${fieldErrors.password ? 'text-red-500' : 'text-slate-400 group-focus-within/input:text-[#0361CA]'}`} />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   required
@@ -295,16 +326,16 @@ export default function AdminLoginPage() {
                     if (fieldErrors.password) setFieldErrors({ ...fieldErrors, password: undefined });
                   }}
                   placeholder="••••••••"
-                  className={`w-full pl-14 pr-14 py-4 xl:py-5 bg-slate-50 border-2 rounded-2xl text-base xl:text-lg text-slate-900 focus:outline-none focus:bg-white transition-all duration-300 placeholder:text-slate-400 hover:bg-slate-50/80 ${
+                  className={`w-full pl-14 pr-14 py-4 xl:py-5 bg-slate-50 border-2 rounded-2xl text-base xl:text-lg text-slate-900 focus:outline-none focus:bg-white transition-all duration-300 placeholder:text-slate-400 hover:bg-slate-100/50 ${
                     fieldErrors.password 
-                      ? 'border-red-300 focus:border-red-500 shadow-[0_0_0_4px_rgba(239,68,68,0.1)]' 
-                      : 'border-slate-200 focus:border-[#2563eb] hover:border-slate-300 shadow-[0_0_0_4px_rgba(37,99,235,0)] focus:shadow-[0_0_0_4px_rgba(37,99,235,0.1)]'
+                      ? 'border-red-400 focus:border-red-500 shadow-[0_0_0_4px_rgba(239,68,68,0.15)]' 
+                      : 'border-slate-200 focus:border-[#0361CA] hover:border-slate-300 focus:shadow-[0_0_0_4px_rgba(3,97,202,0.15)]'
                   }`}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 hover:scale-110 transition-all duration-200 p-2 rounded-xl hover:bg-slate-100"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 hover:scale-110 transition-all duration-200 p-2 rounded-xl hover:bg-slate-200 z-10"
                 >
                   {showPassword ? <EyeOff className="w-6 h-6" /> : <Eye className="w-6 h-6" />}
                 </button>
@@ -322,7 +353,7 @@ export default function AdminLoginPage() {
                     type="checkbox"
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
-                    className="peer appearance-none w-6 h-6 border-2 border-slate-300 rounded-[8px] bg-slate-50 checked:bg-[#2563eb] checked:border-[#2563eb] hover:border-slate-400 transition-all duration-200 cursor-pointer shadow-sm"
+                    className="peer appearance-none w-6 h-6 border-2 border-slate-300 rounded-[8px] bg-white checked:bg-[#0361CA] checked:border-[#0361CA] focus:outline-none focus:ring-2 focus:ring-[#0361CA]/30 focus:ring-offset-1 hover:border-slate-400 transition-all duration-200 cursor-pointer shadow-sm"
                   />
                   <ShieldCheck className="w-4 h-4 text-white absolute opacity-0 peer-checked:opacity-100 pointer-events-none transition-all duration-300 scale-50 peer-checked:scale-100" />
                 </div>
@@ -333,7 +364,7 @@ export default function AdminLoginPage() {
 
               <Link
                 href="/admin/olvide-password"
-                className="text-[15px] font-bold text-[#2563eb] hover:text-[#1d4ed8] hover:underline underline-offset-4 transition-all"
+                className="text-[15px] font-bold text-[#0361CA] hover:text-[#024a9c] hover:underline underline-offset-4 transition-all"
               >
                 ¿Olvidaste tu contraseña?
               </Link>
@@ -351,10 +382,10 @@ export default function AdminLoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-5 mt-2 bg-[#0F203C] hover:bg-[#162e57] text-white font-bold text-lg rounded-2xl transition-all duration-300 flex items-center justify-center gap-3 shadow-[0_10px_20px_-10px_rgba(15,32,60,0.5)] active:scale-[0.98] disabled:opacity-70 disabled:pointer-events-none group overflow-hidden relative"
+              className="w-full py-5 mt-2 bg-[#0361CA] hover:bg-[#024A9B] hover:shadow-[0_15px_30px_-10px_rgba(3,97,202,0.6)] hover:-translate-y-1 text-white font-bold text-lg rounded-2xl transition-all duration-300 flex items-center justify-center gap-3 shadow-[0_10px_20px_-10px_rgba(3,97,202,0.4)] active:scale-[0.98] active:translate-y-0 disabled:opacity-70 disabled:pointer-events-none group overflow-hidden relative"
             >
               {/* Efecto hover brillante */}
-              <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent group-hover:animate-[shimmer_1.5s_infinite]" />
+              <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:animate-[shimmer_1.5s_infinite]" />
               
               {loading ? (
                 <>
@@ -363,7 +394,7 @@ export default function AdminLoginPage() {
                 </>
               ) : (
                 <>
-                  <LogIn className="w-6 h-6 text-white/80 group-hover:text-white transition-colors group-hover:translate-x-1 duration-300" />
+                  <LogIn className="w-6 h-6 text-white/90 group-hover:text-white transition-colors group-hover:translate-x-1 duration-300" />
                   <span className="tracking-wide">INICIAR SESIÓN</span>
                 </>
               )}
