@@ -15,6 +15,7 @@ import {
 import { apiFetch, fetchEquiposPublicos, ROLES_EDITAN_ALQUILERES, SEDES, imagenCompleta } from '@/lib/api';
 import { toast } from 'sonner';
 import { useSession } from '@/hooks/useSession';
+import { norm } from '@/lib/equipo';
 
 interface Equipo {
   id: string;
@@ -91,14 +92,10 @@ export default function NuevoContratoPage() {
         const esDispo = e.estado === 'DISPONIBLE';
         if (!esDispo) return false;
         if (!busquedaEquipo.trim()) return true;
-        const q = busquedaEquipo.toLowerCase();
-        return (
-          e.nombre.toLowerCase().includes(q) ||
-          (e.codigoInterno && e.codigoInterno.toLowerCase().includes(q)) ||
-          (e.marca && e.marca.toLowerCase().includes(q)) ||
-          (e.modelo && e.modelo.toLowerCase().includes(q)) ||
-          (e.ubicacion && e.ubicacion.toLowerCase().includes(q))
-        );
+        const term = norm(busquedaEquipo.trim());
+        const words = term.split(/\s+/);
+        const targetText = norm([e.nombre, e.codigoInterno, e.marca, e.modelo, e.ubicacion].filter(Boolean).join(' '));
+        return words.every((w) => targetText.includes(w));
       }),
     [equipos, busquedaEquipo]
   );

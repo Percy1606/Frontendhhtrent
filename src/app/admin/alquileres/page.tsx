@@ -24,6 +24,7 @@ import {
 } from '@/lib/api';
 import { toast } from 'sonner';
 import { useSession } from '@/hooks/useSession';
+import { norm } from '@/lib/equipo';
 
 interface ContratoItem {
   id: string;
@@ -110,12 +111,13 @@ export default function AdminAlquileresPage() {
   }, []);
 
   const filtrados = contratos.filter((c) => {
+    const term = norm(searchTerm.trim());
     const matchBusqueda =
-      searchTerm === '' ||
-      c.numero.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      c.clienteNombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      c.proyecto.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (c.clienteEmpresa || '').toLowerCase().includes(searchTerm.toLowerCase());
+      term === '' ||
+      norm(c.numero).includes(term) ||
+      norm(c.clienteNombre).includes(term) ||
+      norm(c.proyecto).includes(term) ||
+      norm(c.clienteEmpresa).includes(term);
     const matchEstado = estadoFiltro === 'TODOS' || c.estado === estadoFiltro;
     return matchBusqueda && matchEstado;
   });

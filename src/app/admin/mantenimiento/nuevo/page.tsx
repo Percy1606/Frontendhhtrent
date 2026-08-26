@@ -15,6 +15,7 @@ import {
 } from '@/lib/api';
 import { toast } from 'sonner';
 import { useSession } from '@/hooks/useSession';
+import { norm } from '@/lib/equipo';
 
 interface Equipo {
   id: string;
@@ -134,14 +135,10 @@ function NuevaOrdenTrabajoInner() {
     // Solo equipos en modalidad de ALQUILER aplican para mantenimientos
     if (eq.tipo === 'VENTA') return false;
     if (!busquedaEquipo.trim()) return true;
-    const q = busquedaEquipo.toLowerCase();
-    return (
-      eq.nombre.toLowerCase().includes(q) ||
-      (eq.codigoInterno && eq.codigoInterno.toLowerCase().includes(q)) ||
-      (eq.marca && eq.marca.toLowerCase().includes(q)) ||
-      (eq.modelo && eq.modelo.toLowerCase().includes(q)) ||
-      (eq.serie && eq.serie.toLowerCase().includes(q))
-    );
+    const term = norm(busquedaEquipo.trim());
+    const words = term.split(/\s+/);
+    const targetText = norm([eq.nombre, eq.codigoInterno, eq.marca, eq.modelo, eq.serie].filter(Boolean).join(' '));
+    return words.every((w) => targetText.includes(w));
   });
 
   const equipoSeleccionado = equipos.find((eq) => eq.id === form.equipoId);

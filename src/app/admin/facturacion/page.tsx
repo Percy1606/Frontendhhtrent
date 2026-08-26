@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { apiFetch, formatPEN } from '@/lib/api';
 import { toast } from 'sonner';
+import { norm } from '@/lib/equipo';
 
 interface Comprobante {
   id: string;
@@ -156,11 +157,12 @@ export default function AdminFacturacionPage() {
   };
 
   const filtrados = comprobantes.filter((c) => {
-    const term = searchTerm.toLowerCase();
+    const term = norm(searchTerm.trim());
     const matchSearch =
-      c.clienteRazon.toLowerCase().includes(term) ||
-      c.clienteNumDoc.includes(term) ||
-      `${c.serie}-${c.numero}`.toLowerCase().includes(term);
+      term === '' ||
+      norm(c.clienteRazon).includes(term) ||
+      norm(c.clienteNumDoc).includes(term) ||
+      norm(`${c.serie}-${c.numero}`).includes(term);
     const matchTipo = tipoFiltro === 'TODOS' || c.tipo === tipoFiltro;
     return matchSearch && matchTipo;
   });

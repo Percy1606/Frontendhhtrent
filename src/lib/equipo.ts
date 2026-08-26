@@ -1,6 +1,13 @@
 // Helpers compartidos para diferenciar la modalidad comercial de cada equipo:
 // ALQUILER (tarifa mensual) · VENTA (precio directo) · PROYECTO (llave en mano / bajo cotización)
 
+export const norm = (s: any): string =>
+  (s || '')
+    .toString()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+
 export type TipoTransaccion = 'ALQUILER' | 'VENTA' | 'PROYECTO';
 
 // Etiqueta legible para badges y columnas

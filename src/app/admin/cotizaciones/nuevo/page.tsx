@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { apiFetch, imagenCompleta, formatPEN } from '@/lib/api';
 import { toast } from 'sonner';
+import { norm } from '@/lib/equipo';
 
 export default function NuevaCotizacionAdmin() {
   const router = useRouter();
@@ -73,10 +74,13 @@ export default function NuevaCotizacionAdmin() {
     setItemsCart(itemsCart.map(i => i.equipo.id === id ? { ...i, cantidad } : i));
   };
 
-  const equiposFiltrados = equipos.filter(e => 
-    e.nombre.toLowerCase().includes(busqueda.toLowerCase()) || 
-    (e.codigoInterno || '').toLowerCase().includes(busqueda.toLowerCase())
-  ).slice(0, 10); // Max 10 para dropdown
+  const equiposFiltrados = equipos.filter(e => {
+    const term = norm(busqueda.trim());
+    if (!term) return true;
+    const words = term.split(/\s+/);
+    const targetText = norm([e.nombre, e.codigoInterno, e.marca, e.modelo].filter(Boolean).join(' '));
+    return words.every((w: string) => targetText.includes(w));
+  }).slice(0, 10); // Max 10 para dropdown
 
   const crearCotizacion = async (e: React.FormEvent) => {
     e.preventDefault();

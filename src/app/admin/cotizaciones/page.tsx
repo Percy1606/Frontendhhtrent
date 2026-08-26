@@ -36,7 +36,7 @@ import {
   SEDES,
 } from '@/lib/api';
 import { useSession } from '@/hooks/useSession';
-import { tipoLabel, tipoBadgeClass } from '@/lib/equipo';
+import { tipoLabel, tipoBadgeClass, norm } from '@/lib/equipo';
 import { toast } from 'sonner';
 
 interface ItemCotizacion {
@@ -178,20 +178,18 @@ export default function AdminCotizacionesPage() {
     if (!cumpleFiltro) return false;
     if (!busqueda.trim()) return true;
 
-    const term = busqueda.trim().toLowerCase();
-    const ticket = obtenerTicket(c).toLowerCase();
-    const cliente = (c.clienteNombre || '').toLowerCase();
-    const empresa = (c.clienteEmpresa || '').toLowerCase();
-    const email = (c.clienteEmail || '').toLowerCase();
-    const telefono = (c.clienteTelefono || '').toLowerCase();
+    const term = norm(busqueda.trim());
+    const words = term.split(/\s+/);
+    const targetTextRaw = [
+      obtenerTicket(c),
+      c.clienteNombre,
+      c.clienteEmpresa,
+      c.clienteEmail,
+      c.clienteTelefono,
+    ].filter(Boolean).join(' ');
+    const targetText = norm(targetTextRaw);
 
-    return (
-      ticket.includes(term) ||
-      cliente.includes(term) ||
-      empresa.includes(term) ||
-      email.includes(term) ||
-      telefono.includes(term)
-    );
+    return words.every((w) => targetText.includes(w));
   });
 
   const conteo = (estado: string) =>

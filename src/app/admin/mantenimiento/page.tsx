@@ -27,6 +27,7 @@ import {
   ROLES_EDITAN_MANTENIMIENTO,
 } from '@/lib/api';
 import { useSession } from '@/hooks/useSession';
+import { norm } from '@/lib/equipo';
 
 interface OrdenEquipo {
   id: string;
@@ -130,12 +131,13 @@ export default function AdminMantenimientoPage() {
   };
 
   const filtrados = ordenes.filter((o) => {
+    const term = norm(searchTerm.trim());
     const matchBusqueda =
-      searchTerm === '' ||
-      o.numero.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      o.equipo.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (o.equipo.codigoInterno || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (o.tecnicoResponsable || '').toLowerCase().includes(searchTerm.toLowerCase());
+      term === '' ||
+      norm(o.numero).includes(term) ||
+      norm(o.equipo.nombre).includes(term) ||
+      norm(o.equipo.codigoInterno).includes(term) ||
+      norm(o.tecnicoResponsable).includes(term);
     const matchEstado = estadoFiltro === 'TODOS' || o.estado === estadoFiltro;
     return matchBusqueda && matchEstado;
   });
