@@ -15,7 +15,8 @@ import {
   Trash2,
   PackagePlus,
   Loader2,
-  CheckCircle2
+  CheckCircle2,
+  FileText,
 } from 'lucide-react';
 import { apiFetch, imagenCompleta, formatPEN } from '@/lib/api';
 import { toast } from 'sonner';
@@ -27,6 +28,7 @@ export default function NuevaCotizacionAdmin() {
 
   const [clienteNombre, setClienteNombre] = useState('');
   const [clienteEmpresa, setClienteEmpresa] = useState('');
+  const [clienteDocumento, setClienteDocumento] = useState('');
   const [clienteEmail, setClienteEmail] = useState('');
   const [clienteTelefono, setClienteTelefono] = useState('');
   const [mensaje, setMensaje] = useState('');
@@ -50,7 +52,16 @@ export default function NuevaCotizacionAdmin() {
       }
       
       // Filtramos para mostrar solo los que se pueden cotizar y activos
-      setEquipos((data || []).filter((e: any) => e.estado === 'DISPONIBLE' && !e.esCategoria));
+      const filtrados = (data || []).filter((e: any) => e.estado === 'DISPONIBLE' && !e.esCategoria);
+      setEquipos(filtrados);
+
+      // Pre-carga inmediata de todas las imágenes en caché del navegador a la velocidad de la luz
+      filtrados.forEach((eq: any) => {
+        if (eq.imagenUrl) {
+          const img = new Image();
+          img.src = imagenCompleta(eq.imagenUrl);
+        }
+      });
     } catch (error) {
       toast.error('Error al cargar catálogo de equipos');
     }
@@ -89,6 +100,18 @@ export default function NuevaCotizacionAdmin() {
       return;
     }
 
+    const docLimpio = clienteDocumento.trim();
+    if (docLimpio) {
+      if (!/^\d+$/.test(docLimpio)) {
+        toast.error('El documento debe contener solo dígitos numéricos');
+        return;
+      }
+      if (docLimpio.length !== 8 && docLimpio.length !== 11) {
+        toast.error('El documento debe tener 8 dígitos (DNI) o 11 dígitos (RUC)');
+        return;
+      }
+    }
+
     try {
       setGuardando(true);
       await apiFetch('/cotizaciones', {
@@ -96,10 +119,10 @@ export default function NuevaCotizacionAdmin() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           clienteNombre,
-          clienteEmpresa,
+          clienteEmpresa: clienteEmpresa ? (docLimpio ? `${clienteEmpresa} (${docLimpio.length === 11 ? 'RUC' : 'DNI'}: ${docLimpio})` : clienteEmpresa) : undefined,
           clienteEmail,
           clienteTelefono,
-          mensaje,
+          mensaje: docLimpio && !clienteEmpresa ? `${docLimpio.length === 11 ? 'RUC' : 'DNI'}: ${docLimpio}\n${mensaje}`.trim() : mensaje,
           items: itemsCart.map(i => ({ equipoId: i.equipo.id, cantidad: i.cantidad }))
         })
       });
@@ -174,6 +197,35 @@ export default function NuevaCotizacionAdmin() {
                     onChange={(e) => setClienteEmpresa(e.target.value)}
                     className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border-none rounded-xl text-sm font-[600] text-slate-700 focus:ring-2 focus:ring-[#162B4D]/20 outline-none transition-all"
                     placeholder="Ej. Constructora SAC"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1.5 ml-1">
+                  <label className="block text-[11px] font-[700] uppercase text-slate-500">
+                    RUC / DNI (Opcional)
+                  </label>
+                  <span className="text-[10px] font-[600] text-slate-400">
+                    {clienteDocumento.length === 8
+                      ? 'DNI (8 dígitos)'
+                      : clienteDocumento.length === 11
+                      ? 'RUC (11 dígitos)'
+                      : '8 u 11 dígitos'}
+                  </span>
+                </div>
+                <div className="relative">
+                  <FileText className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    maxLength={11}
+                    value={clienteDocumento}
+                    onChange={(e) => {
+                      const num = e.target.value.replace(/\D/g, '');
+                      setClienteDocumento(num);
+                    }}
+                    className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border-none rounded-xl text-sm font-[600] text-slate-700 focus:ring-2 focus:ring-[#162B4D]/20 outline-none transition-all"
+                    placeholder="Ej. 20601234567 o 72345678"
                   />
                 </div>
               </div>
@@ -271,13 +323,30 @@ export default function NuevaCotizacionAdmin() {
                         onClick={() => agregarAlCarrito(equipo)}
                         className="w-full flex items-center gap-3 p-3 hover:bg-slate-50 transition-colors text-left border-b border-slate-100 last:border-0"
                       >
-                        <img loading="lazy" decoding="async" src={imagenCompleta(equipo.imagenUrl)} 
+                        <img
+                          loading="eager"
+                          decoding="sync"
+                          // @ts-expect-error fetchPriority standard attribute
+                          fetchpriority="high"
+                          src={imagenCompleta(equipo.imagenUrl)} 
                           alt={equipo.nombre}
-                          className="w-10 h-10 rounded-lg object-cover bg-slate-100"
+                          className="w-10 h-10 rounded-lg object-cover bg-slate-100 shrink-0"
                         />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-[700] text-slate-900 truncate">{equipo.nombre}</p>
-                          <p className="text-xs text-slate-500 font-[500]">{equipo.codigoInterno} • {equipo.marca || 'S/M'}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-[700] text-slate-900 truncate">{equipo.nombre}</p>
+                            <span className={`text-[10px] font-[800] px-2 py-0.5 rounded-full shrink-0 uppercase tracking-wider ${
+                              equipo.tipo === 'ALQUILER'
+                                ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                                : 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                            }`}>
+                              {equipo.tipo}
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-500 font-[500]">
+                            {equipo.codigoInterno || 'S/C'} • {equipo.marca || 'S/M'}
+                            {equipo.precio != null && ` • ${formatPEN(Number(equipo.precio))}`}
+                          </p>
                         </div>
                         <PackagePlus className="w-5 h-5 text-emerald-500 shrink-0" />
                       </button>
@@ -303,13 +372,30 @@ export default function NuevaCotizacionAdmin() {
                     <div className="w-6 h-6 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center text-xs font-[800] shrink-0">
                       {i + 1}
                     </div>
-                    <img loading="lazy" decoding="async" src={imagenCompleta(item.equipo.imagenUrl)} 
+                    <img
+                      loading="eager"
+                      decoding="sync"
+                      // @ts-expect-error fetchPriority standard attribute
+                      fetchpriority="high"
+                      src={imagenCompleta(item.equipo.imagenUrl)} 
                       alt={item.equipo.nombre}
-                      className="w-14 h-14 rounded-xl object-cover bg-slate-100 border border-slate-200"
+                      className="w-14 h-14 rounded-xl object-cover bg-slate-100 border border-slate-200 shrink-0"
                     />
                     <div className="flex-1 min-w-0">
-                      <h4 className="text-sm font-[700] text-slate-900 truncate">{item.equipo.nombre}</h4>
-                      <p className="text-xs text-slate-500">{item.equipo.codigoInterno} • {item.equipo.tipo}</p>
+                      <div className="flex items-center gap-2">
+                        <h4 className="text-sm font-[700] text-slate-900 truncate">{item.equipo.nombre}</h4>
+                        <span className={`text-[10px] font-[800] px-2 py-0.5 rounded-full shrink-0 uppercase tracking-wider ${
+                          item.equipo.tipo === 'ALQUILER'
+                            ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                            : 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                        }`}>
+                          {item.equipo.tipo}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-500">
+                        {item.equipo.codigoInterno || 'S/C'} • {item.equipo.marca || 'S/M'}
+                        {item.equipo.precio != null && ` • Unit: ${formatPEN(Number(item.equipo.precio))}`}
+                      </p>
                     </div>
                     
                     <div className="flex items-center gap-2">

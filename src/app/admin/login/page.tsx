@@ -220,21 +220,21 @@ export default function AdminLoginPage() {
                 }`}
               >
                 <h3 
-                  className={`text-xl xl:text-2xl text-[#60A5FA] font-bold tracking-[0.2em] uppercase mb-4 transition-all duration-700 ease-out ${
+                  className={`text-base xl:text-lg text-[#60A5FA] font-bold tracking-[0.2em] uppercase mb-3 transition-all duration-700 ease-out ${
                     currentSlide === index ? 'opacity-100 translate-y-0 delay-[100ms]' : 'opacity-0 translate-y-8'
                   }`}
                 >
                   {slide.title}
                 </h3>
                 <h1 
-                  className={`text-5xl xl:text-[3.5rem] font-extrabold text-white leading-[1.15] mb-6 tracking-tight transition-all duration-700 ease-out ${
+                  className={`text-3xl xl:text-[2.5rem] font-extrabold text-white leading-[1.15] mb-4 tracking-tight transition-all duration-700 ease-out ${
                     currentSlide === index ? 'opacity-100 translate-y-0 delay-[250ms]' : 'opacity-0 translate-y-8'
                   }`}
                 >
                   {slide.subtitle}
                 </h1>
                 <p 
-                  className={`text-xl xl:text-2xl text-slate-200 font-medium max-w-2xl leading-relaxed transition-all duration-700 ease-out ${
+                  className={`text-base xl:text-lg text-slate-200 font-medium max-w-2xl leading-relaxed transition-all duration-700 ease-out ${
                     currentSlide === index ? 'opacity-100 translate-y-0 delay-[400ms]' : 'opacity-0 translate-y-8'
                   }`}
                 >
@@ -276,7 +276,7 @@ export default function AdminLoginPage() {
         
         {/* Contenedor Tarjeta Login con animación de entrada */}
         <div 
-          className={`bg-white p-8 sm:p-10 xl:p-12 rounded-[2rem] shadow-[0_20px_40px_-15px_rgba(0,0,0,0.08)] border border-slate-100 w-full max-w-[28rem] transition-all duration-1000 ease-out transform ${
+          className={`bg-white p-6 sm:p-8 xl:p-9 rounded-[1.5rem] shadow-[0_20px_40px_-15px_rgba(0,0,0,0.08)] border border-slate-100 w-full max-w-[24rem] transition-all duration-1000 ease-out transform ${
             formMounted ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'
           }`}
         >
@@ -296,12 +296,12 @@ export default function AdminLoginPage() {
             </div>
           </div>
 
-          <div className="text-center mb-10">
-            <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight uppercase">BIENVENIDO DE NUEVO</h2>
-            <p className="text-sm text-slate-500 mt-2.5 font-medium">Plataforma Integral de Gestión HHTRENT</p>
+          <div className="text-center mb-6">
+            <h2 className="text-xl font-extrabold text-slate-900 tracking-tight uppercase">BIENVENIDO DE NUEVO</h2>
+            <p className="text-xs text-slate-500 mt-2 font-medium">Plataforma Integral de Gestión HHTRENT</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5 xl:space-y-6" noValidate>
+          <form onSubmit={handleSubmit} className="space-y-3 xl:space-y-4" noValidate>
             
             {/* Input Usuario/Correo */}
             <div className="relative group/input">
@@ -319,7 +319,7 @@ export default function AdminLoginPage() {
                     if (fieldErrors.email) setFieldErrors({ ...fieldErrors, email: undefined });
                   }}
                   placeholder="admin@hhtrent.com"
-                  className={`w-full pl-12 pr-4 py-3.5 bg-slate-50 border-2 rounded-xl text-sm xl:text-base text-slate-900 focus:outline-none focus:bg-white transition-all duration-300 placeholder:text-slate-400 hover:bg-slate-100/50 ${
+                  className={`w-full pl-11 pr-4 py-2.5 bg-slate-50 border-2 rounded-xl text-xs xl:text-sm text-slate-900 focus:outline-none focus:bg-white transition-all duration-300 placeholder:text-slate-400 hover:bg-slate-100/50 ${
                     fieldErrors.email 
                       ? 'border-red-400 focus:border-red-500 shadow-[0_0_0_3px_rgba(239,68,68,0.15)]' 
                       : 'border-slate-200 focus:border-[#0361CA] hover:border-slate-300 focus:shadow-[0_0_0_3px_rgba(3,97,202,0.15)]'
@@ -347,7 +347,7 @@ export default function AdminLoginPage() {
                     if (fieldErrors.password) setFieldErrors({ ...fieldErrors, password: undefined });
                   }}
                   placeholder="••••••••"
-                  className={`w-full pl-12 pr-12 py-3.5 bg-slate-50 border-2 rounded-xl text-sm xl:text-base text-slate-900 focus:outline-none focus:bg-white transition-all duration-300 placeholder:text-slate-400 hover:bg-slate-100/50 ${
+                  className={`w-full pl-11 pr-11 py-2.5 bg-slate-50 border-2 rounded-xl text-xs xl:text-sm text-slate-900 focus:outline-none focus:bg-white transition-all duration-300 placeholder:text-slate-400 hover:bg-slate-100/50 ${
                     fieldErrors.password 
                       ? 'border-red-400 focus:border-red-500 shadow-[0_0_0_3px_rgba(239,68,68,0.15)]' 
                       : 'border-slate-200 focus:border-[#0361CA] hover:border-slate-300 focus:shadow-[0_0_0_3px_rgba(3,97,202,0.15)]'
@@ -403,7 +403,7 @@ export default function AdminLoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-4 mt-1 bg-[#0361CA] hover:bg-[#024A9B] hover:shadow-[0_12px_24px_-8px_rgba(3,97,202,0.5)] hover:-translate-y-0.5 text-white font-bold text-base rounded-xl transition-all duration-300 flex items-center justify-center gap-2.5 shadow-[0_8px_16px_-8px_rgba(3,97,202,0.4)] active:scale-[0.98] active:translate-y-0 disabled:opacity-70 disabled:pointer-events-none group overflow-hidden relative"
+              className="w-full py-3 mt-1 bg-[#0361CA] hover:bg-[#024A9B] hover:shadow-[0_12px_24px_-8px_rgba(3,97,202,0.5)] hover:-translate-y-0.5 text-white font-bold text-sm rounded-xl transition-all duration-300 flex items-center justify-center gap-2.5 shadow-[0_8px_16px_-8px_rgba(3,97,202,0.4)] active:scale-[0.98] active:translate-y-0 disabled:opacity-70 disabled:pointer-events-none group overflow-hidden relative"
             >
               {/* Efecto hover brillante */}
               <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:animate-[shimmer_1.5s_infinite]" />
@@ -415,14 +415,14 @@ export default function AdminLoginPage() {
                 </>
               ) : (
                 <>
-                  <LogIn className="w-5 h-5 text-white/90 group-hover:text-white transition-colors group-hover:translate-x-1 duration-300" />
-                  <span className="tracking-wide">INGRESAR AL SISTEMA</span>
+                  <LogIn className="w-4 h-4 text-white/90 group-hover:text-white transition-colors group-hover:translate-x-1 duration-300" />
+                  <span className="text-xs tracking-widest">INGRESAR AL SISTEMA</span>
                 </>
               )}
             </button>
           </form>
 
-          <div className="mt-10 xl:mt-12 text-center flex flex-col items-center justify-center gap-2">
+          <div className="mt-6 xl:mt-8 text-center flex flex-col items-center justify-center gap-2">
             <div className="w-10 h-1 bg-slate-200 rounded-full mb-1"></div>
             <p className="text-xs font-bold text-slate-400 uppercase tracking-[0.15em]">
               Alquiler y Renta de Equipos

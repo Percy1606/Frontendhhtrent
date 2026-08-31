@@ -19,9 +19,17 @@ import {
   AlertTriangle,
   Pencil,
   Save,
+  Download,
+  Eye,
+  Trash2,
+  Camera,
+  Image as ImageIcon,
+  Upload,
 } from 'lucide-react';
 import {
   apiFetch,
+  getToken,
+  API_URL,
   imagenCompleta,
   CONTRATO_ESTADO_LABELS,
   CONTRATO_ESTADO_COLORS,
@@ -136,6 +144,7 @@ export default function ContratoDetallePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [descargandoDocx, setDescargandoDocx] = useState(false);
   const [modalAbierto, setModalAbierto] = useState(false);
   const [confirmarCancelar, setConfirmarCancelar] = useState(false);
 
@@ -153,7 +162,10 @@ export default function ContratoDetallePage() {
     condiciones: '',
     observaciones: '',
   });
+  const [itemsEdit, setItemsEdit] = useState<{ id: string; equipoId: string; cantidad: number; precioUnitario: number }[]>([]);
   const [guardando, setGuardando] = useState(false);
+  const [guardandoPrecios, setGuardandoPrecios] = useState(false);
+  const [editandoPreciosInline, setEditandoPreciosInline] = useState(false);
 
   const inputCls =
     'w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-[12px] text-xs font-[600] text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#162B4D] focus:bg-white transition-all';
@@ -180,6 +192,14 @@ export default function ContratoDetallePage() {
           condiciones: c.condiciones || '',
           observaciones: c.observaciones || '',
         });
+        setItemsEdit(
+          (c.items || []).map((i) => ({
+            id: i.id,
+            equipoId: i.equipoId,
+            cantidad: i.cantidad || 1,
+            precioUnitario: i.precioUnitario != null ? Number(i.precioUnitario) : 0,
+          }))
+        );
       })
       .catch(() => setError('No se pudo cargar el contrato'))
       .finally(() => setLoading(false));
@@ -189,6 +209,41 @@ export default function ContratoDetallePage() {
     cargar();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
+
+  const guardarPreciosEquipos = async () => {
+    if (!contrato) return;
+    setGuardandoPrecios(true);
+    setError('');
+    try {
+      const actualizado = await apiFetch<Contrato>(`/alquileres/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          items: itemsEdit.map((i) => ({
+            equipoId: i.equipoId,
+            cantidad: Number(i.cantidad),
+            precioUnitario: Number(i.precioUnitario),
+          })),
+        }),
+      });
+      setContrato(actualizado);
+      setItemsEdit(
+        (actualizado.items || []).map((i) => ({
+          id: i.id,
+          equipoId: i.equipoId,
+          cantidad: i.cantidad || 1,
+          precioUnitario: i.precioUnitario != null ? Number(i.precioUnitario) : 0,
+        }))
+      );
+      setEditandoPreciosInline(false);
+      toast.success('Precios y cantidades actualizados correctamente');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Error al actualizar precios';
+      setError(msg);
+      toast.error(msg);
+    } finally {
+      setGuardandoPrecios(false);
+    }
+  };
 
   const guardarEdicion = async () => {
     setGuardando(true);
@@ -208,6 +263,11 @@ export default function ContratoDetallePage() {
           fechaFin: form.fechaFin,
           condiciones: form.condiciones || undefined,
           observaciones: form.observaciones || undefined,
+          items: itemsEdit.map((i) => ({
+            equipoId: i.equipoId,
+            cantidad: Number(i.cantidad),
+            precioUnitario: Number(i.precioUnitario),
+          })),
         }),
       });
       setContrato(actualizado);
@@ -226,6 +286,14 @@ export default function ContratoDetallePage() {
         condiciones: actualizado.condiciones || '',
         observaciones: actualizado.observaciones || '',
       });
+      setItemsEdit(
+        (actualizado.items || []).map((i) => ({
+          id: i.id,
+          equipoId: i.equipoId,
+          cantidad: i.cantidad || 1,
+          precioUnitario: i.precioUnitario != null ? Number(i.precioUnitario) : 0,
+        }))
+      );
       router.replace(`/admin/alquileres/${id}`);
       toast.success('Contrato de alquiler actualizado correctamente');
     } catch (err: unknown) {
@@ -265,6 +333,38 @@ export default function ContratoDetallePage() {
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Error al eliminar el contrato');
       setBusy(false);
+    }
+  };
+
+  const descargarContrato = async () => {
+    if (!contrato) return;
+    setDescargandoDocx(true);
+    try {
+      const token = getToken() || '';
+      const res = await fetch(
+        `${API_URL}/contratos/${id}/docx`,
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+      if (!res.ok) throw new Error('No se pudo generar el contrato');
+      const arrayBuffer = await res.arrayBuffer();
+      const blob = new Blob([arrayBuffer], {
+        type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `contrato-${contrato.numero || 'alquiler'}.docx`;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        a.remove();
+        URL.revokeObjectURL(url);
+      }, 100);
+      toast.success('Contrato Word descargado correctamente');
+    } catch {
+      toast.error('Error al descargar el contrato Word');
+    } finally {
+      setDescargandoDocx(false);
     }
   };
 
@@ -319,13 +419,26 @@ export default function ContratoDetallePage() {
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
+          {/* BOTÓN VISTA PREVIA / DESCARGAR — Siempre visible y destacado */}
+          <a
+            href={`/admin/alquileres/${id}/preview`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#162B4D] hover:bg-[#1f3a6b] text-white text-xs font-[800] rounded-[12px] shadow-sm transition-all"
+            title="Abrir vista previa y descargar el contrato"
+          >
+            <Eye className="w-4 h-4 text-emerald-400" />
+            Vista previa / Descargar
+          </a>
+
           {esModoLectura ? (
-            <span className="px-3.5 py-2.5 bg-slate-100 text-slate-500 text-[11px] font-[700] rounded-[12px] inline-flex items-center gap-2">
+            <span className="px-3.5 py-2.5 bg-slate-100 text-slate-500 text-xs font-[700] rounded-[12px] inline-flex items-center gap-1.5 border border-slate-200">
               <FileText className="w-3.5 h-3.5" />
               Solo lectura
             </span>
           ) : (
             <>
+              {/* ACCIÓN PRINCIPAL DE CAMBIO DE ESTADO */}
               {acciones.map((a) => {
                 const Icon = a.icon;
                 return (
@@ -333,41 +446,47 @@ export default function ContratoDetallePage() {
                     key={a.accion}
                     onClick={() => ejecutarAccion(a.accion)}
                     disabled={busy}
-                    className={`inline-flex items-center gap-2 px-5 py-3 text-white text-xs font-[800] rounded-[14px] shadow-lg transition-all disabled:opacity-60 ${a.color}`}
+                    className={`inline-flex items-center gap-1.5 px-4 py-2.5 text-white text-xs font-[800] rounded-[12px] shadow-sm transition-all disabled:opacity-60 ${a.color}`}
                   >
                     <Icon className="w-4 h-4" />
                     {busy ? 'Procesando...' : a.label}
                   </button>
                 );
               })}
+
+              {/* BOTÓN EDITAR */}
               {contrato.estado === 'BORRADOR' && !esEdicion && (
                 <button
                   onClick={() => router.push(`/admin/alquileres/${id}?editar=1`)}
                   disabled={busy}
-                  className="inline-flex items-center gap-2 px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-[800] rounded-[14px] transition-all disabled:opacity-60"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-[700] rounded-[12px] border border-slate-200 transition-all disabled:opacity-60"
                 >
-                  <Pencil className="w-4 h-4" />
+                  <Pencil className="w-3.5 h-3.5" />
                   Editar
                 </button>
               )}
+
+              {/* BOTÓN CANCELAR */}
               {puedeCancelar && (
                 <button
                   onClick={() => setConfirmarCancelar(true)}
                   disabled={busy}
-                  className="inline-flex items-center gap-2 px-5 py-3 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-[800] rounded-[14px] border border-red-200 transition-all disabled:opacity-60"
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-[700] rounded-[12px] border border-red-200 transition-all disabled:opacity-60"
                 >
-                  <X className="w-4 h-4" />
-                  Cancelar contrato
+                  <X className="w-3.5 h-3.5" />
+                  Cancelar
                 </button>
               )}
+
+              {/* BOTÓN ELIMINAR */}
               {contrato.estado === 'BORRADOR' && (
                 <button
                   onClick={eliminar}
                   disabled={busy}
-                  className="inline-flex items-center gap-2 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-500 text-xs font-[800] rounded-[14px] transition-all disabled:opacity-60"
-                  title="Eliminar contrato provisional"
+                  className="inline-flex items-center gap-1.5 px-3 py-2.5 bg-slate-100 hover:bg-red-50 text-slate-500 hover:text-red-600 text-xs font-[700] rounded-[12px] border border-slate-200 hover:border-red-200 transition-all disabled:opacity-60"
+                  title="Eliminar borrador provisional"
                 >
-                  <FileText className="w-4 h-4" />
+                  <Trash2 className="w-3.5 h-3.5" />
                   Eliminar
                 </button>
               )}
@@ -607,51 +726,146 @@ export default function ContratoDetallePage() {
       {/* EQUIPOS + RESUMEN */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <div className="xl:col-span-2 bg-white rounded-[20px] border border-slate-200/70 shadow-sm overflow-hidden">
-          <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
-            <h2 className="flex items-center gap-2 font-[800] text-slate-800 text-sm uppercase tracking-wider">
-              <Package className="w-4 h-4 text-[#E63C46]" />
-              Equipos del contrato
-            </h2>
-            <span className="text-[11px] font-[700] text-slate-400">
-              {contrato.items.length} ítem(s)
-            </span>
+          <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-3">
+              <h2 className="flex items-center gap-2 font-[800] text-slate-800 text-sm uppercase tracking-wider">
+                <Package className="w-4 h-4 text-[#E63C46]" />
+                Equipos del contrato
+              </h2>
+              <span className="text-[11px] font-[700] text-slate-400">
+                {contrato.items.length} ítem(s)
+              </span>
+            </div>
+
+            {puedeEditar && (
+              <div className="flex items-center gap-2">
+                {!editandoPreciosInline ? (
+                  <button
+                    onClick={() => setEditandoPreciosInline(true)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-[700] rounded-[10px] transition-colors"
+                  >
+                    <Pencil className="w-3.5 h-3.5" />
+                    Editar Precios
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        setEditandoPreciosInline(false);
+                        setItemsEdit(
+                          (contrato.items || []).map((i) => ({
+                            id: i.id,
+                            equipoId: i.equipoId,
+                            cantidad: i.cantidad || 1,
+                            precioUnitario: i.precioUnitario != null ? Number(i.precioUnitario) : 0,
+                          }))
+                        );
+                      }}
+                      disabled={guardandoPrecios}
+                      className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-[700] rounded-[10px] transition-colors disabled:opacity-50"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      onClick={guardarPreciosEquipos}
+                      disabled={guardandoPrecios}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-[800] rounded-[10px] shadow-sm transition-all disabled:opacity-60"
+                    >
+                      <Save className="w-3.5 h-3.5" />
+                      {guardandoPrecios ? 'Guardando...' : 'Guardar Precios'}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
                 <tr className="bg-slate-50 text-slate-500 uppercase font-[700] border-b border-slate-200 text-[11px]">
                   <th className="py-3 px-6">Equipo</th>
-                  <th className="py-3 px-4">Cant.</th>
-                  <th className="py-3 px-4 text-right">Precio unit.</th>
-                  <th className="py-3 px-6 text-right">Subtotal</th>
+                  <th className="py-3 px-4 w-28">Cant.</th>
+                  <th className="py-3 px-4 text-right w-36">Precio unit. (S/)</th>
+                  <th className="py-3 px-6 text-right w-36">Subtotal</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {contrato.items.map((item) => (
-                  <tr key={item.id}>
-                    <td className="py-3.5 px-6">
-                      <div className="flex items-center gap-3">
-                        <img loading="lazy" decoding="async" src={imagenCompleta(item.equipo.imagenUrl)}
-                          alt={item.equipo.nombre}
-                          className="w-11 h-11 rounded-[10px] object-cover bg-slate-100 border border-slate-200 shrink-0"
-                        />
-                        <div className="min-w-0">
-                          <p className="font-[700] text-slate-900 truncate max-w-[260px]">{item.equipo.nombre}</p>
-                          <p className="text-[11px] text-slate-400 font-[500] mt-0.5">
-                            {item.equipo.codigoInterno || 'Sin código'} · {[item.equipo.marca, item.equipo.modelo, item.equipo.serie].filter(Boolean).join(' · ')}
-                          </p>
+                {contrato.items.map((item, idx) => {
+                  const editItem = itemsEdit.find((it) => it.equipoId === item.equipoId) || {
+                    cantidad: item.cantidad,
+                    precioUnitario: item.precioUnitario || 0,
+                  };
+                  const subCalc = (editItem.cantidad || 1) * (editItem.precioUnitario || 0);
+
+                  return (
+                    <tr key={item.id} className={editandoPreciosInline ? 'bg-amber-50/20' : ''}>
+                      <td className="py-3.5 px-6">
+                        <div className="flex items-center gap-3">
+                          <img loading="lazy" decoding="async" src={imagenCompleta(item.equipo.imagenUrl)}
+                            alt={item.equipo.nombre}
+                            className="w-11 h-11 rounded-[10px] object-cover bg-slate-100 border border-slate-200 shrink-0"
+                          />
+                          <div className="min-w-0">
+                            <p className="font-[700] text-slate-900 truncate max-w-[260px]">{item.equipo.nombre}</p>
+                            <p className="text-[11px] text-slate-400 font-[500] mt-0.5">
+                              {item.equipo.codigoInterno || 'Sin código'} · {[item.equipo.marca, item.equipo.modelo, item.equipo.serie].filter(Boolean).join(' · ')}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="py-3.5 px-4 font-[800] text-slate-800">{item.cantidad}</td>
-                    <td className="py-3.5 px-4 text-right font-[700] text-slate-600 whitespace-nowrap">
-                      {fmtSoles(item.precioUnitario)}
-                    </td>
-                    <td className="py-3.5 px-6 text-right font-[800] text-slate-900 whitespace-nowrap">
-                      {fmtSoles(item.subtotal)}
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+
+                      <td className="py-3.5 px-4 font-[800] text-slate-800">
+                        {editandoPreciosInline ? (
+                          <input
+                            type="number"
+                            min="1"
+                            value={editItem.cantidad}
+                            onChange={(e) => {
+                              const val = Math.max(1, parseInt(e.target.value) || 1);
+                              setItemsEdit((prev) =>
+                                prev.map((p) =>
+                                  p.equipoId === item.equipoId ? { ...p, cantidad: val } : p
+                                )
+                              );
+                            }}
+                            className="w-20 px-2.5 py-1.5 bg-white border border-slate-300 rounded-[8px] text-xs font-[700] text-slate-800 focus:outline-none focus:border-[#162B4D]"
+                          />
+                        ) : (
+                          item.cantidad
+                        )}
+                      </td>
+
+                      <td className="py-3.5 px-4 text-right font-[700] text-slate-600 whitespace-nowrap">
+                        {editandoPreciosInline ? (
+                          <div className="flex items-center justify-end gap-1">
+                            <span className="text-slate-400 text-xs">S/</span>
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.5"
+                              value={editItem.precioUnitario}
+                              onChange={(e) => {
+                                const val = parseFloat(e.target.value) || 0;
+                                setItemsEdit((prev) =>
+                                  prev.map((p) =>
+                                    p.equipoId === item.equipoId ? { ...p, precioUnitario: val } : p
+                                  )
+                                );
+                              }}
+                              className="w-24 px-2.5 py-1.5 bg-white border border-slate-300 rounded-[8px] text-xs font-[700] text-right text-slate-800 focus:outline-none focus:border-[#162B4D]"
+                            />
+                          </div>
+                        ) : (
+                          fmtSoles(item.precioUnitario)
+                        )}
+                      </td>
+
+                      <td className="py-3.5 px-6 text-right font-[800] text-slate-900 whitespace-nowrap">
+                        {editandoPreciosInline ? fmtSoles(subCalc) : fmtSoles(item.subtotal)}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -660,22 +874,38 @@ export default function ContratoDetallePage() {
         <div className="bg-white rounded-[20px] border border-slate-200/70 shadow-sm p-6 h-fit">
           <h2 className="flex items-center gap-2 font-[800] text-slate-800 text-sm uppercase tracking-wider mb-4">
             <FileText className="w-4 h-4 text-[#E63C46]" />
-            Resumen económico
+            Resumen económico {editandoPreciosInline && <span className="text-[10px] text-amber-600 lowercase font-medium">(vista previa)</span>}
           </h2>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between text-slate-600 font-[600]">
-              <span>Subtotal</span>
-              <span className="font-[800] text-slate-900">{fmtSoles(contrato.subtotal)}</span>
-            </div>
-            <div className="flex justify-between text-slate-600 font-[600]">
-              <span>IGV (18%)</span>
-              <span className="font-[800] text-slate-900">{fmtSoles(contrato.igv)}</span>
-            </div>
-            <div className="flex justify-between text-slate-900 font-[800] pt-3 border-t border-slate-200 text-base">
-              <span>Total</span>
-              <span className="text-[#E63C46]">{fmtSoles(contrato.total)}</span>
-            </div>
-          </div>
+          {(() => {
+            let subPreview = contrato.subtotal;
+            let igvPreview = contrato.igv;
+            let totalPreview = contrato.total;
+
+            if (editandoPreciosInline) {
+              const sub = itemsEdit.reduce((acc, curr) => acc + (Number(curr.cantidad) || 1) * (Number(curr.precioUnitario) || 0), 0);
+              const igv = sub * 0.18;
+              subPreview = sub;
+              igvPreview = igv;
+              totalPreview = sub + igv;
+            }
+
+            return (
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between text-slate-600 font-[600]">
+                  <span>Subtotal</span>
+                  <span className="font-[800] text-slate-900">{fmtSoles(subPreview)}</span>
+                </div>
+                <div className="flex justify-between text-slate-600 font-[600]">
+                  <span>IGV (18%)</span>
+                  <span className="font-[800] text-slate-900">{fmtSoles(igvPreview)}</span>
+                </div>
+                <div className="flex justify-between text-slate-900 font-[800] pt-3 border-t border-slate-200 text-base">
+                  <span>Total</span>
+                  <span className="text-[#E63C46]">{fmtSoles(totalPreview)}</span>
+                </div>
+              </div>
+            );
+          })()}
         </div>
       </div>
 
@@ -703,55 +933,100 @@ export default function ContratoDetallePage() {
           </p>
         ) : (
           <div className="divide-y divide-slate-100">
-            {contrato.inspecciones.map((ins) => (
-              <div key={ins.id} className="px-6 py-5">
-                <div className="flex items-center gap-3 flex-wrap">
-                  <span
-                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-[800] border ${
-                      ins.tipo === 'ENTREGA'
-                        ? 'bg-blue-50 text-blue-700 border-blue-200'
-                        : 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                    }`}
-                  >
-                    {ins.tipo === 'ENTREGA' ? <Truck className="w-3 h-3" /> : <Undo2 className="w-3 h-3" />}
-                    {ins.tipo === 'ENTREGA' ? 'Entrega' : 'Retorno'}
-                  </span>
-                  <span className="text-xs font-[700] text-slate-600">
-                    {fmtFecha(ins.fecha)}
-                  </span>
-                  <span className="text-[11px] text-slate-400 font-[500]">
-                    Responsable: {ins.responsableNombre || '—'}
-                  </span>
-                </div>
-                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-2.5">
-                  {ins.items.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex items-center gap-3 px-4 py-2.5 rounded-[10px] bg-slate-50 border border-slate-100"
+            {contrato.inspecciones.map((ins) => {
+              // Extraer posibles fotos guardadas en observaciones (formato __FOTOS__:[...])
+              let textoObs = ins.observaciones || '';
+              let fotosEvidencia: string[] = [];
+              if (textoObs.includes('__FOTOS__:')) {
+                try {
+                  const parts = textoObs.split('__FOTOS__:');
+                  textoObs = parts[0].trim();
+                  fotosEvidencia = JSON.parse(parts[1]);
+                } catch {}
+              }
+
+              return (
+                <div key={ins.id} className="px-6 py-5">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <span
+                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-[800] border ${
+                        ins.tipo === 'ENTREGA'
+                          ? 'bg-blue-50 text-blue-700 border-blue-200'
+                          : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                      }`}
                     >
-                      <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-[800] border whitespace-nowrap ${
-                          RESULTADO_COLORS[item.resultado] || 'bg-slate-100 text-slate-500'
-                        }`}
+                      {ins.tipo === 'ENTREGA' ? <Truck className="w-3 h-3" /> : <Undo2 className="w-3 h-3" />}
+                      {ins.tipo === 'ENTREGA' ? 'Entrega' : 'Retorno'}
+                    </span>
+                    <span className="text-xs font-[700] text-slate-600">
+                      {fmtFecha(ins.fecha)}
+                    </span>
+                    <span className="text-[11px] text-slate-400 font-[500]">
+                      Responsable: {ins.responsableNombre || '—'}
+                    </span>
+                  </div>
+
+                  <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                    {ins.items.map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex items-center gap-3 px-4 py-2.5 rounded-[10px] bg-slate-50 border border-slate-100"
                       >
-                        {RESULTADO_LABELS[item.resultado] || item.resultado}
-                      </span>
-                      <div className="min-w-0">
-                        <p className="text-xs font-[700] text-slate-700 truncate">{item.descripcion}</p>
-                        {item.observacion && (
-                          <p className="text-[11px] text-slate-400 font-[500] truncate">{item.observacion}</p>
-                        )}
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-[800] border whitespace-nowrap ${
+                            RESULTADO_COLORS[item.resultado] || 'bg-slate-100 text-slate-500'
+                          }`}
+                        >
+                          {RESULTADO_LABELS[item.resultado] || item.resultado}
+                        </span>
+                        <div className="min-w-0">
+                          <p className="text-xs font-[700] text-slate-700 truncate">{item.descripcion}</p>
+                          {item.observacion && (
+                            <p className="text-[11px] text-slate-400 font-[500] truncate">{item.observacion}</p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {textoObs && (
+                    <p className="mt-3 text-[11px] text-slate-600 font-[600] bg-amber-50/70 border border-amber-100 px-4 py-2 rounded-[8px]">
+                      {textoObs}
+                    </p>
+                  )}
+
+                  {/* FOTOS / EVIDENCIAS ADJUNTAS */}
+                  {fotosEvidencia.length > 0 && (
+                    <div className="mt-4 pt-3 border-t border-slate-100">
+                      <p className="text-[11px] font-[700] text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                        <Camera className="w-3.5 h-3.5 text-blue-600" />
+                        Fotos y Evidencias ({fotosEvidencia.length})
+                      </p>
+                      <div className="flex items-center gap-3 flex-wrap">
+                        {fotosEvidencia.map((foto, idx) => (
+                          <a
+                            key={idx}
+                            href={imagenCompleta(foto)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="group relative block w-16 h-16 rounded-[10px] overflow-hidden border border-slate-200 bg-slate-100 shadow-sm hover:scale-105 transition-transform"
+                          >
+                            <img
+                              src={imagenCompleta(foto)}
+                              alt={`Evidencia ${idx + 1}`}
+                              className="w-full h-full object-cover"
+                            />
+                            <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                              <Eye className="w-4 h-4 text-white" />
+                            </div>
+                          </a>
+                        ))}
                       </div>
                     </div>
-                  ))}
+                  )}
                 </div>
-                {ins.observaciones && (
-                  <p className="mt-3 text-[11px] text-slate-500 font-[600] bg-amber-50 border border-amber-100 px-4 py-2 rounded-[8px]">
-                    {ins.observaciones}
-                  </p>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
@@ -826,6 +1101,8 @@ function ModalInspeccion({
   );
   const [responsable, setResponsable] = useState('');
   const [observaciones, setObservaciones] = useState('');
+  const [fotos, setFotos] = useState<string[]>([]);
+  const [subiendoFoto, setSubiendoFoto] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState('');
 
@@ -837,16 +1114,79 @@ function ModalInspeccion({
     setItems((prev) => prev.map((it, i) => (i === idx ? { ...it, observacion } : it)));
   };
 
+  const eliminarItem = (idx: number) => {
+    setItems((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const [nuevoPunto, setNuevoPunto] = useState('');
+  const agregarPunto = () => {
+    if (!nuevoPunto.trim()) return;
+    setItems((prev) => [...prev, { descripcion: nuevoPunto.trim(), resultado: 'OK', observacion: '' }]);
+    setNuevoPunto('');
+  };
+
+  // Subir foto al backend y obtener URL
+  const handleSubirFoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setSubiendoFoto(true);
+    setError('');
+    try {
+      const token = getToken() || '';
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const res = await fetch(`${API_URL}/equipos/imagen`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        });
+
+        if (!res.ok) {
+          throw new Error('Error al subir la imagen');
+        }
+
+        const data = await res.json();
+        if (data.url) {
+          setFotos((prev) => [...prev, data.url]);
+        }
+      }
+      toast.success('Foto(s) de evidencia subida(s) correctamente');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Error al subir la foto';
+      setError(msg);
+      toast.error(msg);
+    } finally {
+      setSubiendoFoto(false);
+      e.target.value = '';
+    }
+  };
+
+  const eliminarFoto = (idx: number) => {
+    setFotos((prev) => prev.filter((_, i) => i !== idx));
+  };
+
   const guardar = async () => {
     setGuardando(true);
     setError('');
     try {
+      // Si hay fotos, las adjuntamos estructuradas al texto de observaciones
+      let obsFinal = observaciones ? observaciones.trim() : '';
+      if (fotos.length > 0) {
+        obsFinal = `${obsFinal ? obsFinal + ' ' : ''}__FOTOS__:${JSON.stringify(fotos)}`;
+      }
+
       await apiFetch(`/alquileres/${id}/inspecciones`, {
         method: 'POST',
         body: JSON.stringify({
           tipo,
           responsableNombre: responsable || undefined,
-          observaciones: observaciones || undefined,
+          observaciones: obsFinal || undefined,
           items: items.map((it) => ({
             descripcion: it.descripcion,
             resultado: it.resultado,
@@ -854,6 +1194,7 @@ function ModalInspeccion({
           })),
         }),
       });
+      toast.success(`Checklist de ${tipo === 'ENTREGA' ? 'Entrega' : 'Retorno'} guardado con éxito`);
       onGuardar();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Error al guardar la inspección');
@@ -865,7 +1206,7 @@ function ModalInspeccion({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-white rounded-[20px] w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
-        <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white">
+        <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white z-10">
           <h3 className="flex items-center gap-2 font-[800] text-slate-900 text-base">
             <ClipboardCheck className="w-5 h-5 text-[#E63C46]" />
             Checklist de {tipo === 'ENTREGA' ? 'Entrega' : 'Retorno'}
@@ -881,25 +1222,49 @@ function ModalInspeccion({
               {error}
             </div>
           )}
-          <input
-            type="text"
-            value={responsable}
-            onChange={(e) => setResponsable(e.target.value)}
-            placeholder="Responsable (ej: Ing. Percy Loro)"
-            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-[12px] text-xs font-[600] text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#162B4D] focus:bg-white transition-all"
-          />
+
+          <div>
+            <label className="block text-[11px] font-[700] text-slate-500 uppercase tracking-wider mb-1.5">
+              Responsable de la inspección
+            </label>
+            <input
+              type="text"
+              value={responsable}
+              onChange={(e) => setResponsable(e.target.value)}
+              placeholder="Nombre del inspector o responsable..."
+              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-[12px] text-xs font-[600] text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#162B4D] focus:bg-white transition-all"
+            />
+          </div>
 
           <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="block text-[11px] font-[700] text-slate-500 uppercase tracking-wider">
+                Puntos de verificación ({items.length})
+              </label>
+              <span className="text-[10px] text-slate-400">Puedes eliminar (X) los que no apliquen</span>
+            </div>
+
             {items.map((item, idx) => (
-              <div key={idx} className="bg-slate-50 border border-slate-100 rounded-[12px] p-4">
-                <p className="text-xs font-[700] text-slate-800">{item.descripcion}</p>
-                <div className="mt-3 flex flex-wrap items-center gap-2">
+              <div key={idx} className="bg-slate-50 border border-slate-200/80 rounded-[12px] p-3.5 relative group">
+                <div className="flex items-start justify-between gap-2">
+                  <p className="text-xs font-[700] text-slate-800 flex-1">{item.descripcion}</p>
+                  <button
+                    type="button"
+                    onClick={() => eliminarItem(idx)}
+                    className="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-[6px] transition-all"
+                    title="Eliminar este punto de verificación"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                <div className="mt-2.5 flex flex-wrap items-center gap-2">
                   {['OK', 'NO_OK', 'NA'].map((r) => (
                     <button
                       key={r}
                       type="button"
                       onClick={() => setResultado(idx, r)}
-                      className={`px-3.5 py-1.5 rounded-full text-[10px] font-[800] border transition-all ${
+                      className={`px-3 py-1 rounded-full text-[10px] font-[800] border transition-all ${
                         item.resultado === r
                           ? r === 'OK'
                             ? 'bg-emerald-600 text-white border-emerald-600'
@@ -917,35 +1282,112 @@ function ModalInspeccion({
                   type="text"
                   value={item.observacion}
                   onChange={(e) => setObservacion(idx, e.target.value)}
-                  placeholder="Observación (opcional)"
-                  className="mt-2.5 w-full px-3 py-2 bg-white border border-slate-200 rounded-[8px] text-[11px] font-[600] text-slate-700 placeholder-slate-400 focus:outline-none focus:border-[#E63C46] transition-all"
+                  placeholder="Observación técnica (opcional)"
+                  className="mt-2 w-full px-3 py-1.5 bg-white border border-slate-200 rounded-[8px] text-[11px] font-[600] text-slate-700 placeholder-slate-400 focus:outline-none focus:border-[#E63C46] transition-all"
                 />
               </div>
             ))}
+
+            {/* AGREGAR PUNTO PERSONALIZADO */}
+            <div className="flex gap-2 pt-1">
+              <input
+                type="text"
+                value={nuevoPunto}
+                onChange={(e) => setNuevoPunto(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    agregarPunto();
+                  }
+                }}
+                placeholder="+ Agregar otro punto de verificación..."
+                className="flex-1 px-3 py-2 bg-slate-50 border border-dashed border-slate-300 rounded-[10px] text-xs font-[600] text-slate-700 placeholder-slate-400 focus:outline-none focus:border-[#162B4D] focus:bg-white transition-all"
+              />
+              <button
+                type="button"
+                onClick={agregarPunto}
+                disabled={!nuevoPunto.trim()}
+                className="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-white text-xs font-[700] rounded-[10px] disabled:opacity-40 transition-colors"
+              >
+                Agregar
+              </button>
+            </div>
           </div>
 
-          <textarea
-            rows={2}
-            value={observaciones}
-            onChange={(e) => setObservaciones(e.target.value)}
-            placeholder="Observaciones generales de la inspección (opcional)"
-            className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-[12px] text-xs font-[600] text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#162B4D] focus:bg-white transition-all resize-none"
-          />
+          {/* SECCIÓN DE SUBIDA DE FOTOS Y EVIDENCIAS */}
+          <div className="pt-2">
+            <label className="block text-[11px] font-[700] text-slate-500 uppercase tracking-wider mb-2 flex items-center justify-between">
+              <span className="flex items-center gap-1.5">
+                <Camera className="w-3.5 h-3.5 text-[#E63C46]" />
+                Fotos / Evidencias del estado
+              </span>
+              <span className="text-[10px] text-slate-400 font-normal">JPG, PNG (máx. 10MB)</span>
+            </label>
+
+            {/* Grid de fotos adjuntas */}
+            {fotos.length > 0 && (
+              <div className="grid grid-cols-4 gap-2 mb-3">
+                {fotos.map((url, idx) => (
+                  <div key={idx} className="relative group w-full aspect-square rounded-[10px] overflow-hidden border border-slate-200 bg-slate-100">
+                    <img src={imagenCompleta(url)} alt={`Foto ${idx + 1}`} className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => eliminarFoto(idx)}
+                      className="absolute top-1 right-1 bg-red-600/90 hover:bg-red-600 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="Eliminar foto"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Botón para subir archivo */}
+            <label className="flex flex-col items-center justify-center w-full py-4 border-2 border-dashed border-slate-200 hover:border-slate-400 rounded-[12px] bg-slate-50 hover:bg-slate-100 cursor-pointer transition-all">
+              <div className="flex items-center gap-2 text-xs font-[700] text-slate-600">
+                <Upload className="w-4 h-4 text-slate-400" />
+                <span>{subiendoFoto ? 'Subiendo imagen...' : 'Adjuntar fotos de evidencia'}</span>
+              </div>
+              <p className="text-[10px] text-slate-400 mt-1">Haz clic para seleccionar o tomar foto desde el móvil</p>
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                disabled={subiendoFoto}
+                onChange={handleSubirFoto}
+                className="hidden"
+              />
+            </label>
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-[700] text-slate-500 uppercase tracking-wider mb-1.5">
+              Observaciones generales
+            </label>
+            <textarea
+              rows={2}
+              value={observaciones}
+              onChange={(e) => setObservaciones(e.target.value)}
+              placeholder="Detalles sobre el estado en que se entrega/recibe..."
+              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-[12px] text-xs font-[600] text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#162B4D] focus:bg-white transition-all resize-none"
+            />
+          </div>
 
           <button
             onClick={guardar}
-            disabled={guardando}
+            disabled={guardando || subiendoFoto}
             className="w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 bg-[#E63C46] hover:bg-[#C92A36] disabled:opacity-60 text-white text-xs font-[800] rounded-[14px] shadow-lg shadow-[#E63C46]/25 transition-all"
           >
             {guardando ? (
               <>
                 <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                Guardando...
+                Guardando checklist...
               </>
             ) : (
               <>
                 <CheckCircle2 className="w-4 h-4" />
-                Guardar checklist
+                Guardar checklist con evidencias
               </>
             )}
           </button>

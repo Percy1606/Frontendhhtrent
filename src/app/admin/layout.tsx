@@ -34,6 +34,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const isLoginPage = pathname === '/admin/login' || pathname === '/admin/olvide-password' || pathname === '/admin/reset-password';
+  const isPreviewPage = pathname?.endsWith('/preview');
 
   useEffect(() => {
     setMounted(true);
@@ -51,8 +52,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
   }, [router, pathname, isLoginPage]);
 
-  // Si estamos en la página de login o recuperación, renderizar directamente
-  if (isLoginPage) {
+  // Si estamos en la página de login, recuperación o vista previa de contrato, renderizar directamente
+  if (isLoginPage || isPreviewPage) {
     return <>{children}</>;
   }
 

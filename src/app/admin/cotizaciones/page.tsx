@@ -42,6 +42,7 @@ import { toast } from 'sonner';
 interface ItemCotizacion {
   id: string;
   cantidad: number;
+  precioUnitario?: number | null;
   equipo: {
     id: string;
     codigoInterno: string | null;
@@ -121,10 +122,17 @@ export default function AdminCotizacionesPage() {
   const [formConv, setFormConv] = useState({
     proyecto: '',
     sede: SEDES[0],
+    clienteDocumento: '',
     fechaInicio: hoyISO(),
     fechaFin: enNDias(30),
     condiciones: '',
     observaciones: '',
+    items: [] as {
+      equipoId: string;
+      nombre: string;
+      cantidad: number;
+      precioUnitario: number;
+    }[],
   });
   const [guardandoContrato, setGuardandoContrato] = useState(false);
   const [errorConv, setErrorConv] = useState('');
@@ -289,10 +297,17 @@ export default function AdminCotizacionesPage() {
         ? `Proyecto ${c.clienteEmpresa}`
         : `Proyecto ${c.clienteNombre}`,
       sede: SEDES[0],
+      clienteDocumento: '',
       fechaInicio: hoyISO(),
       fechaFin: enNDias(30),
-      condiciones: '',
-      observaciones: '',
+      condiciones: 'Garantía previa requerida. Flete de entrega y retorno por cuenta del cliente. Operación según especificaciones de fábrica.',
+      observaciones: c.mensaje || '',
+      items: c.items.map((item) => ({
+        equipoId: item.equipo.id,
+        nombre: item.equipo.nombre,
+        cantidad: item.cantidad,
+        precioUnitario: Number(item.precioUnitario ?? item.equipo.precio ?? 0),
+      })),
     });
     setConvirtiendo(c);
   };
@@ -315,7 +330,20 @@ export default function AdminCotizacionesPage() {
         contrato: { id: string; numero: string };
       }>(`/cotizaciones/${convirtiendo.id}/contrato`, {
         method: 'POST',
-        body: JSON.stringify(formConv),
+        body: JSON.stringify({
+          proyecto: formConv.proyecto,
+          sede: formConv.sede,
+          clienteDocumento: formConv.clienteDocumento,
+          fechaInicio: formConv.fechaInicio,
+          fechaFin: formConv.fechaFin,
+          condiciones: formConv.condiciones,
+          observaciones: formConv.observaciones,
+          items: formConv.items.map((i) => ({
+            equipoId: i.equipoId,
+            cantidad: i.cantidad,
+            precioUnitario: i.precioUnitario,
+          })),
+        }),
       });
       setCotizaciones((prev) =>
         prev.map((c) => (c.id === convirtiendo.id ? res.cotizacion : c)),
@@ -789,93 +817,177 @@ export default function AdminCotizacionesPage() {
       )}
 
       {/* MODAL DE CONVERSIÓN A CONTRATO */}
-      {convirtiendo && !contratoGenerado && (
-        <div className="fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4">
-          <div
-            className="bg-white rounded-[24px] w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* CABECERA */}
-            <div className="sticky top-0 bg-white border-b border-slate-100 px-6 py-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="w-10 h-10 rounded-[12px] bg-emerald-600/10 flex items-center justify-center">
-                  <FilePlus2 className="w-5 h-5 text-emerald-600" />
-                </span>
-                <div>
-                  <h2 className="font-[800] text-sm text-slate-900 uppercase">
-                    Convertir en Contrato
-                  </h2>
-                  <p className="text-[11px] text-slate-400 font-[500]">
-                    {convirtiendo.clienteNombre} · {convirtiendo.items.length} equipo(s) ·{' '}
-                    {formatPEN(convirtiendo.totalEstimado)}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setConvirtiendo(null)}
-                className="p-2 rounded-full hover:bg-slate-100 transition-colors"
-              >
-                <X className="w-5 h-5 text-slate-500" />
-              </button>
-            </div>
+      {convirtiendo && !contratoGenerado && (() => {
+        const dInicio = new Date(formConv.fechaInicio);
+        const dFin = new Date(formConv.fechaFin);
+        const diasAlquiler = !isNaN(dInicio.getTime()) && !isNaN(dFin.getTime()) && dFin >= dInicio
+          ? Math.max(1, Math.round((dFin.getTime() - dInicio.getTime()) / (1000 * 60 * 60 * 24)) + 1)
+          : 0;
 
-            <div className="p-6 space-y-4">
-              {/* EQUIPOS DE LA COTIZACIÓN */}
-              <div className="bg-slate-50 rounded-xl border border-slate-100 p-3.5">
-                <p className="text-[10px] font-[800] uppercase tracking-widest text-slate-400 mb-2">
-                  Equipos que se incluirán
-                </p>
-                <ul className="space-y-1.5">
-                  {convirtiendo.items.map((item) => (
-                    <li key={item.id} className="flex items-center justify-between gap-2 text-xs">
-                      <span className="font-[600] text-slate-700 truncate">
-                        {item.equipo.nombre}
-                      </span>
-                      <span className="font-[800] text-slate-500 shrink-0">×{item.cantidad}</span>
-                    </li>
-                  ))}
-                </ul>
+        const subtotalCalculado = formConv.items.reduce(
+          (acc, it) => acc + (it.precioUnitario * it.cantidad),
+          0,
+        );
+        const igvCalculado = subtotalCalculado * 0.18;
+        const totalCalculado = subtotalCalculado + igvCalculado;
+
+        return (
+          <div className="fixed inset-0 z-[60] bg-black/60 flex items-center justify-center p-4">
+            <div
+              className="bg-white rounded-[24px] w-full max-w-2xl max-h-[92vh] overflow-y-auto shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* CABECERA */}
+              <div className="sticky top-0 bg-white border-b border-slate-100 px-6 py-4 flex items-center justify-between z-10">
+                <div className="flex items-center gap-3">
+                  <span className="w-10 h-10 rounded-[12px] bg-emerald-600/10 flex items-center justify-center">
+                    <FilePlus2 className="w-5 h-5 text-emerald-600" />
+                  </span>
+                  <div>
+                    <h2 className="font-[800] text-sm text-slate-900 uppercase">
+                      Convertir en Contrato de Alquiler
+                    </h2>
+                    <p className="text-[11px] text-slate-400 font-[500]">
+                      {convirtiendo.clienteNombre} {convirtiendo.clienteEmpresa ? `(${convirtiendo.clienteEmpresa})` : ''} · {convirtiendo.items.length} equipo(s)
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setConvirtiendo(null)}
+                  className="p-2 rounded-full hover:bg-slate-100 transition-colors"
+                >
+                  <X className="w-5 h-5 text-slate-500" />
+                </button>
               </div>
 
-              {errorConv && (
-                <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-2.5 rounded-[10px] text-[11px] font-[700]">
-                  {errorConv}
-                </div>
-              )}
+              <div className="p-6 space-y-4">
+                {errorConv && (
+                  <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-2.5 rounded-[10px] text-[11px] font-[700]">
+                    {errorConv}
+                  </div>
+                )}
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="col-span-2">
-                  <label className="block text-[10px] font-[700] text-slate-500 uppercase tracking-wider mb-1.5">
-                    Proyecto *
-                  </label>
-                  <input
-                    type="text"
-                    value={formConv.proyecto}
-                    onChange={(e) => setFormConv({ ...formConv, proyecto: e.target.value })}
-                    placeholder="Nombre del proyecto / obra"
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-[12px] text-xs font-[600] text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#162B4D] focus:bg-white transition-all"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-[700] text-slate-500 uppercase tracking-wider mb-1.5">
-                    Sede *
-                  </label>
-                  <select
-                    value={formConv.sede}
-                    onChange={(e) => setFormConv({ ...formConv, sede: e.target.value })}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-[12px] text-xs font-[600] text-slate-800 cursor-pointer focus:outline-none focus:border-[#162B4D] focus:bg-white transition-all"
-                  >
-                    {SEDES.map((s) => (
-                      <option key={s} value={s}>
-                        {s}
-                      </option>
+                {/* EQUIPOS Y TARIFAS DE ALQUILER */}
+                <div className="bg-slate-50 rounded-xl border border-slate-200/70 p-3.5 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-[10px] font-[800] uppercase tracking-widest text-slate-500">
+                      Equipos y Tarifas de Renta
+                    </p>
+                    <span className="text-[10px] font-[700] text-slate-400">
+                      Edita cantidades o tarifas pactadas
+                    </span>
+                  </div>
+
+                  <div className="space-y-2">
+                    {formConv.items.map((item, idx) => (
+                      <div
+                        key={item.equipoId}
+                        className="bg-white p-3 rounded-lg border border-slate-200 flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 text-xs"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <p className="font-[700] text-slate-800 truncate">{item.nombre}</p>
+                          <p className="text-[10px] text-slate-400 font-[500]">Equipo seleccionado</p>
+                        </div>
+                        <div className="flex items-center gap-3 shrink-0">
+                          <div>
+                            <label className="block text-[9px] font-[700] text-slate-400 uppercase">Cant.</label>
+                            <input
+                              type="number"
+                              min="1"
+                              value={item.cantidad}
+                              onChange={(e) => {
+                                const val = Math.max(1, parseInt(e.target.value) || 1);
+                                const next = [...formConv.items];
+                                next[idx].cantidad = val;
+                                setFormConv({ ...formConv, items: next });
+                              }}
+                              className="w-16 px-2 py-1 bg-slate-50 border border-slate-200 rounded-md text-xs font-[700] text-slate-800 text-center"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-[700] text-slate-400 uppercase">Tarifa (S/.)</label>
+                            <input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              value={item.precioUnitario}
+                              onChange={(e) => {
+                                const val = Math.max(0, parseFloat(e.target.value) || 0);
+                                const next = [...formConv.items];
+                                next[idx].precioUnitario = val;
+                                setFormConv({ ...formConv, items: next });
+                              }}
+                              className="w-24 px-2 py-1 bg-slate-50 border border-slate-200 rounded-md text-xs font-[700] text-slate-800 text-right"
+                            />
+                          </div>
+                          <div className="text-right min-w-[70px]">
+                            <span className="block text-[9px] font-[700] text-slate-400 uppercase">Subtotal</span>
+                            <span className="font-[800] text-slate-900">
+                              {formatPEN(item.precioUnitario * item.cantidad)}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
                     ))}
-                  </select>
+                  </div>
+
+                  {/* Resumen del cálculo */}
+                  <div className="pt-2 border-t border-slate-200 flex items-center justify-between text-xs font-[700]">
+                    <span className="text-slate-500">Subtotal Neto: {formatPEN(subtotalCalculado)} | IGV (18%): {formatPEN(igvCalculado)}</span>
+                    <span className="text-[#162B4D] font-[800] text-sm">
+                      Total Contrato: {formatPEN(totalCalculado)}
+                    </span>
+                  </div>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+
+                {/* FORMULARIO DE CONTRATO */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="sm:col-span-2">
+                    <label className="block text-[10px] font-[700] text-slate-500 uppercase tracking-wider mb-1.5">
+                      Nombre del Proyecto / Obra *
+                    </label>
+                    <input
+                      type="text"
+                      value={formConv.proyecto}
+                      onChange={(e) => setFormConv({ ...formConv, proyecto: e.target.value })}
+                      placeholder="Ej. Ampliación Planta Sur / Obra San Isidro"
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-[12px] text-xs font-[600] text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#162B4D] focus:bg-white transition-all"
+                    />
+                  </div>
+
                   <div>
                     <label className="block text-[10px] font-[700] text-slate-500 uppercase tracking-wider mb-1.5">
-                      Inicio *
+                      RUC / DNI del Cliente
+                    </label>
+                    <input
+                      type="text"
+                      value={formConv.clienteDocumento}
+                      onChange={(e) => setFormConv({ ...formConv, clienteDocumento: e.target.value })}
+                      placeholder="Ej. 20601234567"
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-[12px] text-xs font-[600] text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#162B4D] focus:bg-white transition-all"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-[700] text-slate-500 uppercase tracking-wider mb-1.5">
+                      Sede de Despacho *
+                    </label>
+                    <select
+                      value={formConv.sede}
+                      onChange={(e) => setFormConv({ ...formConv, sede: e.target.value })}
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-[12px] text-xs font-[600] text-slate-800 cursor-pointer focus:outline-none focus:border-[#162B4D] focus:bg-white transition-all"
+                    >
+                      {SEDES.map((s) => (
+                        <option key={s} value={s}>
+                          {s}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-[700] text-slate-500 uppercase tracking-wider mb-1.5">
+                      Fecha Inicio Alquiler *
                     </label>
                     <input
                       type="date"
@@ -884,9 +996,10 @@ export default function AdminCotizacionesPage() {
                       className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-[12px] text-xs font-[600] text-slate-800 focus:outline-none focus:border-[#162B4D] focus:bg-white transition-all"
                     />
                   </div>
+
                   <div>
                     <label className="block text-[10px] font-[700] text-slate-500 uppercase tracking-wider mb-1.5">
-                      Fin *
+                      Fecha Fin Alquiler * {diasAlquiler > 0 ? `(${diasAlquiler} días)` : ''}
                     </label>
                     <input
                       type="date"
@@ -895,65 +1008,97 @@ export default function AdminCotizacionesPage() {
                       className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-[12px] text-xs font-[600] text-slate-800 focus:outline-none focus:border-[#162B4D] focus:bg-white transition-all"
                     />
                   </div>
-                </div>
-                <div className="col-span-2">
-                  <label className="block text-[10px] font-[700] text-slate-500 uppercase tracking-wider mb-1.5">
-                    Condiciones comerciales
-                  </label>
-                  <textarea
-                    rows={2}
-                    value={formConv.condiciones}
-                    onChange={(e) => setFormConv({ ...formConv, condiciones: e.target.value })}
-                    placeholder="Forma de pago, transporte, garantía..."
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-[12px] text-xs font-[600] text-slate-800 placeholder-slate-400 resize-none focus:outline-none focus:border-[#162B4D] focus:bg-white transition-all"
-                  />
-                </div>
-                <div className="col-span-2">
-                  <label className="block text-[10px] font-[700] text-slate-500 uppercase tracking-wider mb-1.5">
-                    Observaciones
-                  </label>
-                  <textarea
-                    rows={2}
-                    value={formConv.observaciones}
-                    onChange={(e) => setFormConv({ ...formConv, observaciones: e.target.value })}
-                    placeholder="Requerimientos especiales del cliente"
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-[12px] text-xs font-[600] text-slate-800 placeholder-slate-400 resize-none focus:outline-none focus:border-[#162B4D] focus:bg-white transition-all"
-                  />
-                </div>
-              </div>
 
-              <div className="flex gap-2 pt-1">
-                <button
-                  onClick={() => setConvirtiendo(null)}
-                  className="flex-1 px-4 py-3 rounded-[12px] bg-slate-100 text-slate-600 text-xs font-[800] hover:bg-slate-200 transition-colors"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={convertir}
-                  disabled={guardandoContrato}
-                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 bg-[#162B4D] text-white rounded-[12px] text-xs font-[800] hover:bg-[#0f1e36] disabled:opacity-60 transition-all"
-                >
-                  {guardandoContrato ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Generando...
-                    </>
-                  ) : (
-                    <>
-                      <FilePlus2 className="w-4 h-4" />
-                      Generar contrato (Provisional)
-                    </>
-                  )}
-                </button>
+                  <div className="sm:col-span-2">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-[10px] font-[700] text-slate-500 uppercase tracking-wider">
+                        Condiciones de Alquiler
+                      </label>
+                      <div className="flex gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setFormConv({
+                              ...formConv,
+                              condiciones:
+                                'Garantía previa requerida. Flete de entrega y retorno por cuenta del cliente. Operación según especificaciones de fábrica.',
+                            })
+                          }
+                          className="text-[9px] font-[700] text-[#162B4D] bg-slate-100 hover:bg-slate-200 px-2 py-0.5 rounded transition-colors"
+                        >
+                          Estándar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setFormConv({
+                              ...formConv,
+                              condiciones:
+                                'Incluye mantenimiento preventivo mensual y consumibles básicos. Flete incluido en radio metropolitano. Depósito en garantía 1 mes.',
+                            })
+                          }
+                          className="text-[9px] font-[700] text-[#162B4D] bg-slate-100 hover:bg-slate-200 px-2 py-0.5 rounded transition-colors"
+                        >
+                          Con Mantenimiento
+                        </button>
+                      </div>
+                    </div>
+                    <textarea
+                      rows={2}
+                      value={formConv.condiciones}
+                      onChange={(e) => setFormConv({ ...formConv, condiciones: e.target.value })}
+                      placeholder="Garantías, flete, mantenimiento..."
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-[12px] text-xs font-[600] text-slate-800 placeholder-slate-400 resize-none focus:outline-none focus:border-[#162B4D] focus:bg-white transition-all"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label className="block text-[10px] font-[700] text-slate-500 uppercase tracking-wider mb-1.5">
+                      Observaciones
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={formConv.observaciones}
+                      onChange={(e) => setFormConv({ ...formConv, observaciones: e.target.value })}
+                      placeholder="Requerimientos especiales, dirección de obra, etc."
+                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-[12px] text-xs font-[600] text-slate-800 placeholder-slate-400 resize-none focus:outline-none focus:border-[#162B4D] focus:bg-white transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-2 pt-2">
+                  <button
+                    onClick={() => setConvirtiendo(null)}
+                    className="flex-1 px-4 py-3 rounded-[12px] bg-slate-100 text-slate-600 text-xs font-[800] hover:bg-slate-200 transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={convertir}
+                    disabled={guardandoContrato}
+                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 bg-emerald-600 text-white rounded-[12px] text-xs font-[800] hover:bg-emerald-700 disabled:opacity-60 transition-all shadow-sm"
+                  >
+                    {guardandoContrato ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Generando contrato...
+                      </>
+                    ) : (
+                      <>
+                        <FilePlus2 className="w-4 h-4" />
+                        Generar Contrato de Alquiler
+                      </>
+                    )}
+                  </button>
+                </div>
+                <p className="text-[10px] text-slate-400 font-[500] text-center">
+                  Se generará el contrato de alquiler provisional oficial (HTR-ALQ-XXX) y la cotización pasará automáticamente a estado Aprobada.
+                </p>
               </div>
-              <p className="text-[10px] text-slate-400 font-[500] text-center">
-                Se creará un contrato PROVISIONAL con el cliente y los equipos de esta cotización. Podrás ajustar precios, fechas y condiciones antes de confirmarlo.
-              </p>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* ÉXITO DE CONVERSIÓN */}
       {contratoGenerado && (

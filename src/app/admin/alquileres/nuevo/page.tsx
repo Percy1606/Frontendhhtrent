@@ -77,13 +77,29 @@ export default function NuevoContratoPage() {
 
   useEffect(() => {
     apiFetch<Equipo[]>('/equipos/admin/listar')
-      .then((eqs) => setEquipos(eqs.filter((e) => e.tipo === 'ALQUILER')))
+      .then((eqs) => {
+        const alquilerEqs = eqs.filter((e) => e.tipo === 'ALQUILER');
+        setEquipos(alquilerEqs);
+        // Pre-carga inmediata de todas las imágenes en caché del navegador a la velocidad de la luz
+        alquilersEqPreload(alquilerEqs);
+      })
       .catch(async () => {
         const publicList = await fetchEquiposPublicos<Equipo>().catch(() => []);
-        setEquipos(publicList.filter((e) => e.tipo === 'ALQUILER'));
+        const alquilerEqs = publicList.filter((e) => e.tipo === 'ALQUILER');
+        setEquipos(alquilerEqs);
+        alquilersEqPreload(alquilerEqs);
       })
       .finally(() => setLoading(false));
   }, []);
+
+  const alquilersEqPreload = (list: Equipo[]) => {
+    list.forEach((eq) => {
+      if (eq.imagenUrl) {
+        const img = new Image();
+        img.src = imagenCompleta(eq.imagenUrl);
+      }
+    });
+  };
 
   const disponibles = useMemo(
     () =>
@@ -422,7 +438,12 @@ export default function NuevoContratoPage() {
                         onChange={() => toggleItem(eq)}
                         className="w-4 h-4 accent-[#E63C46] cursor-pointer shrink-0"
                       />
-                      <img loading="lazy" decoding="async" src={imagenCompleta(eq.imagenUrl)}
+                      <img
+                        loading="eager"
+                        decoding="sync"
+                        // @ts-expect-error fetchPriority is standard in modern browsers
+                        fetchpriority="high"
+                        src={imagenCompleta(eq.imagenUrl)}
                         alt={eq.nombre}
                         className="w-12 h-12 rounded-[10px] object-cover bg-slate-100 border border-slate-200 shrink-0"
                       />

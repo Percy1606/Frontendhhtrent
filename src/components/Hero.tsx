@@ -34,7 +34,7 @@ export default function Hero() {
 
 
           {/* Título Principal */}
-          <h1 className="font-spartan font-[800] text-[28px] sm:text-[37px] lg:text-[43px] uppercase text-white leading-[1.12] tracking-tight mb-5">
+          <h1 className="font-spartan font-[800] text-[24px] sm:text-[30px] lg:text-[36px] uppercase text-white leading-[1.12] tracking-tight mb-5">
             LÍDERES EN ALQUILER Y VENTA DE EQUIPOS PARA <br className="hidden sm:inline" />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#E63C46] to-red-400">PROYECTOS ELÉCTRICOS E INDUSTRIALES</span>
           </h1>

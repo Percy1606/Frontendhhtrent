@@ -3,9 +3,11 @@ export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001
 
 // Convierte rutas relativas del backend (/uploads/...) en URLs completas cargables
 // desde el navegador (el frontend corre en otro puerto). Las URLs externas (https://...)
-// se devuelven tal cual.
+// se devuelven tal cual, excepto servicios caídos como via.placeholder.com.
 export function imagenCompleta(url?: string | null): string {
-  if (!url) return '';
+  if (!url || url.includes('via.placeholder.com') || url === 'Por asignar') {
+    return 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 24 24" fill="none" stroke="%2394a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>';
+  }
   if (url.startsWith('/uploads/')) {
     return `${API_URL}${url}`;
   }
