@@ -253,7 +253,38 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           colapsada ? 'lg:pl-[76px]' : 'lg:pl-64'
         }`}
       >
-        <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
+        {/* HEADER MÓVIL (Solo visible en pantallas < 1024px) */}
+        <header className="lg:hidden sticky top-0 z-20 bg-[#162B4D] text-white px-4 py-3 flex items-center justify-between shadow-md">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="p-2 rounded-[10px] bg-white/10 hover:bg-white/20 text-white transition-colors flex items-center justify-center"
+              aria-label="Abrir menú"
+            >
+              <PanelLeft className="w-5 h-5" />
+            </button>
+            <div className="bg-white rounded-[8px] px-2 py-1 flex items-center justify-center h-8">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/img/hhtrentlogo.jpg"
+                alt="HHT RENT"
+                className="h-6 w-auto object-contain"
+              />
+            </div>
+          </div>
+          {user && (
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-[700] text-slate-300 truncate max-w-[120px]">
+                {user.nombre.split(' ')[0]}
+              </span>
+              <div className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center">
+                <UserCircle2 className="w-4 h-4 text-slate-300" />
+              </div>
+            </div>
+          )}
+        </header>
+
+        <main className="flex-1 p-3.5 sm:p-6 lg:p-8">{children}</main>
       </div>
     </div>
   );

@@ -150,14 +150,14 @@ export default function Header() {
     <>
       {/* HEADER EN UNA SOLA FILA HORIZONTAL (74px) */}
       <header className="fixed top-0 left-0 right-0 z-40 bg-white font-poppins shadow-sm border-b border-slate-100 h-[74px]">
-        <div className="max-w-7xl mx-auto pl-4 sm:pl-6 lg:pl-12 pr-4 sm:pr-6 lg:pr-0 h-full flex items-center justify-between gap-4 lg:gap-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between gap-3 sm:gap-4 lg:gap-6">
           
           {/* 1. EXTREMO IZQUIERDO: LOGO HT RENT */}
           <Link href="/" className="flex items-center gap-3 group shrink-0 py-1">
             <img
               src="/img/hhtrentlogo.jpg"
               alt="HT RENT"
-              className="h-12 sm:h-14 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+              className="h-10 sm:h-12 lg:h-14 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
             />
           </Link>
 
@@ -306,10 +306,7 @@ export default function Header() {
           </nav>
 
           {/* 3. BLOQUE DERECHA: BUSCADOR + ADMIN + CARRITO */}
-          <div
-            className="flex items-center gap-3 lg:gap-4 shrink-0 ml-auto"
-            style={{ marginRight: 'calc(-1 * max(0px, (100vw - 80rem) / 2) + 40px)' }}
-          >
+          <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 shrink-0 ml-auto">
             {/* BUSCADOR (Escritorio) */}
             <form
               onSubmit={(e) => {
