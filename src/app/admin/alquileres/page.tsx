@@ -91,7 +91,7 @@ export default function AdminAlquileresPage() {
       });
       setContratos((prev) => prev.filter((c) => c.id !== confirmarEliminar.id));
       setConfirmarEliminar(null);
-      toast.error('Contrato eliminado');
+      toast.success('Contrato eliminado correctamente');
     } catch (err) {
       toast.error(
         err instanceof Error

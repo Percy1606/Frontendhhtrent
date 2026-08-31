@@ -26,6 +26,8 @@ import {
   ChevronDown,
   Loader2,
   X,
+  Clock,
+  Truck,
 } from 'lucide-react';
 import { leerCarrito, agregarAlCarrito, guardarCarrito } from '@/lib/cart';
 import type { CartItem } from '@/lib/cart';
@@ -162,11 +164,10 @@ export default function CotizacionPage() {
   const guardarBorrador = () => {
     try {
       localStorage.setItem('hht_cotizacion_draft', JSON.stringify(clienteForm));
-      setMensajeGuardado('📄 Borrador de la solicitud guardado en este navegador.');
-      setErrorEnvio(null);
-      setTimeout(() => setMensajeGuardado(null), 3500);
+      setMensajeGuardado('📄 Guardado provisionalmente en este navegador.');
+      setTimeout(() => setMensajeGuardado(null), 4000);
     } catch {
-      setErrorEnvio('No se pudo guardar el borrador.');
+      setErrorEnvio('No se pudo guardar provisionalmente.');
     }
   };
 
@@ -303,72 +304,62 @@ export default function CotizacionPage() {
             <div className="space-y-3">
               <div className="flex flex-wrap items-center gap-2.5">
                 <span className="bg-[#162B4D] text-white text-[11px] font-[800] px-3.5 py-1.5 rounded-full uppercase tracking-wider shadow-xs">
-                  {cotizacionMetadata.numero}
+                  SOLICITUD EN LÍNEA
                 </span>
-                <span className={`text-white font-[800] text-[11px] px-3.5 py-1.5 rounded-full uppercase tracking-wider shadow-xs ${
-                  cotizacionMetadata.estado.includes('DISPONIBLE') ? 'bg-emerald-600' : 'bg-amber-500'
-                }`}>
-                  {cotizacionMetadata.estado}
+                <span className="bg-emerald-600 text-white font-[800] text-[11px] px-3.5 py-1.5 rounded-full uppercase tracking-wider shadow-xs">
+                  {cartItems.length > 0 ? `${cartItems.length} EQUIPO(S) SELECCIONADO(S)` : 'CARRITO VACÍO'}
                 </span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-bold font-poppins text-slate-900 tracking-tight leading-tight">
-                Módulo Empresarial de Cotizaciones
+                Solicitud de Cotización Empresarial
               </h1>
               <p className="text-slate-500 text-xs sm:text-sm font-normal">
-                Gestión comercial de equipos industriales, transformadores y celdas de media tensión.
+                Equipos certificados de potencia, subestaciones y maniobra listos para cotizar y alquilar.
               </p>
             </div>
 
-            {/* BOTONES DE ACCIÓN RÁPIDA EN EL ENCABEZADO */}
+            {/* BOTONES DE ACCIÓN */}
             <div className="flex flex-wrap items-center gap-2">
               <button
-                onClick={() => alert('📄 Borrador guardado correctamente.')}
+                onClick={guardarBorrador}
                 className="px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-xl transition-all flex items-center gap-1.5"
               >
                 <Save className="w-4 h-4 text-slate-500" />
-                <span>Guardar</span>
+                <span>Guardar Provisional</span>
               </button>
-              <button
-                onClick={() => alert('👀 Generando vista previa del documento...')}
-                className="px-3.5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-medium rounded-xl transition-all flex items-center gap-1.5"
-              >
-                <Eye className="w-4 h-4 text-slate-500" />
-                <span>Vista Previa</span>
-              </button>
-              <button
-                onClick={() => alert('📥 Generando y descargando PDF de cotización...')}
-                className="px-3.5 py-2.5 bg-[#E63C46] hover:bg-[#C92A36] text-white text-xs font-semibold rounded-xl transition-all shadow-md flex items-center gap-1.5"
-              >
-                <Download className="w-4 h-4" />
-                <span>Descargar PDF</span>
-              </button>
-              <button
-                onClick={() => alert('🚀 Enviando propuesta al correo del cliente...')}
-                className="px-3.5 py-2.5 bg-[#162B4D] hover:bg-[#10203B] text-white text-xs font-semibold rounded-xl transition-all shadow-md flex items-center gap-1.5"
+              <a
+                href="#formulario-solicitud"
+                className="px-4 py-2.5 bg-[#E63C46] hover:bg-[#C92A36] text-white text-xs font-semibold rounded-xl transition-all shadow-md flex items-center gap-1.5"
               >
                 <Send className="w-4 h-4" />
-                <span>Enviar al Cliente</span>
-              </button>
+                <span>Completar y Enviar</span>
+              </a>
             </div>
           </div>
 
           {/* DATOS CLAVE DE LA COTIZACIÓN */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-6 text-xs">
             <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
-              <span className="text-slate-400 font-[600] block uppercase text-[10px]">Cliente / Empresa</span>
-              <span className="font-[700] text-slate-900 mt-0.5 block">{cotizacionMetadata.cliente}</span>
+              <span className="text-slate-400 font-[600] block uppercase text-[10px]">Solicitante / Empresa</span>
+              <span className="font-[700] text-slate-900 mt-0.5 block truncate">
+                {clienteForm.empresa || clienteForm.nombre || 'Por completar en el formulario'}
+              </span>
             </div>
             <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
-              <span className="text-slate-400 font-[600] block uppercase text-[10px]">Proyecto</span>
-              <span className="font-[700] text-slate-900 mt-0.5 block truncate">{cotizacionMetadata.proyecto}</span>
+              <span className="text-slate-400 font-[600] block uppercase text-[10px]">Equipos en lista</span>
+              <span className="font-[700] text-slate-900 mt-0.5 block">
+                {cartItems.reduce((acc, curr) => acc + curr.cantidad, 0)} unidades
+              </span>
             </div>
             <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
-              <span className="text-slate-400 font-[600] block uppercase text-[10px]">Fecha Emisión</span>
-              <span className="font-[700] text-slate-900 mt-0.5 block">{cotizacionMetadata.fecha}</span>
+              <span className="text-slate-400 font-[600] block uppercase text-[10px]">Fecha</span>
+              <span className="font-[700] text-slate-900 mt-0.5 block">
+                {new Date().toLocaleDateString('es-PE')}
+              </span>
             </div>
             <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
-              <span className="text-slate-400 font-[600] block uppercase text-[10px]">Responsable Técnico</span>
-              <span className="font-[700] text-slate-900 mt-0.5 block">{cotizacionMetadata.responsable}</span>
+              <span className="text-slate-400 font-[600] block uppercase text-[10px]">Atención</span>
+              <span className="font-[700] text-slate-900 mt-0.5 block">Equipo Comercial HH RENT</span>
             </div>
           </div>
         </section>
@@ -1035,7 +1026,7 @@ export default function CotizacionPage() {
                 onClick={guardarBorrador}
                 className="px-4 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-[700] transition-all"
               >
-                Guardar Borrador
+                Guardar Provisional
               </button>
               <button
                 onClick={enviarSolicitud}
@@ -1056,6 +1047,24 @@ export default function CotizacionPage() {
               </button>
             </div>
           </section>
+        )}
+
+        {/* SELLOS DE CONFIANZA Y GARANTÍA COMERCIAL */}
+        {!enviada && (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 text-center text-xs text-slate-500 font-[500]">
+            <div className="p-3 bg-white rounded-xl border border-slate-200/70 flex items-center justify-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-[#10A36A]" />
+              <span>Cotización 100% formal y confidencial</span>
+            </div>
+            <div className="p-3 bg-white rounded-xl border border-slate-200/70 flex items-center justify-center gap-2">
+              <Clock className="w-4 h-4 text-[#162B4D]" />
+              <span>Respuesta técnica en menos de 2 horas</span>
+            </div>
+            <div className="p-3 bg-white rounded-xl border border-slate-200/70 flex items-center justify-center gap-2">
+              <Truck className="w-4 h-4 text-[#E63C46]" />
+              <span>Disponibilidad y despacho a nivel nacional</span>
+            </div>
+          </div>
         )}
 
       </div>

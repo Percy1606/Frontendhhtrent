@@ -875,6 +875,41 @@ export default function EquipoDetallePage() {
         </div>
       </section>
 
+      {/* BOTTOM ACTION BAR FIJO EN MÓVIL (md:hidden) */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/80 p-3 px-4 md:hidden shadow-2xl flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <span className="text-[10px] font-[700] uppercase text-slate-400 block">
+            {precioEtiquetaCorta(equipo.tipo)}
+          </span>
+          <span className="font-spartan font-[800] text-sm text-slate-900 truncate block">
+            {formatoPrecioMoneda(
+              varianteSeleccionada ? varianteSeleccionada.precio : equipo.precio,
+              varianteSeleccionada ? varianteSeleccionada.unidad : equipo.unidad,
+            )}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => agregar(varianteSeleccionada || equipo)}
+            className="px-4 py-2.5 bg-[#E63C46] text-white text-xs font-[800] rounded-xl flex items-center gap-1.5 shadow-md active:scale-95 transition-transform"
+          >
+            <ShoppingCart className="w-4 h-4" />
+            <span>Agregar</span>
+          </button>
+          <a
+            href={`https://wa.me/51968285032?text=${encodeURIComponent(
+              `Hola, me interesa cotizar el equipo "${(varianteSeleccionada || equipo).nombre}".`
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="p-2.5 bg-[#162B4D] text-white rounded-xl shadow-md active:scale-95"
+            aria-label="WhatsApp"
+          >
+            <FileText className="w-4 h-4" />
+          </a>
+        </div>
+      </div>
+
       <Footer />
       <WhatsappWidget />
     </main>

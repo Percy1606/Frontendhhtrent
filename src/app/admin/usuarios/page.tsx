@@ -474,10 +474,11 @@ export default function AdminUsuariosPage() {
                     Contraseña inicial *
                   </label>
                   <input
-                    type="text"
+                    type="password"
                     value={form.password}
                     onChange={(e) => setForm({ ...form, password: e.target.value })}
                     placeholder="Mínimo 6 caracteres"
+                    autoComplete="new-password"
                     className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-[#E63C46]/30"
                   />
                 </div>
@@ -489,10 +490,11 @@ export default function AdminUsuariosPage() {
                     Nueva contraseña *
                   </label>
                   <input
-                    type="text"
+                    type="password"
                     value={form.password}
                     onChange={(e) => setForm({ ...form, password: e.target.value })}
                     placeholder="Mínimo 6 caracteres"
+                    autoComplete="new-password"
                     className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-[#E63C46]/30"
                   />
                 </div>

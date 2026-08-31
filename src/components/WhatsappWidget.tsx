@@ -5,9 +5,46 @@ import { MessageSquare, X } from 'lucide-react';
 
 export default function WhatsappWidget() {
   const [isOpen, setIsOpen] = useState(false);
+  const [showBubble, setShowBubble] = useState(false);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowBubble(true);
+    }, 3500);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <div className="fixed bottom-6 right-6 z-50 font-poppins">
+      {/* Burbuja de ayuda comercial emergente */}
+      <AnimatePresence>
+        {!isOpen && showBubble && (
+          <motion.div
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="absolute bottom-20 right-0 bg-white text-slate-800 p-3.5 rounded-2xl shadow-xl border border-slate-100 w-64 text-xs font-[600] flex items-center justify-between gap-2"
+          >
+            <div
+              onClick={() => {
+                setIsOpen(true);
+                setShowBubble(false);
+              }}
+              className="cursor-pointer"
+            >
+              <p className="font-[700] text-slate-900 leading-tight">👋 ¿Necesitas cotizar equipos?</p>
+              <p className="text-[11px] text-slate-500 font-[400] mt-0.5">Asesoría y entrega inmediata en obra</p>
+            </div>
+            <button
+              onClick={() => setShowBubble(false)}
+              className="text-slate-400 hover:text-slate-600 p-1"
+              aria-label="Cerrar"
+            >
+              ✕
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
       <AnimatePresence>
         {isOpen && (
           <motion.div

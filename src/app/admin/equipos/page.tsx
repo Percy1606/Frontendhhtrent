@@ -86,7 +86,7 @@ export default function AdminEquiposPage() {
       await apiFetch(`/equipos/${confirmarBaja.id}`, { method: 'DELETE' });
       setEquipos((prev) => prev.filter((e) => e.id !== confirmarBaja.id));
       setConfirmarBaja(null);
-      toast.error('Equipo dado de baja / eliminado');
+      toast.success('Equipo dado de baja / eliminado correctamente');
     } catch (err) {
       toast.error(
         err instanceof Error
@@ -301,10 +301,74 @@ export default function AdminEquiposPage() {
         </div>
       ) : (
         <div className="bg-white rounded-[16px] border border-slate-200/70 shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
+          {/* VISTA EN TARJETAS PARA CELULARES (md:hidden) */}
+          <div className="md:hidden divide-y divide-slate-100">
+            {paginados.map((eq) => (
+              <div key={eq.id} className="p-3.5 space-y-2.5">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    {eq.imagenUrl ? (
+                      <img
+                        loading="lazy"
+                        src={imagenCompleta(eq.imagenUrl)}
+                        alt={eq.nombre}
+                        className="w-12 h-12 rounded-[10px] object-cover bg-slate-100 border border-slate-200 shrink-0"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-[10px] bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0">
+                        <ImageIcon className="w-4 h-4 text-slate-300" />
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <span className="px-2 py-0.5 rounded-md bg-[#162B4D]/5 text-[#162B4D] font-[800] text-[9.5px] border border-[#162B4D]/10">
+                          {eq.codigoInterno || 'Sin código'}
+                        </span>
+                        <span className={`px-2 py-0.5 rounded-md text-[9px] font-[800] border ${ESTADO_COLORS[eq.estado] || 'bg-slate-100 text-slate-600'}`}>
+                          {ESTADO_LABELS[eq.estado] || eq.estado}
+                        </span>
+                      </div>
+                      <p className="font-[700] text-slate-900 text-xs mt-1 truncate">
+                        {eq.nombre}
+                      </p>
+                      <p className="text-[10px] text-slate-400 font-[500]">
+                        {[eq.marca, eq.modelo].filter(Boolean).join(' · ') || eq.familia?.nombre || 'General'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-1 text-[11px] border-t border-slate-50">
+                  <div className="flex items-center gap-1.5 text-slate-500">
+                    <MapPin className="w-3 h-3 text-[#E63C46]" />
+                    <span>{eq.ubicacion}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Link
+                      href={`/admin/equipos/${eq.id}`}
+                      className="px-2.5 py-1.5 rounded-lg bg-slate-100 text-slate-700 font-[700] text-[10.5px] flex items-center gap-1"
+                    >
+                      <Eye className="w-3.5 h-3.5" /> Ficha
+                    </Link>
+                    {puedeEditar && (
+                      <Link
+                        href={`/admin/equipos/${eq.id}?editar=1`}
+                        className="px-2.5 py-1.5 rounded-lg bg-[#E63C46] text-white font-[700] text-[10.5px] flex items-center gap-1"
+                      >
+                        <Pencil className="w-3.5 h-3.5" /> Editar
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* TABLA COMPLETA PARA TABLETS Y PC (hidden md:block) */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left text-[11px]">
               <thead>
-                <tr className="bg-slate-50 text-slate-500 uppercase font-[700] border-b border-slate-200 text-[10px] tracking-wider">
+                <tr className="bg-slate-50 text-slate-500 uppercase font-[700] border-b border-slate-200 text-[10px] tracking-wider sticky top-0">
                   <th className="py-3 px-4">Código</th>
                   <th className="py-3 px-3.5">Equipo</th>
                   <th className="py-3 px-3.5">Categoría</th>

@@ -20,6 +20,7 @@ import {
   PhoneCall,
   Image as ImageIcon,
   Loader2,
+  X,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -188,14 +189,15 @@ export default function EquiposPage() {
     fetchEquipos(debouncedTerm, selectedTipo, selectedCategoria, sig);
   };
 
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+
   return (
-    <main className="min-h-screen bg-[#f8fafc] font-poppins text-slate-900">
+    <div className="min-h-screen bg-[#F8FAFC]">
       <Header />
 
-      {/* HEADER DE LA PÁGINA */}
-      <section className="bg-gradient-to-r from-[#162B4D] via-[#1E3A66] to-[#162B4D] pt-24 pb-6 text-white relative overflow-hidden flex items-center justify-center">
-        <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-12 relative z-10">
-          <div className="relative flex flex-col md:flex-row items-center justify-center min-h-[44px] gap-3">
+      <section className="bg-[#162B4D] pt-28 pb-8 px-4 sm:px-6 lg:px-8 relative overflow-hidden text-center">
+        <div className="max-w-7xl mx-auto space-y-4">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 relative">
             <Link
               href="/#catalogo"
               className="md:absolute md:left-0 inline-flex items-center gap-1.5 text-xs font-[700] text-slate-300 hover:text-white bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm transition-all"
@@ -208,49 +210,138 @@ export default function EquiposPage() {
               Todos los Equipos Industriales
             </h1>
 
-            <a
-              href="#"
-              onClick={(e) => { e.preventDefault(); alert("El nuevo catálogo estará disponible pronto."); }}
-              className="md:absolute md:right-0 px-3.5 py-1.5 bg-[#E63C46] hover:bg-[#C92A36] text-white rounded-lg text-xs font-[700] flex items-center gap-1.5 transition-all shadow-sm"
+            <button
+              onClick={() => setMobileFiltersOpen(true)}
+              className="lg:hidden md:absolute md:right-0 px-4 py-2 bg-[#E63C46] hover:bg-[#C92A36] text-white rounded-xl text-xs font-[800] flex items-center gap-2 transition-all shadow-md active:scale-95"
             >
-              <FileText className="w-4 h-4" />
-              <span>Descargar PDF</span>
-              <Download className="w-3.5 h-3.5" />
-            </a>
+              <Filter className="w-4 h-4" />
+              <span>Filtrar Equipos ({filteredProducts.length})</span>
+            </button>
           </div>
         </div>
       </section>
 
-      {/* CONTENIDO PRINCIPAL Y FILTROS */}
+      {mobileFiltersOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden flex justify-end">
+          <div
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs transition-opacity animate-fade-in"
+            onClick={() => setMobileFiltersOpen(false)}
+          />
+          <div className="relative w-full max-w-xs sm:max-w-sm bg-white h-full shadow-2xl p-5 overflow-y-auto z-10 flex flex-col justify-between">
+            <div className="space-y-5">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 className="font-spartan font-[800] text-sm text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                  <Filter className="w-4 h-4 text-[#E63C46]" />
+                  Filtros del Catálogo
+                </h3>
+                <button
+                  onClick={() => setMobileFiltersOpen(false)}
+                  className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div>
+                <label className="text-[11px] font-[700] uppercase tracking-wider text-slate-400 block mb-1.5">
+                  Buscar Producto / Código
+                </label>
+                <div className="relative">
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Ej. Megóhmetro, Transformador..."
+                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#E63C46]/20 bg-slate-50"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[11px] font-[700] uppercase tracking-wider text-slate-400 block mb-2">
+                  Categoría
+                </label>
+                <div className="flex flex-wrap gap-1.5 max-h-48 overflow-y-auto p-0.5">
+                  {categoriasUnicas.map((cat: string) => (
+                    <button
+                      key={cat}
+                      onClick={() => setSelectedCategoria(cat)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-[700] transition-all border ${
+                        selectedCategoria === cat
+                          ? 'bg-[#162B4D] border-[#162B4D] text-white shadow-xs'
+                          : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[11px] font-[700] uppercase tracking-wider text-slate-400 block mb-2">
+                  Modalidad
+                </label>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {[
+                    { id: 'TODOS', label: 'Todos' },
+                    { id: 'ALQUILER', label: 'Alquiler' },
+                    { id: 'VENTA', label: 'Venta' },
+                    { id: 'PROYECTO', label: 'Proyecto' },
+                  ].map((m) => (
+                    <button
+                      key={m.id}
+                      onClick={() => setSelectedTipo(m.id)}
+                      className={`py-2 px-2.5 rounded-lg text-xs font-[700] border transition-all text-center ${
+                        selectedTipo === m.id
+                          ? 'bg-[#E63C46] border-[#E63C46] text-white'
+                          : 'bg-slate-50 border-slate-200 text-slate-700'
+                      }`}
+                    >
+                      {m.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-slate-100 space-y-2">
+              <button
+                onClick={() => setMobileFiltersOpen(false)}
+                className="w-full py-3 bg-[#162B4D] text-white text-xs font-[800] rounded-xl hover:bg-[#10203B] transition-all shadow-md"
+              >
+                Ver {filteredProducts.length} Resultados
+              </button>
+              <button
+                onClick={() => {
+                  setSearchTerm('');
+                  setSelectedCategoria('TODAS');
+                  setSelectedTipo('TODOS');
+                  setSelectedMarca('TODAS');
+                  setSelectedAmperaje('TODOS');
+                  setSelectedIP('TODOS');
+                }}
+                className="w-full py-2 text-slate-500 hover:text-[#E63C46] text-xs font-[700] transition-colors"
+              >
+                Limpiar Filtros
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <section className="py-6 w-full px-4 sm:px-6 lg:px-8">
-        {/* CONTENEDOR PRINCIPAL CON SIDEBAR A LA IZQUIERDA */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* SIDEBAR DE FILTROS A LA IZQUIERDA */}
-          <div className="lg:col-span-3 bg-white p-5 rounded-[20px] border border-slate-200/80 shadow-sm space-y-5 lg:sticky lg:top-24 text-left">
+          <div className="hidden lg:block lg:col-span-3 bg-white p-5 rounded-[20px] border border-slate-200/80 shadow-sm space-y-5 lg:sticky lg:top-24 text-left">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="font-spartan font-[800] text-sm text-slate-800 uppercase tracking-wider flex items-center gap-2">
                 <Filter className="w-4 h-4 text-[#E63C46]" />
                 Filtros Avanzados
               </h3>
-              {(searchTerm || selectedCategoria !== 'TODAS' || selectedTipo !== 'TODOS' || selectedMarca !== 'TODAS' || selectedAmperaje !== 'TODOS' || selectedIP !== 'TODOS') && (
-                <button
-                  onClick={() => {
-                    setSearchTerm('');
-                    setSelectedCategoria('TODAS');
-                    setSelectedTipo('TODOS');
-                    setSelectedMarca('TODAS');
-                    setSelectedAmperaje('TODOS');
-                    setSelectedIP('TODOS');
-                  }}
-                  className="text-[10px] font-[700] text-[#E63C46] hover:underline"
-                >
-                  Limpiar todo
-                </button>
-              )}
             </div>
 
-            {/* Buscador general */}
-            <div className="text-left">
+            <div>
               <label className="text-[11px] font-[700] uppercase tracking-wider text-slate-400 block mb-1.5 text-left">
                 Buscar Producto / Código
               </label>
@@ -258,16 +349,15 @@ export default function EquiposPage() {
                 <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
-                  placeholder="Ej: 32A, IP67, 5SY4..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-[12px] text-xs font-[600] text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#162B4D] focus:bg-white transition-all text-left"
+                  placeholder="Ej. Megóhmetro, TTR, Celda..."
+                  className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#E63C46]/20 bg-slate-50 transition-all font-[500]"
                 />
               </div>
             </div>
 
-            {/* Modalidad */}
-            <div className="text-left">
+            <div>
               <label className="text-[11px] font-[700] uppercase tracking-wider text-slate-400 block mb-1.5 text-left">
                 Modalidad
               </label>
@@ -593,7 +683,7 @@ export default function EquiposPage() {
 
       <Footer />
       <WhatsappWidget />
-    </main>
+    </div>
   );
 }
 

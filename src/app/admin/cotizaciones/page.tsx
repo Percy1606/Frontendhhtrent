@@ -281,7 +281,7 @@ export default function AdminCotizacionesPage() {
       if (detalle?.id === id) setDetalle(null);
       setConfirmarEliminar(null);
       setAdminPasswordConfirm('');
-      toast.error('Cotización eliminada');
+      toast.success('Cotización eliminada correctamente');
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Error al eliminar la cotización';
       setErrorPasswordEliminar(msg);

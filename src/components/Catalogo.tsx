@@ -156,8 +156,9 @@ export default function Catalogo() {
                     >
                       {tipoLabel(item.tipo)}
                     </span>
-                    <span className="absolute top-3 right-3 z-10 px-2.5 py-1 rounded-full bg-amber-400 text-amber-950 text-[10px] font-[800] uppercase tracking-wider shadow-sm">
-                      Destacado
+                    <span className="absolute top-3 right-3 z-10 px-2.5 py-1 rounded-full bg-emerald-500 text-white text-[9.5px] font-[800] tracking-wider shadow-sm flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                      Despacho Inmediato
                     </span>
                     {item.imagenUrl ? (
                       <Image

@@ -123,7 +123,7 @@ export default function AdminMantenimientoPage() {
     if (!confirm('¿Eliminar este plan de mantenimiento preventivo?')) return;
     try {
       await apiFetch(`/mantenimiento/planes/${id}`, { method: 'DELETE' });
-      toast.error('Plan de mantenimiento eliminado');
+      toast.success('Plan de mantenimiento eliminado correctamente');
       cargar();
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : 'No se pudo eliminar el plan');

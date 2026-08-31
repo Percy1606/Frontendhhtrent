@@ -47,12 +47,12 @@ export default function Hero() {
           {/* Botones de Acción */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-start gap-4">
             <a
-              href="https://wa.me/51968285032?text=Hola%20HT%20Rent,%20deseo%20solicitar%20Evaluación%20Técnica"
+              href="https://wa.me/51968285032?text=Hola%20HT%20Rent,%20deseo%20solicitar%20cotización%20inmediata%20de%20equipos"
               target="_blank"
               rel="noopener noreferrer"
               className="bg-gradient-to-r from-[#E63C46] to-[#C92A36] hover:from-[#C92A36] hover:to-[#E63C46] text-white font-montserrat font-[700] px-8 py-4 rounded-[12px] text-xs sm:text-sm transition-all duration-300 shadow-lg shadow-[#E63C46]/25 uppercase tracking-wider text-center transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
             >
-              Solicitar Evaluación
+              Cotizar por WhatsApp
             </a>
 
             <a
