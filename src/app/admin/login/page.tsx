@@ -52,7 +52,7 @@ export default function AdminLoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
@@ -65,6 +65,10 @@ export default function AdminLoginPage() {
   // Helper para redirigir según el rol
   const redirectByRole = (rol?: string) => {
     switch (rol) {
+      case 'ADMINISTRADOR':
+      case 'GERENCIA':
+        router.replace('/admin');
+        break;
       case 'COMERCIAL':
         router.replace('/admin/cotizaciones');
         break;
@@ -74,7 +78,6 @@ export default function AdminLoginPage() {
       case 'OPERACIONES':
         router.replace('/admin/mantenimiento');
         break;
-      case 'ADMINISTRADOR':
       case 'ALMACEN':
       default:
         router.replace('/admin/equipos');
@@ -84,6 +87,16 @@ export default function AdminLoginPage() {
 
   useEffect(() => {
     setFormMounted(true); // Activa la animación del form
+
+    // Cargar último correo recordado
+    if (typeof window !== 'undefined') {
+      const savedEmail = localStorage.getItem('hhtrent_remember_email');
+      if (savedEmail) {
+        setEmail(savedEmail);
+        setRememberMe(true);
+      }
+    }
+
     if (getToken()) {
       const user = getStoredUser();
       redirectByRole(user?.rol);
@@ -112,15 +125,15 @@ export default function AdminLoginPage() {
     startTimer(); // Reinicia el tiempo al clickear
   };
 
-  const validateFields = () => {
+  const validateFields = (cleanEmail: string, cleanPassword: string) => {
     const errors: { email?: string; password?: string } = {};
-    if (!email) {
+    if (!cleanEmail) {
       errors.email = 'El correo o usuario es requerido';
-    } else if (email.includes('@') && !/^\S+@\S+\.\S+$/.test(email)) {
+    } else if (cleanEmail.includes('@') && !/^\S+@\S+\.\S+$/.test(cleanEmail)) {
       errors.email = 'Formato de correo inválido';
     }
 
-    if (!password) {
+    if (!cleanPassword) {
       errors.password = 'La contraseña es requerida';
     }
 
@@ -132,7 +145,10 @@ export default function AdminLoginPage() {
     e.preventDefault();
     setError('');
     
-    if (!validateFields()) {
+    const cleanEmail = email.trim();
+    const cleanPassword = password;
+
+    if (!validateFields(cleanEmail, cleanPassword)) {
       return;
     }
 
@@ -142,7 +158,7 @@ export default function AdminLoginPage() {
       const res = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email: cleanEmail, password: cleanPassword }),
       });
 
       const data = await res.json();
@@ -150,6 +166,15 @@ export default function AdminLoginPage() {
         setError(data.message || 'Credenciales inválidas. Por favor, verifique sus datos.');
         setLoading(false);
         return;
+      }
+
+      // Guardar o limpiar correo recordado
+      if (typeof window !== 'undefined') {
+        if (rememberMe) {
+          localStorage.setItem('hhtrent_remember_email', cleanEmail);
+        } else {
+          localStorage.removeItem('hhtrent_remember_email');
+        }
       }
 
       saveSession(data.token, data.usuario, rememberMe);
@@ -161,7 +186,7 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 flex font-poppins selection:bg-[#0361CA] selection:text-white">
+    <main className="min-h-screen bg-slate-50 flex font-poppins selection:bg-[#162B4D] selection:text-white">
       
       {/* Columna Izquierda - Carrusel Informativo (Oculto en móvil) */}
       <div 
@@ -301,28 +326,30 @@ export default function AdminLoginPage() {
             <p className="text-xs text-slate-500 mt-2 font-medium">Plataforma Integral de Gestión HHTRENT</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-3 xl:space-y-4" noValidate>
+          <form onSubmit={handleSubmit} className="space-y-3.5 xl:space-y-4" noValidate>
             
             {/* Input Usuario/Correo */}
             <div className="relative group/input">
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5 ml-1 transition-colors group-focus-within/input:text-[#0361CA]">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5 ml-1 transition-colors group-focus-within/input:text-[#162B4D]">
                 Correo Electrónico o Usuario
               </label>
               <div className="relative">
-                <Mail className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 z-10 ${fieldErrors.email ? 'text-red-500' : 'text-slate-400 group-focus-within/input:text-[#0361CA]'}`} />
+                <Mail className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 z-10 ${fieldErrors.email ? 'text-red-500' : 'text-slate-400 group-focus-within/input:text-[#162B4D]'}`} />
                 <input
-                  type="text"
+                  type="email"
+                  name="email"
+                  autoComplete="username"
                   required
                   value={email}
                   onChange={(e) => {
                     setEmail(e.target.value);
                     if (fieldErrors.email) setFieldErrors({ ...fieldErrors, email: undefined });
                   }}
-                  placeholder="admin@hhtrent.com"
+                  placeholder="usuario@hhtrent.com"
                   className={`w-full pl-11 pr-4 py-2.5 bg-slate-50 border-2 rounded-xl text-xs xl:text-sm text-slate-900 focus:outline-none focus:bg-white transition-all duration-300 placeholder:text-slate-400 hover:bg-slate-100/50 ${
                     fieldErrors.email 
                       ? 'border-red-400 focus:border-red-500 shadow-[0_0_0_3px_rgba(239,68,68,0.15)]' 
-                      : 'border-slate-200 focus:border-[#0361CA] hover:border-slate-300 focus:shadow-[0_0_0_3px_rgba(3,97,202,0.15)]'
+                      : 'border-slate-200 focus:border-[#162B4D] hover:border-slate-300 focus:shadow-[0_0_0_3px_rgba(22,43,77,0.12)]'
                   }`}
                 />
               </div>
@@ -333,13 +360,15 @@ export default function AdminLoginPage() {
 
             {/* Input Contraseña */}
             <div className="relative group/input">
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5 ml-1 transition-colors group-focus-within/input:text-[#0361CA]">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5 ml-1 transition-colors group-focus-within/input:text-[#162B4D]">
                 Contraseña de Acceso
               </label>
               <div className="relative">
-                <Lock className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 z-10 ${fieldErrors.password ? 'text-red-500' : 'text-slate-400 group-focus-within/input:text-[#0361CA]'}`} />
+                <Lock className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors duration-300 z-10 ${fieldErrors.password ? 'text-red-500' : 'text-slate-400 group-focus-within/input:text-[#162B4D]'}`} />
                 <input
                   type={showPassword ? 'text' : 'password'}
+                  name="password"
+                  autoComplete="current-password"
                   required
                   value={password}
                   onChange={(e) => {
@@ -350,13 +379,14 @@ export default function AdminLoginPage() {
                   className={`w-full pl-11 pr-11 py-2.5 bg-slate-50 border-2 rounded-xl text-xs xl:text-sm text-slate-900 focus:outline-none focus:bg-white transition-all duration-300 placeholder:text-slate-400 hover:bg-slate-100/50 ${
                     fieldErrors.password 
                       ? 'border-red-400 focus:border-red-500 shadow-[0_0_0_3px_rgba(239,68,68,0.15)]' 
-                      : 'border-slate-200 focus:border-[#0361CA] hover:border-slate-300 focus:shadow-[0_0_0_3px_rgba(3,97,202,0.15)]'
+                      : 'border-slate-200 focus:border-[#162B4D] hover:border-slate-300 focus:shadow-[0_0_0_3px_rgba(22,43,77,0.12)]'
                   }`}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 hover:scale-110 transition-all duration-200 p-1.5 rounded-lg hover:bg-slate-200 z-10"
+                  aria-label={showPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -374,7 +404,7 @@ export default function AdminLoginPage() {
                     type="checkbox"
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
-                    className="peer appearance-none w-5 h-5 border-2 border-slate-300 rounded-md bg-white checked:bg-[#0361CA] checked:border-[#0361CA] focus:outline-none focus:ring-2 focus:ring-[#0361CA]/30 focus:ring-offset-1 hover:border-slate-400 transition-all duration-200 cursor-pointer shadow-sm"
+                    className="peer appearance-none w-5 h-5 border-2 border-slate-300 rounded-md bg-white checked:bg-[#162B4D] checked:border-[#162B4D] focus:outline-none focus:ring-2 focus:ring-[#162B4D]/30 focus:ring-offset-1 hover:border-slate-400 transition-all duration-200 cursor-pointer shadow-sm"
                   />
                   <ShieldCheck className="w-3.5 h-3.5 text-white absolute opacity-0 peer-checked:opacity-100 pointer-events-none transition-all duration-300 scale-50 peer-checked:scale-100" />
                 </div>
@@ -385,7 +415,7 @@ export default function AdminLoginPage() {
 
               <Link
                 href="/admin/olvide-password"
-                className="text-sm font-bold text-[#0361CA] hover:text-[#024a9c] hover:underline underline-offset-4 transition-all"
+                className="text-sm font-bold text-[#E63C46] hover:text-[#C92A36] hover:underline underline-offset-4 transition-all"
               >
                 ¿Olvidaste tu contraseña?
               </Link>
@@ -403,7 +433,7 @@ export default function AdminLoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3 mt-1 bg-[#0361CA] hover:bg-[#024A9B] hover:shadow-[0_12px_24px_-8px_rgba(3,97,202,0.5)] hover:-translate-y-0.5 text-white font-bold text-sm rounded-xl transition-all duration-300 flex items-center justify-center gap-2.5 shadow-[0_8px_16px_-8px_rgba(3,97,202,0.4)] active:scale-[0.98] active:translate-y-0 disabled:opacity-70 disabled:pointer-events-none group overflow-hidden relative"
+              className="w-full py-3 mt-1 bg-[#162B4D] hover:bg-[#1f3b68] hover:shadow-[0_12px_24px_-8px_rgba(22,43,77,0.5)] hover:-translate-y-0.5 text-white font-bold text-sm rounded-xl transition-all duration-300 flex items-center justify-center gap-2.5 shadow-[0_8px_16px_-8px_rgba(22,43,77,0.35)] active:scale-[0.98] active:translate-y-0 disabled:opacity-70 disabled:pointer-events-none group overflow-hidden relative"
             >
               {/* Efecto hover brillante */}
               <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent group-hover:animate-[shimmer_1.5s_infinite]" />
