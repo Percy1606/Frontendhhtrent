@@ -1112,24 +1112,19 @@ export default function CotizacionPage() {
               <a
                 href={`https://wa.me/51968285032?text=${encodeURIComponent(
                   `*SOLICITUD DE COTIZACIÓN - HT RENT*\n\n` +
-                  `Hola, deseo solicitar cotización formal para los siguientes equipos:\n\n` +
+                  (cartItems.length === 1
+                    ? `Hola, deseo solicitar cotización formal para el siguiente equipo:\n\n`
+                    : `Hola, deseo solicitar cotización formal para los siguientes equipos:\n\n`) +
                   cartItems
                     .map(
                       (i, idx) =>
-                        `📌 *Item ${idx + 1}:* ${i.nombre}\n` +
-                        (i.codigoInterno ? `   • *CÓDIGO:* ${i.codigoInterno}\n` : '') +
-                        `   • *Cantidad:* ${i.cantidad} unidad(es)\n` +
-                        `   • *Modalidad:* ${i.tipo === 'VENTA' ? 'Venta' : 'Alquiler'}\n` +
-                        `   • *Precio/Tarifa:* ${
-                          Number(i.precio) > 0 ? `S/ ${i.precio}` : 'Bajo Cotización'
-                        }`
+                        `*Ítem ${idx + 1}: ${i.nombre}*\n` +
+                        `• Cantidad: ${i.cantidad} ${i.cantidad === 1 ? 'unidad' : 'unidades'}\n` +
+                        `• Modalidad: ${i.tipo === 'VENTA' ? 'Venta' : 'Alquiler'}\n` +
+                        `• Tarifa: ${Number(i.precio) > 0 ? `S/ ${Number(i.precio).toLocaleString('es-PE')}` : 'Por cotizar'}`
                     )
                     .join('\n\n') +
-                  (clienteForm.nombre ? `\n\n👤 *Solicitante:* ${clienteForm.nombre}` : '') +
-                  (clienteForm.empresa ? `\n🏢 *Empresa:* ${clienteForm.empresa}` : '') +
-                  (clienteForm.telefono ? `\n📱 *Teléfono:* ${clienteForm.telefono}` : '') +
-                  (clienteForm.email ? `\n✉️ *Correo:* ${clienteForm.email}` : '') +
-                  (clienteForm.mensaje ? `\n📝 *Requerimiento:* ${clienteForm.mensaje}` : '')
+                  `\n\nAgradeceré indicarnos disponibilidad, precio y condiciones de alquiler.`
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"
