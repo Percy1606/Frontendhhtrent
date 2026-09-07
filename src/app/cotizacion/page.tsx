@@ -851,32 +851,42 @@ export default function CotizacionPage() {
 
         </section>
 
-        {/* 8.5. DATOS DEL SOLICITANTE (se envía a la BD) */}
-        <section className="bg-white rounded-[24px] border border-slate-200/80 p-6 sm:p-8 shadow-sm">
+        {/* 8.5. DATOS DEL SOLICITANTE */}
+        <section id="formulario-solicitud" className="bg-white rounded-[24px] border border-slate-200/80 p-6 sm:p-8 shadow-sm scroll-mt-24">
           <div className="border-b border-slate-100 pb-3 mb-5">
-            <h3 className="text-lg font-[800] font-spartan text-slate-900 uppercase tracking-tight">
-              Datos del Solicitante
-            </h3>
-            <p className="text-slate-500 text-xs mt-0.5">
-              Completa tus datos y envía la solicitud al área comercial de HH T-Soluciona. Un asesor te contactará para confirmar disponibilidad.
+            <div className="flex items-center gap-2">
+              <span className="w-7 h-7 rounded-full bg-[#E63C46] text-white text-xs font-[800] flex items-center justify-center">
+                1
+              </span>
+              <h3 className="text-lg font-[800] font-spartan text-slate-900 uppercase tracking-tight">
+                Paso 1: Completa tus Datos de Contacto
+              </h3>
+            </div>
+            <p className="text-slate-500 text-xs mt-1">
+              Ingresa tus datos para generar tu cotización formal y enviarte la propuesta.
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="text-[11px] font-[700] uppercase tracking-wide text-slate-500 block mb-1.5">
-                Nombre completo *
+              <label className="text-[11px] font-[700] uppercase tracking-wide text-slate-700 block mb-1.5">
+                Nombre completo <span className="text-[#E63C46]">*</span>
               </label>
               <input
                 value={clienteForm.nombre}
-                onChange={(e) => actualizarCampo('nombre', e.target.value)}
+                onChange={(e) => {
+                  actualizarCampo('nombre', e.target.value);
+                  if (errorEnvio) setErrorEnvio(null);
+                }}
                 placeholder="Ej. Juan Pérez"
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-[#E63C46]/30"
+                className={`w-full px-4 py-3 rounded-xl border ${
+                  !clienteForm.nombre.trim() && errorEnvio ? 'border-red-400 bg-red-50/50 ring-2 ring-red-200' : 'border-slate-200 bg-slate-50'
+                } text-sm focus:outline-none focus:ring-2 focus:ring-[#E63C46]/30 transition-all`}
               />
             </div>
             <div>
-              <label className="text-[11px] font-[700] uppercase tracking-wide text-slate-500 block mb-1.5">
-                Empresa
+              <label className="text-[11px] font-[700] uppercase tracking-wide text-slate-700 block mb-1.5">
+                Empresa / Razón Social <span className="text-slate-400 font-normal">(Opcional)</span>
               </label>
               <input
                 value={clienteForm.empresa}
@@ -886,31 +896,41 @@ export default function CotizacionPage() {
               />
             </div>
             <div>
-              <label className="text-[11px] font-[700] uppercase tracking-wide text-slate-500 block mb-1.5">
-                Correo electrónico *
+              <label className="text-[11px] font-[700] uppercase tracking-wide text-slate-700 block mb-1.5">
+                Correo electrónico <span className="text-[#E63C46]">*</span>
               </label>
               <input
                 type="email"
                 value={clienteForm.email}
-                onChange={(e) => actualizarCampo('email', e.target.value)}
+                onChange={(e) => {
+                  actualizarCampo('email', e.target.value);
+                  if (errorEnvio) setErrorEnvio(null);
+                }}
                 placeholder="Ej. juan.perez@empresa.com"
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-[#E63C46]/30"
+                className={`w-full px-4 py-3 rounded-xl border ${
+                  !clienteForm.email.trim() && errorEnvio ? 'border-red-400 bg-red-50/50 ring-2 ring-red-200' : 'border-slate-200 bg-slate-50'
+                } text-sm focus:outline-none focus:ring-2 focus:ring-[#E63C46]/30 transition-all`}
               />
             </div>
             <div>
-              <label className="text-[11px] font-[700] uppercase tracking-wide text-slate-500 block mb-1.5">
-                Teléfono / WhatsApp *
+              <label className="text-[11px] font-[700] uppercase tracking-wide text-slate-700 block mb-1.5">
+                Teléfono / WhatsApp <span className="text-[#E63C46]">*</span>
               </label>
               <input
                 value={clienteForm.telefono}
-                onChange={(e) => actualizarCampo('telefono', e.target.value)}
+                onChange={(e) => {
+                  actualizarCampo('telefono', e.target.value);
+                  if (errorEnvio) setErrorEnvio(null);
+                }}
                 placeholder="Ej. 999 999 999"
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-[#E63C46]/30"
+                className={`w-full px-4 py-3 rounded-xl border ${
+                  !clienteForm.telefono.trim() && errorEnvio ? 'border-red-400 bg-red-50/50 ring-2 ring-red-200' : 'border-slate-200 bg-slate-50'
+                } text-sm focus:outline-none focus:ring-2 focus:ring-[#E63C46]/30 transition-all`}
               />
             </div>
             <div className="sm:col-span-2">
-              <label className="text-[11px] font-[700] uppercase tracking-wide text-slate-500 block mb-1.5">
-                Mensaje o requerimiento
+              <label className="text-[11px] font-[700] uppercase tracking-wide text-slate-700 block mb-1.5">
+                Mensaje o requerimiento especial <span className="text-slate-400 font-normal">(Opcional)</span>
               </label>
               <textarea
                 value={clienteForm.mensaje}
@@ -923,13 +943,9 @@ export default function CotizacionPage() {
           </div>
 
           {errorEnvio && (
-            <div className="mt-4 bg-red-50 border border-red-200 text-red-700 text-xs font-[600] rounded-xl p-3.5">
-              {errorEnvio}
-            </div>
-          )}
-          {mensajeGuardado && (
-            <div className="mt-4 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-[600] rounded-xl p-3.5">
-              {mensajeGuardado}
+            <div className="mt-4 bg-red-50 border border-red-300 text-red-700 text-xs font-[700] rounded-xl p-3.5 flex items-center gap-2">
+              <span>⚠️</span>
+              <span>{errorEnvio}</span>
             </div>
           )}
         </section>
@@ -1006,16 +1022,6 @@ export default function CotizacionPage() {
                 <CheckCircle2 className="w-4 h-4" />
                 <span>Rastrear Pedido & Pagar</span>
               </Link>
-              <a
-                href={`https://wa.me/51968285032?text=${encodeURIComponent(
-                  `Hola HT RENT, acabo de enviar la cotización con el Ticket ${ticketGenerado?.codigo || ''}. Quisiera coordinar detalles.`
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full sm:w-auto px-6 py-3.5 bg-[#25D366] hover:bg-[#20bd5a] text-white rounded-xl text-xs font-[800] uppercase tracking-wider shadow-lg flex items-center justify-center gap-2 transition-all"
-              >
-                <span>Consultar por WhatsApp</span>
-              </a>
               <button
                 onClick={() => {
                   setEnviada(false);
@@ -1027,42 +1033,107 @@ export default function CotizacionPage() {
             </div>
           </section>
         ) : (
-          <section className="bg-[#162B4D] rounded-[24px] p-6 sm:p-8 text-white shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 border border-slate-700/50">
-            <div>
+        /* 9. PASO 2: ELEGIR CÓMO ENVIAR LA COTIZACIÓN */
+        <section className="bg-slate-900 rounded-[24px] p-6 sm:p-8 text-white shadow-xl space-y-6 border border-slate-800">
+          <div className="border-b border-slate-800 pb-4">
+            <div className="flex items-center gap-2">
+              <span className="w-7 h-7 rounded-full bg-[#E63C46] text-white text-xs font-[800] flex items-center justify-center">
+                2
+              </span>
               <h3 className="text-lg sm:text-xl font-[800] font-spartan text-white uppercase tracking-tight">
-                ¿Listo para enviar tu solicitud?
+                Paso 2: Elige cómo enviar tu solicitud
               </h3>
-              <p className="text-xs sm:text-sm text-slate-300 mt-1">
-                Completa tus datos y envía la cotización al área comercial. Recibirás respuesta por correo o WhatsApp.
-              </p>
             </div>
+            <p className="text-xs sm:text-sm text-slate-400 mt-1">
+              Selecciona la opción que prefieras para tramitar tu cotización con nosotros:
+            </p>
+          </div>
 
-            <div className="flex flex-wrap items-center gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {/* OPCIÓN A: REGISTRAR EN EL SISTEMA */}
+            <div className="bg-slate-800/90 border-2 border-slate-700 rounded-2xl p-5 flex flex-col justify-between space-y-4 hover:border-[#E63C46]/60 transition-all">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-[800] uppercase px-2.5 py-1 bg-[#E63C46]/20 text-[#E63C46] rounded-full border border-[#E63C46]/30">
+                    Opción 1 · Sistema Web
+                  </span>
+                  <span className="text-[11px] text-slate-400 font-[600]">Formal</span>
+                </div>
+                <h4 className="font-spartan font-[700] text-base text-white">
+                  Registrar en Web y Generar Ticket
+                </h4>
+                <p className="text-xs text-slate-300 leading-relaxed font-[400]">
+                  Registra tu solicitud en nuestra base de datos. Obtendrás un <b>N° de Ticket único</b> para hacer seguimiento en línea y recibir la cotización por correo.
+                </p>
+              </div>
+
               <button
-                onClick={guardarBorrador}
-                className="px-4 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl text-xs font-[700] transition-all"
-              >
-                Guardar Provisional
-              </button>
-              <button
-                onClick={enviarSolicitud}
+                onClick={() => {
+                  const el = document.getElementById('formulario-solicitud');
+                  if (!clienteForm.nombre.trim() || !clienteForm.email.trim() || !clienteForm.telefono.trim()) {
+                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }
+                  enviarSolicitud();
+                }}
                 disabled={enviando}
-                className="px-6 py-3 bg-[#E63C46] hover:bg-[#C92A36] disabled:opacity-60 disabled:cursor-not-allowed text-white rounded-xl text-xs font-[800] shadow-lg shadow-[#E63C46]/30 transition-all flex items-center gap-2"
+                className="w-full py-4 bg-[#E63C46] hover:bg-[#C92A36] disabled:opacity-60 disabled:cursor-not-allowed text-white rounded-xl text-xs font-[800] uppercase tracking-wider shadow-lg shadow-[#E63C46]/30 transition-all flex items-center justify-center gap-2"
               >
                 {enviando ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Enviando…</span>
+                    <span>Registrando Solicitud…</span>
                   </>
                 ) : (
                   <>
                     <Send className="w-4 h-4" />
-                    <span>Enviar Solicitud de Cotización</span>
+                    <span>Registrar en Web</span>
                   </>
                 )}
               </button>
             </div>
-          </section>
+
+            {/* OPCIÓN B: ENVIAR POR WHATSAPP */}
+            <div className="bg-[#25D366]/10 border-2 border-[#25D366]/40 rounded-2xl p-5 flex flex-col justify-between space-y-4 hover:border-[#25D366]/80 transition-all">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-[800] uppercase px-2.5 py-1 bg-[#25D366]/20 text-[#25D366] rounded-full border border-[#25D366]/30">
+                    Opción 2 · Atención Inmediata
+                  </span>
+                  <span className="text-[11px] text-[#25D366] font-[700]">Recomendado</span>
+                </div>
+                <h4 className="font-spartan font-[700] text-base text-white">
+                  Cotizar Directo por WhatsApp
+                </h4>
+                <p className="text-xs text-slate-300 leading-relaxed font-[400]">
+                  ¿Prefieres atención rápida? Abre un chat directo con un asesor con el resumen de tus <b>{cartItems.reduce((acc, curr) => acc + curr.cantidad, 0)} equipo(s)</b> ya redactado.
+                </p>
+              </div>
+
+              <a
+                href={`https://wa.me/51968285032?text=${encodeURIComponent(
+                  `Hola HT RENT, solicito cotización para los siguientes equipos:\n\n${cartItems
+                    .map(
+                      (i, idx) =>
+                        `${idx + 1}. ${i.nombre} (Cant: ${i.cantidad}) - ${
+                          Number(i.precio) > 0 ? `S/ ${i.precio}` : 'Bajo Cotización'
+                        }`
+                    )
+                    .join('\n')}${
+                    clienteForm.nombre ? `\n\nSolicitante: ${clienteForm.nombre}` : ''
+                  }${clienteForm.empresa ? `\nEmpresa: ${clienteForm.empresa}` : ''}${
+                    clienteForm.telefono ? `\nTeléfono: ${clienteForm.telefono}` : ''
+                  }${clienteForm.mensaje ? `\nRequerimiento: ${clienteForm.mensaje}` : ''}`
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-4 bg-[#25D366] hover:bg-[#20bd5a] text-white rounded-xl text-xs font-[800] uppercase tracking-wider shadow-lg shadow-[#25D366]/25 transition-all flex items-center justify-center gap-2 transform hover:scale-[1.01]"
+              >
+                <FileText className="w-4 h-4" />
+                <span>Enviar por WhatsApp</span>
+              </a>
+            </div>
+          </div>
+        </section>
         )}
 
         {/* SELLOS DE CONFIANZA Y GARANTÍA COMERCIAL */}
