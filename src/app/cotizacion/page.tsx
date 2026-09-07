@@ -74,6 +74,7 @@ export default function CotizacionPage() {
   const [clienteForm, setClienteForm] = useState({
     nombre: '',
     empresa: '',
+    rucDni: '',
     email: '',
     telefono: '',
     mensaje: '',
@@ -246,6 +247,7 @@ export default function CotizacionPage() {
       setClienteForm({
         nombre: '',
         empresa: '',
+        rucDni: '',
         email: '',
         telefono: '',
         mensaje: '',
@@ -851,7 +853,7 @@ export default function CotizacionPage() {
 
         </section>
 
-        {/* 8.5. DATOS DEL SOLICITANTE */}
+        {/* 8.5. DATOS DEL CLIENTE / SOLICITANTE */}
         <section id="formulario-solicitud" className="bg-white rounded-[24px] border border-slate-200/80 p-6 sm:p-8 shadow-sm scroll-mt-24">
           <div className="border-b border-slate-100 pb-3 mb-5">
             <div className="flex items-center gap-2">
@@ -859,18 +861,18 @@ export default function CotizacionPage() {
                 1
               </span>
               <h3 className="text-lg font-[800] font-spartan text-slate-900 uppercase tracking-tight">
-                Paso 1: Completa tus Datos de Contacto
+                Paso 1: Datos del Cliente
               </h3>
             </div>
             <p className="text-slate-500 text-xs mt-1">
-              Ingresa tus datos para generar tu cotización formal y enviarte la propuesta.
+              Completa tus datos para emitir y enviarte la cotización formal.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
               <label className="text-[11px] font-[700] uppercase tracking-wide text-slate-700 block mb-1.5">
-                Nombre completo <span className="text-[#E63C46]">*</span>
+                Nombre Completo / Titular <span className="text-[#E63C46]">*</span>
               </label>
               <input
                 value={clienteForm.nombre}
@@ -884,20 +886,35 @@ export default function CotizacionPage() {
                 } text-sm focus:outline-none focus:ring-2 focus:ring-[#E63C46]/30 transition-all`}
               />
             </div>
+
             <div>
               <label className="text-[11px] font-[700] uppercase tracking-wide text-slate-700 block mb-1.5">
-                Empresa / Razón Social <span className="text-slate-400 font-normal">(Opcional)</span>
+                Empresa <span className="text-slate-400 font-normal">(Opcional)</span>
               </label>
               <input
                 value={clienteForm.empresa}
                 onChange={(e) => actualizarCampo('empresa', e.target.value)}
-                placeholder="Ej. Minera del Norte S.A.C."
+                placeholder="Ej. Constructora SAC"
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-[#E63C46]/30"
               />
             </div>
+
             <div>
               <label className="text-[11px] font-[700] uppercase tracking-wide text-slate-700 block mb-1.5">
-                Correo electrónico <span className="text-[#E63C46]">*</span>
+                RUC / DNI <span className="text-slate-400 font-normal">(Opcional · 8 u 11 dígitos)</span>
+              </label>
+              <input
+                value={clienteForm.rucDni}
+                maxLength={11}
+                onChange={(e) => actualizarCampo('rucDni', e.target.value.replace(/\D/g, ''))}
+                placeholder="Ej. 20601234567 o 72345678"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-[#E63C46]/30"
+              />
+            </div>
+
+            <div>
+              <label className="text-[11px] font-[700] uppercase tracking-wide text-slate-700 block mb-1.5">
+                Correo Electrónico <span className="text-[#E63C46]">*</span>
               </label>
               <input
                 type="email"
@@ -906,15 +923,16 @@ export default function CotizacionPage() {
                   actualizarCampo('email', e.target.value);
                   if (errorEnvio) setErrorEnvio(null);
                 }}
-                placeholder="Ej. juan.perez@empresa.com"
+                placeholder="correo@empresa.com"
                 className={`w-full px-4 py-3 rounded-xl border ${
                   !clienteForm.email.trim() && errorEnvio ? 'border-red-400 bg-red-50/50 ring-2 ring-red-200' : 'border-slate-200 bg-slate-50'
                 } text-sm focus:outline-none focus:ring-2 focus:ring-[#E63C46]/30 transition-all`}
               />
             </div>
-            <div>
+
+            <div className="lg:col-span-2">
               <label className="text-[11px] font-[700] uppercase tracking-wide text-slate-700 block mb-1.5">
-                Teléfono / WhatsApp <span className="text-[#E63C46]">*</span>
+                Teléfono / Celular <span className="text-[#E63C46]">*</span>
               </label>
               <input
                 value={clienteForm.telefono}
@@ -922,21 +940,22 @@ export default function CotizacionPage() {
                   actualizarCampo('telefono', e.target.value);
                   if (errorEnvio) setErrorEnvio(null);
                 }}
-                placeholder="Ej. 999 999 999"
+                placeholder="Ej. +51 999 999 999"
                 className={`w-full px-4 py-3 rounded-xl border ${
                   !clienteForm.telefono.trim() && errorEnvio ? 'border-red-400 bg-red-50/50 ring-2 ring-red-200' : 'border-slate-200 bg-slate-50'
                 } text-sm focus:outline-none focus:ring-2 focus:ring-[#E63C46]/30 transition-all`}
               />
             </div>
-            <div className="sm:col-span-2">
+
+            <div className="sm:col-span-2 lg:col-span-3">
               <label className="text-[11px] font-[700] uppercase tracking-wide text-slate-700 block mb-1.5">
-                Mensaje o requerimiento especial <span className="text-slate-400 font-normal">(Opcional)</span>
+                Mensaje u Observación <span className="text-slate-400 font-normal">(Opcional)</span>
               </label>
               <textarea
                 value={clienteForm.mensaje}
                 onChange={(e) => actualizarCampo('mensaje', e.target.value)}
                 rows={3}
-                placeholder="Cuéntanos sobre tu proyecto, fechas estimadas, condiciones especiales..."
+                placeholder="Cuéntanos sobre tu proyecto, fechas estimadas, lugar de entrega o condiciones especiales..."
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-[#E63C46]/30 resize-none"
               />
             </div>
