@@ -690,13 +690,27 @@ export default function EquipoDetallePage() {
                 </p>
               </div>
 
-              {/* BOTÓN PRINCIPAL COMPRAR + SECUNDARIO COTIZAR */}
+              {/* BOTÓN PRINCIPAL COMPRAR / COTIZAR + SECUNDARIO WHATSAPP */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-6">
                 <button
                   onClick={() => agregar(varianteSeleccionada || equipo)}
                   className="w-full py-4 rounded-[14px] text-xs font-[800] uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-xl bg-[#E63C46] hover:bg-[#C92A36] shadow-[#E63C46]/25 text-white transform hover:scale-[1.01]"
                 >
-                  <ShoppingCart className="w-4 h-4" /> COMPRAR AHORA
+                  {Number((varianteSeleccionada || equipo).precio) > 0 ? (
+                    (varianteSeleccionada || equipo).tipo === 'VENTA' ? (
+                      <>
+                        <ShoppingCart className="w-4 h-4" /> COMPRAR AHORA
+                      </>
+                    ) : (
+                      <>
+                        <ShoppingCart className="w-4 h-4" /> SOLICITAR ALQUILER
+                      </>
+                    )
+                  ) : (
+                    <>
+                      <FileText className="w-4 h-4" /> AGREGAR A COTIZACIÓN
+                    </>
+                  )}
                 </button>
                 <a
                   href={`https://wa.me/51968285032?text=${encodeURIComponent(
@@ -706,7 +720,7 @@ export default function EquipoDetallePage() {
                   rel="noopener noreferrer"
                   className="w-full py-4 rounded-[14px] text-xs font-[800] uppercase tracking-wider bg-[#162B4D] hover:bg-[#233A61] text-white transition-all flex items-center justify-center gap-2 shadow-md"
                 >
-                  <FileText className="w-4 h-4" /> Solicitar Cotización
+                  <FileText className="w-4 h-4" /> Cotizar por WhatsApp
                 </a>
               </div>
 

@@ -461,46 +461,60 @@ export default function Header() {
                       <h4 className="text-xs font-[700] text-[#1A1A1A] line-clamp-1 truncate">{item.nombre}</h4>
                       <span className="text-[10px] font-[700] text-[#E63C46] uppercase tracking-wide">{tipoLabel(item.tipo)}</span>
                       <div className="text-xs font-[800] text-[#1A1A1A] mt-1">
-                        S/ {item.precio.toLocaleString()}
-                        {item.unidad && <span className="font-[500] text-slate-400"> {item.unidad}</span>}
+                        {Number(item.precio) > 0 ? (
+                          <>
+                            S/ {item.precio.toLocaleString()}
+                            {item.unidad && <span className="font-[500] text-slate-400"> {item.unidad}</span>}
+                          </>
+                        ) : (
+                          <span className="text-[#E63C46] font-[700]">Bajo Cotización</span>
+                        )}
                       </div>
                     </div>
 
                     <div className="flex flex-col items-end gap-2 shrink-0">
-                      <button
-                        onClick={() => removeItem(item.id)}
-                        className="text-slate-400 hover:text-[#E63C46] transition-colors p-0.5"
-                      >
-                        <Trash2 className="w-4 h-4" />
+                    <button
+                      onClick={() => removeItem(item.id)}
+                      className="text-slate-400 hover:text-[#E63C46] transition-colors p-0.5"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                    <div className="flex items-center gap-1 bg-white border border-[#E5E7EB] rounded-[8px] px-1.5 py-1">
+                      <button onClick={() => updateQuantity(item.id, -1)} className="p-0.5 hover:text-[#E63C46]">
+                        <Minus className="w-3 h-3" />
                       </button>
-                      <div className="flex items-center gap-1 bg-white border border-[#E5E7EB] rounded-[8px] px-1.5 py-1">
-                        <button onClick={() => updateQuantity(item.id, -1)} className="p-0.5 hover:text-[#E63C46]">
-                          <Minus className="w-3 h-3" />
-                        </button>
-                        <span className="text-xs font-[700] px-1.5 min-w-[14px] text-center">{item.cantidad}</span>
-                        <button onClick={() => updateQuantity(item.id, 1)} className="p-0.5 hover:text-[#E63C46]">
-                          <Plus className="w-3 h-3" />
-                        </button>
-                      </div>
+                      <span className="text-xs font-[700] px-1.5 min-w-[14px] text-center">{item.cantidad}</span>
+                      <button onClick={() => updateQuantity(item.id, 1)} className="p-0.5 hover:text-[#E63C46]">
+                        <Plus className="w-3 h-3" />
+                      </button>
                     </div>
                   </div>
-                ))
-              )}
-            </div>
-
-            {/* Footer Drawer */}
-            {cart.length > 0 && (
-              <div className="px-5 sm:px-6 py-5 border-t border-[#E5E7EB] bg-[#F8FAFC] space-y-4">
-                <div className="space-y-1 text-xs">
-                  <div className="flex justify-between text-[#6B7280]">
-                    <span>Subtotal</span>
-                    <span className="font-[700] text-[#1A1A1A]">S/ {subtotal.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between text-[#1A1A1A] font-[800] text-sm pt-2 border-t border-slate-200">
-                    <span>Total Estimado</span>
-                    <span className="text-[#E63C46]">S/ {subtotal.toLocaleString('es-PE', { maximumFractionDigits: 2 })}</span>
-                  </div>
                 </div>
+              ))
+            )}
+          </div>
+
+          {/* Footer Drawer */}
+          {cart.length > 0 && (
+            <div className="px-5 sm:px-6 py-5 border-t border-[#E5E7EB] bg-[#F8FAFC] space-y-4">
+              <div className="space-y-1 text-xs">
+                {subtotal > 0 ? (
+                  <>
+                    <div className="flex justify-between text-[#6B7280]">
+                      <span>Subtotal</span>
+                      <span className="font-[700] text-[#1A1A1A]">S/ {subtotal.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between text-[#1A1A1A] font-[800] text-sm pt-2 border-t border-slate-200">
+                      <span>Total Estimado</span>
+                      <span className="text-[#E63C46]">S/ {subtotal.toLocaleString('es-PE', { maximumFractionDigits: 2 })}</span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="bg-amber-50 border border-amber-200 rounded-[10px] p-2.5 text-center text-amber-800 font-[600] text-[11px]">
+                    Los equipos seleccionados se cotizarán con un asesor comercial según tus requerimientos.
+                  </div>
+                )}
+              </div>
 
                 <div className="space-y-2">
                   <a

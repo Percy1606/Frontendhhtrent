@@ -507,9 +507,15 @@ export default function CotizacionPage() {
                   {precioEtiqueta(currentProduct.tipo)}
                 </span>
                 <div className="text-2xl sm:text-3xl font-[800] text-white">
-                  S/ {typeof currentProduct.precio === 'number' ? currentProduct.precio.toFixed(2) : currentProduct.precio}
-                  {currentProduct.unidad && (
-                    <span className="text-sm font-[600] text-slate-300 ml-1">{currentProduct.unidad}</span>
+                  {Number(currentProduct.precio) > 0 ? (
+                    <>
+                      S/ {Number(currentProduct.precio).toFixed(2)}
+                      {currentProduct.unidad && (
+                        <span className="text-sm font-[600] text-slate-300 ml-1">{currentProduct.unidad}</span>
+                      )}
+                    </>
+                  ) : (
+                    <span className="text-xl sm:text-2xl font-[800] text-amber-400">Bajo Cotización</span>
                   )}
                 </div>
               </div>
@@ -818,17 +824,27 @@ export default function CotizacionPage() {
             )}
 
             <div className="space-y-3 text-xs">
-              <div className="flex justify-between text-slate-600">
-                <span>Subtotal Equipos ({cartItems.reduce((acc, curr) => acc + curr.cantidad, 0)} u)</span>
-                <span className="font-[700] text-slate-900">S/ {subtotal.toLocaleString('es-PE', { minimumFractionDigits: 2 })}</span>
-              </div>
+              {subtotal > 0 ? (
+                <>
+                  <div className="flex justify-between text-slate-600">
+                    <span>Subtotal Equipos ({cartItems.reduce((acc, curr) => acc + curr.cantidad, 0)} u)</span>
+                    <span className="font-[700] text-slate-900">S/ {subtotal.toLocaleString('es-PE', { minimumFractionDigits: 2 })}</span>
+                  </div>
 
-              <div className="pt-4 border-t border-slate-200 flex items-baseline justify-between bg-slate-900 p-4 rounded-xl text-white">
-                <span className="font-[800] text-sm uppercase">TOTAL ESTIMADO</span>
-                <span className="text-2xl font-[800] text-[#E63C46]">
-                  S/ {subtotal.toLocaleString('es-PE', { minimumFractionDigits: 2 })}
-                </span>
-              </div>
+                  <div className="pt-4 border-t border-slate-200 flex items-baseline justify-between bg-slate-900 p-4 rounded-xl text-white">
+                    <span className="font-[800] text-sm uppercase">TOTAL ESTIMADO</span>
+                    <span className="text-2xl font-[800] text-[#E63C46]">
+                      S/ {subtotal.toLocaleString('es-PE', { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <div className="bg-slate-900 p-4 rounded-xl text-white text-center space-y-1">
+                  <span className="font-[800] text-xs uppercase tracking-wider text-slate-400 block">TOTAL DE COTIZACIÓN</span>
+                  <span className="text-xl font-[800] text-amber-400 block">A Cotizar con Asesor</span>
+                  <p className="text-[10px] text-slate-400 font-[400]">Tarifas y disponibilidad personalizadas según duración y proyecto.</p>
+                </div>
+              )}
             </div>
 
           </div>
