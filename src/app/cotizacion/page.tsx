@@ -1111,18 +1111,25 @@ export default function CotizacionPage() {
 
               <a
                 href={`https://wa.me/51968285032?text=${encodeURIComponent(
-                  `Hola HT RENT, solicito cotización para los siguientes equipos:\n\n${cartItems
+                  `*SOLICITUD DE COTIZACIÓN - HT RENT*\n\n` +
+                  `Hola, deseo solicitar cotización formal para los siguientes equipos:\n\n` +
+                  cartItems
                     .map(
                       (i, idx) =>
-                        `${idx + 1}. ${i.nombre} (Cant: ${i.cantidad}) - ${
+                        `📌 *Item ${idx + 1}:* ${i.nombre}\n` +
+                        (i.codigoInterno ? `   • *CÓDIGO:* ${i.codigoInterno}\n` : '') +
+                        `   • *Cantidad:* ${i.cantidad} unidad(es)\n` +
+                        `   • *Modalidad:* ${i.tipo === 'VENTA' ? 'Venta' : 'Alquiler'}\n` +
+                        `   • *Precio/Tarifa:* ${
                           Number(i.precio) > 0 ? `S/ ${i.precio}` : 'Bajo Cotización'
                         }`
                     )
-                    .join('\n')}${
-                    clienteForm.nombre ? `\n\nSolicitante: ${clienteForm.nombre}` : ''
-                  }${clienteForm.empresa ? `\nEmpresa: ${clienteForm.empresa}` : ''}${
-                    clienteForm.telefono ? `\nTeléfono: ${clienteForm.telefono}` : ''
-                  }${clienteForm.mensaje ? `\nRequerimiento: ${clienteForm.mensaje}` : ''}`
+                    .join('\n\n') +
+                  (clienteForm.nombre ? `\n\n👤 *Solicitante:* ${clienteForm.nombre}` : '') +
+                  (clienteForm.empresa ? `\n🏢 *Empresa:* ${clienteForm.empresa}` : '') +
+                  (clienteForm.telefono ? `\n📱 *Teléfono:* ${clienteForm.telefono}` : '') +
+                  (clienteForm.email ? `\n✉️ *Correo:* ${clienteForm.email}` : '') +
+                  (clienteForm.mensaje ? `\n📝 *Requerimiento:* ${clienteForm.mensaje}` : '')
                 )}`}
                 target="_blank"
                 rel="noopener noreferrer"

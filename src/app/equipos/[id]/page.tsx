@@ -231,6 +231,7 @@ export default function EquipoDetallePage() {
     agregarAlCarrito({
       id: itemAgregar.id,
       nombre: itemAgregar.nombre,
+      codigoInterno: itemAgregar.codigoInterno || undefined,
       descripcion: itemAgregar.descripcion,
       ubicacion: itemAgregar.ubicacion,
       precio: itemAgregar.precio,

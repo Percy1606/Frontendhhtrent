@@ -38,6 +38,7 @@ import {
 interface EquipoBD {
   id: string;
   nombre: string;
+  codigoInterno?: string | null;
   categoria: string;
   descripcion: string;
   precio: number | string | null;
@@ -561,6 +562,7 @@ export default function EquiposPage() {
                           agregarAlCarrito({
                             id: p.id,
                             nombre: p.nombre,
+                            codigoInterno: p.codigoInterno || undefined,
                             descripcion: p.descripcion,
                             ubicacion: p.ubicacion,
                             precio: p.precio,

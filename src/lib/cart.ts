@@ -5,6 +5,7 @@ export const CART_KEY = 'hht_cotizacion_cart';
 export interface CartItem {
   id: string;
   nombre: string;
+  codigoInterno?: string;
   descripcion?: string;
   ubicacion?: string;
   precio: number;
@@ -34,6 +35,7 @@ export function leerCarrito(): CartItem[] {
       .map((i) => ({
         id: String(i.id),
         nombre: String(i.nombre ?? 'Equipo'),
+        codigoInterno: typeof i.codigoInterno === 'string' ? i.codigoInterno : undefined,
         descripcion: typeof i.descripcion === 'string' ? i.descripcion : undefined,
         ubicacion: typeof i.ubicacion === 'string' ? i.ubicacion : undefined,
         precio: numeroPrecio(i.precio as number | string | null),
@@ -60,6 +62,7 @@ export function guardarCarrito(cart: CartItem[]) {
 export function agregarAlCarrito(item: {
   id: string;
   nombre: string;
+  codigoInterno?: string;
   descripcion?: string;
   ubicacion?: string;
   precio: number | string | null;
@@ -78,6 +81,7 @@ export function agregarAlCarrito(item: {
     cart.push({
       id: item.id,
       nombre: item.nombre,
+      codigoInterno: item.codigoInterno,
       descripcion: item.descripcion,
       ubicacion: item.ubicacion,
       precio: numeroPrecio(item.precio),
